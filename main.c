@@ -107,7 +107,15 @@ void TrapKernelHandler(ExceptionInfo *info) {
  * riodic clock interrupts. The period between clock interrupts is exaggerated in the simulated hardware
  * in order to avoid using up too much real CPU time on the shared CLEAR hardware systems.
 */
-void TrapClockHandler(ExceptionInfo *info);
+void TrapClockHandler(ExceptionInfo *info){
+    /**
+     * Your Yalnix kernel should implement round-robin process scheduling with a time
+     * quantum per process of 2 clock ticks. After the current process has been running as the current
+     * process continuously for at least 2 clock ticks, if there are other runnable processes on the ready
+     * queue, perform a context switch to the next runnable process.
+    */
+   Delay(2);
+};
 
 /**
  * This type of exception results from the execution of an illegal instruction by the
@@ -118,59 +126,61 @@ void TrapIllegalHandler(ExceptionInfo *info){
     /**Terminate the currently running Yalnix user process and print a message giving the
     process ID of the process and an explanation of the problem; and continue running other processes.*/
     if (info->code == TRAP_ILLEGAL_ILLOPC) {
-        TracePrintf(0, "Process %d: Illegal opcode", getpid());
+        printf("Process %d: Illegal opcode", getpid());
     }
     else if (info->code == TRAP_ILLEGAL_ILLOPN)
     {
-        TracePrintf(0, "Process %d: Illegal operand", getpid());
+        printf("Process %d: Illegal operand", getpid());
     }
     else if (info->code == TRAP_ILLEGAL_ILLADR)
     {
-        TracePrintf(0, "Process %d: Illegal addressing mode", getpid());
+        printf("Process %d: Illegal addressing mode", getpid());
     }
     else if (info->code == TRAP_ILLEGAL_ILLTRP)
     {
-        TracePrintf(0, "Process %d: Illegal software trap", getpid());
+        printf("Process %d: Illegal software trap", getpid());
     }
     else if (info->code == TRAP_ILLEGAL_PRVOPC)
     {
-        TracePrintf(0, "Process %d: Privileged opcode", getpid());
+        printf("Process %d: Privileged opcode", getpid());
     }
     else if (info->code == TRAP_ILLEGAL_PRVREG)
     {
-        TracePrintf(0, "Process %d: Privileged register", getpid());
+        printf("Process %d: Privileged register", getpid());
     }
     else if (info->code == TRAP_ILLEGAL_COPROC)
     {
-        TracePrintf(0, "Process %d: Coprocessor error", getpid());
+        printf("Process %d: Coprocessor error", getpid());
     }
     else if (info->code == TRAP_ILLEGAL_BADSTK)
     {
-        TracePrintf(0, "Process %d: Bad stack", getpid());
+        printf("Process %d: Bad stack", getpid());
     }
     else if (info->code == TRAP_ILLEGAL_KERNELI)
     {
-        TracePrintf(0, "Process %d: Linux kernel sent SIGILL", getpid());
+        printf("Process %d: Linux kernel sent SIGILL", getpid());
     }
     else if (info->code == TRAP_ILLEGAL_USERIB)
     {
-        TracePrintf(0, "Process %d: Received SIGILL or SIGBUS from user", getpid());
+        printf("Process %d: Received SIGILL or SIGBUS from user", getpid());
     }
     else if (info->code == TRAP_ILLEGAL_ADRALN)
     {
-        TracePrintf(0, "Process %d: Invalid address alignment", getpid());
+        printf("Process %d: Invalid address alignment", getpid());
     }
     else if (info->code == TRAP_ILLEGAL_ADRERR)
     {
-        TracePrintf(0, "Process %d: Non-existent physical address", getpid());
+        printf("Process %d: Non-existent physical address", getpid());
     }
     else if (info->code == TRAP_ILLEGAL_OBJERR)
     {
-        TracePrintf(0, "Process %d: Object-specific HW error", getpid());
+        printf("Process %d: Object-specific HW error", getpid());
     }
     else if (info->code == TRAP_ILLEGAL_KERNELB)
     {
-        TracePrintf(0, "Process %d: Linux kernel sent SIGBUS", getpid());
+        printf("Process %d: Linux kernel sent SIGBUS", getpid());
+    } else {
+        printf("Code not found.")
     }
     
     Halt();
@@ -183,13 +193,102 @@ void TrapIllegalHandler(ExceptionInfo *info){
  * the address is not mapped in the current page tables, or because the access violates the current page
  * protection specified in the corresponding page table entry.
 */
-void TrapMemoryHandler(ExceptionInfo *info);
+void TrapMemoryHandler(ExceptionInfo *info){
+    /**
+     * The kernel must determine if this exception represents an implicit request by the
+     * current process to enlarge the amount of memory allocated to the process’s stack, as described in
+     * more detail in Section 3.4.4. If so, the kernel enlarges the process’s stack to “cover” the address that
+     * was being referenced that caused the exception (the addr field in the ExceptionInfo) and then
+     * returns from the exception, allowing the process to continue execution with the larger stack. Other-
+     * wise, terminate the currently running Yalnix user process and print a message giving the process ID
+     * of the process and an explanation of the problem; and continue running other processes
+    */
+    // check if virtual addr is in region 0, below the stack, and above the break for the process
+    void *addr = info->addr;
+    if (addr > VMEM_0_BASE || addr < VMEM_0_LIMIT || addr < KERNEL_STACK_BASE) {
+        SetKernelBrk(addr);
+    } 
+    else {
+        if (info->code == TRAP_MEMORY_MAPPER)
+        {
+            printf("Process %d: No mapping at addr", getpid());
+        }
+        else if (info->code == TRAP_MEMORY_ACCERR)
+        {
+            printf("Process %d: Protection violation at addr", getpid());
+        }
+        else if (info->code == TRAP_MEMORY_KERNEL)
+        {
+            printf("Process %d: Linux kernel sent SIGSEGV at addr", getpid());
+        }
+        else if (info->code == TRAP_MEMORY_USER)
+        {
+            printf("Process %d: Received SIGSEGV from user", getpid());
+        }
+        else
+        {
+            printf("Code not found.");
+        }
+
+        Halt();
+    }
+};
 
 /**
  * This type of exception results from any arithmetic error from an instruction executed
  * by the current user process, such as division by zero or an arithmetic overflow.
 */
-void TrapMathHandler(ExceptionInfo *info);
+void TrapMathHandler(ExceptionInfo *info){
+    /**
+     * Terminate the currently running Yalnix user process and print a message giving the
+     * process ID of the process and an explanation of the problem; and continue running other processes
+    */
+    if (info->code == TRAP_MATH_INTDIV)
+    {
+        printf("Process %d: Integer divide by zero", getpid());
+    }
+    else if (info->code == TRAP_MATH_INTOVF)
+    {
+        printf("Process %d: Integer overflow", getpid());
+    }
+    else if (info->code == TRAP_MATH_FLTDIV)
+    {
+        printf("Process %d: Floating divide by zero", getpid());
+    }
+    else if (info->code == TRAP_MATH_FLTOVF)
+    {
+        printf("Process %d: Floating overflow", getpid());
+    }
+    else if (info->code == TRAP_MATH_FLTUND)
+    {
+        printf("Process %d: Floating underflow", getpid());
+    }
+    else if (info->code == TRAP_MATH_FLTRES)
+    {
+        printf("Process %d: Floating inexact result", getpid());
+    }
+    else if (info->code == TRAP_MATH_FLTINV)
+    {
+        printf("Process %d: Invalid floating operation", getpid());
+    }
+    else if (info->code == TRAP_MATH_FLTSUB)
+    {
+        printf("Process %d: FP subscript out of range", getpid());
+    }
+    else if (info->code == TRAP_MATH_KERNEL)
+    {
+        printf("Process %d: Linux kernel sent SIGFPE", getpid());
+    }
+    else if (info->code == TRAP_MATH_USER)
+    {
+        printf("Process %d: Received SIGFPE from user", getpid());
+    }
+    else
+    {
+        printf("Code not found.")
+    }
+   Halt();
+};
 
 /**
  * This type of interrupt is generated by the terminal device controller hardware
