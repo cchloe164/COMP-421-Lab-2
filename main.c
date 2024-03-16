@@ -65,7 +65,41 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void **orig
  * through this single type of trap.
 */
 void TrapKernelHandler(ExceptionInfo *info) {
-
+    if (info->code == YALNIX_FORK) {
+        *info->regs[0] = Fork();
+    }
+    else if (info->code == YALNIX_EXEC)
+    {
+        *info->regs[0] = Exec(info->regs[1], info->regs[2]);
+    }
+    else if (info->code == YALNIX_EXIT)
+    {
+        Exit(0);
+    }
+    else if (info->code == YALNIX_WAIT)
+    {
+        *info->regs[0] = Wait(info->regs[1]);
+    }
+    else if (info->code == YALNIX_GETPID)
+    {
+        *info->regs[0] = GetPid();
+    }
+    else if (info->code == YALNIX_BRK)
+    {
+        *info->regs[0] = Brk(info->regs[1]);
+    }
+    else if (info->code == YALNIX_DELAY)
+    {
+        *info->regs[0] = Delay(info->regs[1]);
+    }
+    else if (info->code == YALNIX_TTY_READ)
+    {
+        *info->regs[0] = TtyRead(info->regs[1], info->regs[2], info->regs[3]);
+    }
+    else if (info->code == YALNIX_TTY_WRITE)
+    {
+        *info->regs[0] = TtyWrite(info->regs[1], info->regs[2], info->regs[3]);
+    }
 };
 
 /**
