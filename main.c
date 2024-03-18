@@ -203,7 +203,7 @@ void TrapClockHandler(ExceptionInfo *info){
      * queue, perform a context switch to the next runnable process.
     */
     TracePrintf("TRAP_CLOCK handler called!\n");
-    Delay(2);
+    
 };
 
 /**
@@ -216,59 +216,59 @@ void TrapIllegalHandler(ExceptionInfo *info){
     process ID of the process and an explanation of the problem; and continue running other processes.*/
     TracePrintf("TRAP_ILLEGAL handler called!\n");
     if (info->code == TRAP_ILLEGAL_ILLOPC) {
-        printf("Process %d: Illegal opcode", getpid());
+        printf("Process %d: Illegal opcode", GetPid());
     }
     else if (info->code == TRAP_ILLEGAL_ILLOPN)
     {
-        printf("Process %d: Illegal operand", getpid());
+        printf("Process %d: Illegal operand", GetPid());
     }
     else if (info->code == TRAP_ILLEGAL_ILLADR)
     {
-        printf("Process %d: Illegal addressing mode", getpid());
+        printf("Process %d: Illegal addressing mode", GetPid());
     }
     else if (info->code == TRAP_ILLEGAL_ILLTRP)
     {
-        printf("Process %d: Illegal software trap", getpid());
+        printf("Process %d: Illegal software trap", GetPid());
     }
     else if (info->code == TRAP_ILLEGAL_PRVOPC)
     {
-        printf("Process %d: Privileged opcode", getpid());
+        printf("Process %d: Privileged opcode", GetPid());
     }
     else if (info->code == TRAP_ILLEGAL_PRVREG)
     {
-        printf("Process %d: Privileged register", getpid());
+        printf("Process %d: Privileged register", GetPid());
     }
     else if (info->code == TRAP_ILLEGAL_COPROC)
     {
-        printf("Process %d: Coprocessor error", getpid());
+        printf("Process %d: Coprocessor error", GetPid());
     }
     else if (info->code == TRAP_ILLEGAL_BADSTK)
     {
-        printf("Process %d: Bad stack", getpid());
+        printf("Process %d: Bad stack", GetPid());
     }
     else if (info->code == TRAP_ILLEGAL_KERNELI)
     {
-        printf("Process %d: Linux kernel sent SIGILL", getpid());
+        printf("Process %d: Linux kernel sent SIGILL", GetPid());
     }
     else if (info->code == TRAP_ILLEGAL_USERIB)
     {
-        printf("Process %d: Received SIGILL or SIGBUS from user", getpid());
+        printf("Process %d: Received SIGILL or SIGBUS from user", GetPid());
     }
     else if (info->code == TRAP_ILLEGAL_ADRALN)
     {
-        printf("Process %d: Invalid address alignment", getpid());
+        printf("Process %d: Invalid address alignment", GetPid());
     }
     else if (info->code == TRAP_ILLEGAL_ADRERR)
     {
-        printf("Process %d: Non-existent physical address", getpid());
+        printf("Process %d: Non-existent physical address", GetPid());
     }
     else if (info->code == TRAP_ILLEGAL_OBJERR)
     {
-        printf("Process %d: Object-specific HW error", getpid());
+        printf("Process %d: Object-specific HW error", GetPid());
     }
     else if (info->code == TRAP_ILLEGAL_KERNELB)
     {
-        printf("Process %d: Linux kernel sent SIGBUS", getpid());
+        printf("Process %d: Linux kernel sent SIGBUS", GetPid());
     } else {
         printf("Code not found.")
     }
@@ -302,19 +302,19 @@ void TrapMemoryHandler(ExceptionInfo *info){
     else {
         if (info->code == TRAP_MEMORY_MAPPER)
         {
-            printf("Process %d: No mapping at addr", getpid());
+            printf("Process %d: No mapping at addr", GetPid());
         }
         else if (info->code == TRAP_MEMORY_ACCERR)
         {
-            printf("Process %d: Protection violation at addr", getpid());
+            printf("Process %d: Protection violation at addr", GetPid());
         }
         else if (info->code == TRAP_MEMORY_KERNEL)
         {
-            printf("Process %d: Linux kernel sent SIGSEGV at addr", getpid());
+            printf("Process %d: Linux kernel sent SIGSEGV at addr", GetPid());
         }
         else if (info->code == TRAP_MEMORY_USER)
         {
-            printf("Process %d: Received SIGSEGV from user", getpid());
+            printf("Process %d: Received SIGSEGV from user", GetPid());
         }
         else
         {
@@ -337,43 +337,43 @@ void TrapMathHandler(ExceptionInfo *info){
     TracePrintf("TRAP_MATH handler called!\n");
     if (info->code == TRAP_MATH_INTDIV)
     {
-        printf("Process %d: Integer divide by zero", getpid());
+        printf("Process %d: Integer divide by zero", GetPid());
     }
     else if (info->code == TRAP_MATH_INTOVF)
     {
-        printf("Process %d: Integer overflow", getpid());
+        printf("Process %d: Integer overflow", GetPid());
     }
     else if (info->code == TRAP_MATH_FLTDIV)
     {
-        printf("Process %d: Floating divide by zero", getpid());
+        printf("Process %d: Floating divide by zero", GetPid());
     }
     else if (info->code == TRAP_MATH_FLTOVF)
     {
-        printf("Process %d: Floating overflow", getpid());
+        printf("Process %d: Floating overflow", GetPid());
     }
     else if (info->code == TRAP_MATH_FLTUND)
     {
-        printf("Process %d: Floating underflow", getpid());
+        printf("Process %d: Floating underflow", GetPid());
     }
     else if (info->code == TRAP_MATH_FLTRES)
     {
-        printf("Process %d: Floating inexact result", getpid());
+        printf("Process %d: Floating inexact result", GetPid());
     }
     else if (info->code == TRAP_MATH_FLTINV)
     {
-        printf("Process %d: Invalid floating operation", getpid());
+        printf("Process %d: Invalid floating operation", GetPid());
     }
     else if (info->code == TRAP_MATH_FLTSUB)
     {
-        printf("Process %d: FP subscript out of range", getpid());
+        printf("Process %d: FP subscript out of range", GetPid());
     }
     else if (info->code == TRAP_MATH_KERNEL)
     {
-        printf("Process %d: Linux kernel sent SIGFPE", getpid());
+        printf("Process %d: Linux kernel sent SIGFPE", GetPid());
     }
     else if (info->code == TRAP_MATH_USER)
     {
-        printf("Process %d: Received SIGFPE from user", getpid());
+        printf("Process %d: Received SIGFPE from user", GetPid());
     }
     else
     {
@@ -395,7 +395,7 @@ void TrapTTYReceiveHandler(ExceptionInfo *info){
      * call by some user process.
     */
     TracePrintf("TRAP_TTYRECEIVE handler called!\n");
-    TtyReceive(info->code, tty_buf, TERMINAL_MAX_LINE);
+    TtyReceive(info->code, tty_buf, TERMINAL_MAX_LINE); // work on these much later
 };
 
 /**
@@ -413,5 +413,5 @@ void TrapTTYTransmitHandler(ExceptionInfo *info){
      * nal, also start the next one using TtyTransmit.
     */
     TracePrintf("TRAP_TTYTRANSMIT handler called!\n");
-    TtyWrite(info->code, tty_buf, TERMINAL_MAX_LEN);
+    TtyWrite(info->code, tty_buf, TERMINAL_MAX_LEN); // work on these much later
 };
