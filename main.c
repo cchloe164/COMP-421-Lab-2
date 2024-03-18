@@ -51,7 +51,7 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void **orig
     //RW: maybe we could do this after 
     buildFreePages(pmem_size);
     // Build 1 initial page table
-    initPT();
+    initPT(*orig_brk);
     // Initialize terminals
 
     // Enable virtual memory
@@ -65,44 +65,71 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void **orig
 
 void buildFreePages(unsigned int pmem_size) {
     num_pages = DOWN_TO_PAGE(pmem_size) >> PAGESHIFT;
+    int page_itr;
     //keep track of free pages
-    freePages = Malloc(total_pages * sizeof(int));
-
-    //TOOD: iterate through and set freePages to indicate free (do a linked list? or just an array)
-	TracePrintf("buildFreePages DONE \n"); 
+    freePages = Malloc(num_pages * sizeof(int));
+    for (page_itr = 0, page_itr < num_pages; page_itr++) {
+        freePages[page_itr] = 1;
+    }
+    //TODO: iterate through and set freePages to indicate free (do a linked list? or just an array)
+	TracePrintf("Finished building free pages\n"); 
 
 }
 
-void initPT() {
+/**
+* The kernel does, however, control the mapping (i.e., the page table entry) that 
+specifies this translation, by building and initializing the contents of the page table. 
+This division of labor makes sense because memory references occur very frequently as the 
+CPU executes instructions, whereas the virtual-to-physical address mapping (the page table) 
+changes relatively infrequently and in accord with the process abstraction and memory protection 
+policy implemented by the kernel.
+*/
+void initPT(orig_brk) {
     //initial region 0 & 1 page tables are placed at the top page of region 1
-    region0Pt = (struct pte *)(DOWN_TO_PAGE(VMEM_1_LIMIT) - 2 * PAGESIZE); //vmem should be the same as pmem at start
-    region1Pt = (struct pte *)(DOWN_TO_PAGE(VMEM_1_LIMIT) - PAGESIZE);
+    region0Pt = (struct pte *)(DOWN_TO_PAGE(VMEM_1_LIMIT) - 2 * VMEM_REGION_SIZE); //vmem should be the same as pmem at start
+    region1Pt = (struct pte *)(DOWN_TO_PAGE(VMEM_1_LIMIT) - VMEM_REGION_SIZE);
 
     //setup initial ptes in region 1 page table and region 0 page table
     int page_itr;
-    //init region 0 page table
-    for (page_itr = 0; page_itr < KERNEL_STACK_PAGES; page_itr++) {  
+    //init region 0 page table (see pg 22)
+    //TODO: check these values
+    for (page_itr = PMEM_BASE; page_itr < KERNEL_STACK_PAGES; page_itr++) {  
         int index = PAGE_TABLE_LEN - page_itr - 1;
         region0Pt[index].pfn = index;
-        region0Pt[index].uprot = 0;
+        region0Pt[index].uprot = PROT_NONE;
         region0Pt[index].kprot = PROT_READ | PROT_WRITE;
         region0Pt[index].valid = 1;
     }
 
     //region 1 setup
-	for (page_itr = VMEM_1_BASE >> PAGESHIFT; page_itr < (UP_TO_PAGE(kernel_break) >> PAGESHIFT); page_itr++) {
+    //iterate starting from VMEM_1_Base until the kernel break to establish PTs
+	for (page_itr = VMEM_1_BASE >> PAGESHIFT; page_itr < (UP_TO_PAGE(orig_brk) >> PAGESHIFT); page_itr++) {
 		region1Pt[page_itr].pfn = PAGE_TABLE_LEN + page_itr;
-		region1Pt[page_itr].uprot = 0;
+		region1Pt[page_itr].uprot = PROT_NONE;
 		region1Pt[page_itr].valid = 1;
-
-		if (VMEM_1_BASE + pt_iter1 * PAGESIZE < (UP_TO_PAGE(&_etext) >> PAGESHIFT)) {
+        /**
+        from page 24:
+        In particular, the page table entries for your kernel text should be set 
+        to “read” and “execute” protection for kernel mode, and the page table 
+        entries for your kernel data/bss/heap should be set to “read” and “write” 
+        protection for kernel mode; the user mode protection for both kinds of kernel 
+        page table entries should be “none” (no access).
+        */
+		if (VMEM_1_BASE + (page_itr << PAGESIZE) < (UP_TO_PAGE(&_etext) << PAGESHIFT)) { //up till the _etext
 			region1Pt[page_itr].kprot = (PROT_READ | PROT_EXEC);
 		} else {
 			region1Pt[page_itr].kprot = (PROT_READ | PROT_WRITE);
 		}
 	}
+
     //Next: init values for Page Tables
-    TracePrintf("initPT DONE \n"); 
+
+    //set the REG_PTR0 and REG_PTR1
+    ptr0 = (RCS421RegVal *) region0Pt;
+    ptr1 = (RCS421RegVal *) region1Pt;
+    WriteRegister(REG_PTR0, ptr0);
+    WriteRegister(REG_PTR1, ptr1);
+    TracePrintf("Finished initializing Page Table \n"); 
 
 
 }
