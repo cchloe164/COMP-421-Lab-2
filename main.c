@@ -30,7 +30,7 @@ int freePages;
 extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void **orig_brk, char **cmd_args)
 {
     /* Initialize interrupt vector table */
-    interruptVector = (int *) malloc(TRAP_VECTOR_SIZE * sizeof(int*)); // allocate space in physical memory
+    interruptVector = (int *) Malloc(TRAP_VECTOR_SIZE * sizeof(int*)); // allocate space in physical memory
     
     // assign handler functions to indices
     interruptVector[TRAP_KERNEL] = TrapKernelHandler;
@@ -69,7 +69,7 @@ void buildFreePages(unsigned int pmem_size) {
     freePages = Malloc(total_pages * sizeof(int));
 
     //TOOD: iterate through and set freePages to indicate free (do a linked list? or just an array)
-	TracePrintf("buildFreePages DONE \n"); 
+	TracePrintf("buildFreePages DONE\n"); 
 
 }
 
@@ -118,6 +118,14 @@ void initPT() {
  * through this single type of trap.
 */
 void TrapKernelHandler(ExceptionInfo *info) {
+    /**
+     * This type of trap results from a “kernel call” (also called a “system call” or
+     * “syscall”) trap instruction executed by the current user processes. Such a trap is used by user pro-
+     * cesses to request some type of service from the operating system kernel, such as creating a new
+     * process, allocating memory, or performing I/O. All different kernel call requests enter the kernel
+     * through this single type of trap.
+    */
+    TracePrintf("TRAP_KERNEL handler called!\n");
     if (info->code == YALNIX_FORK) {
         *info->regs[0] = Fork();
     }
@@ -167,7 +175,8 @@ void TrapClockHandler(ExceptionInfo *info){
      * process continuously for at least 2 clock ticks, if there are other runnable processes on the ready
      * queue, perform a context switch to the next runnable process.
     */
-   Delay(2);
+    TracePrintf("TRAP_CLOCK handler called!\n");
+    Delay(2);
 };
 
 /**
@@ -178,6 +187,7 @@ void TrapClockHandler(ExceptionInfo *info){
 void TrapIllegalHandler(ExceptionInfo *info){
     /**Terminate the currently running Yalnix user process and print a message giving the
     process ID of the process and an explanation of the problem; and continue running other processes.*/
+    TracePrintf("TRAP_ILLEGAL handler called!\n");
     if (info->code == TRAP_ILLEGAL_ILLOPC) {
         printf("Process %d: Illegal opcode", getpid());
     }
@@ -257,6 +267,7 @@ void TrapMemoryHandler(ExceptionInfo *info){
      * of the process and an explanation of the problem; and continue running other processes
     */
     // check if virtual addr is in region 0, below the stack, and above the break for the process
+    TracePrintf("TRAP_MEMORY handler called!\n");
     void *addr = info->addr;
     if (addr > VMEM_0_BASE || addr < VMEM_0_LIMIT || addr < KERNEL_STACK_BASE) {
         SetKernelBrk(addr);
@@ -296,6 +307,7 @@ void TrapMathHandler(ExceptionInfo *info){
      * Terminate the currently running Yalnix user process and print a message giving the
      * process ID of the process and an explanation of the problem; and continue running other processes
     */
+    TracePrintf("TRAP_MATH handler called!\n");
     if (info->code == TRAP_MATH_INTDIV)
     {
         printf("Process %d: Integer divide by zero", getpid());
@@ -355,7 +367,8 @@ void TrapTTYReceiveHandler(ExceptionInfo *info){
      * hardware operation and if necessary should buffer the input line for a subsequent TtyRead kernel
      * call by some user process.
     */
-   TtyReceive(info->code, tty_buf, TERMINAL_MAX_LINE);
+    TracePrintf("TRAP_TTYRECEIVE handler called!\n");
+    TtyReceive(info->code, tty_buf, TERMINAL_MAX_LINE);
 };
 
 /**
@@ -372,5 +385,6 @@ void TrapTTYTransmitHandler(ExceptionInfo *info){
      * TtyWrite kernel call that started this output. If other TtyWrite calls are pending for this termi-
      * nal, also start the next one using TtyTransmit.
     */
-   TtyWrite(info->code, tty_buf, TERMINAL_MAX_LEN);
+    TracePrintf("TRAP_TTYTRANSMIT handler called!\n");
+    TtyWrite(info->code, tty_buf, TERMINAL_MAX_LEN);
 };
