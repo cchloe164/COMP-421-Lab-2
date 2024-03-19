@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <comp421/hardware.h>
@@ -7,8 +8,9 @@
 #define	PAGE_FREE	0
 #define PAGE_USED   1       
 
-int **interruptVector[TRAP_VECTOR_SIZE];
 void *tty_buf; // buffer in virtual memory region 1
+struct pte *region0Pt, *region1Pt;  //page table pointers
+int freePages;
 
 void TrapKernelHandler(ExceptionInfo *info);
 void TrapClockHandler(ExceptionInfo *info);
@@ -17,8 +19,7 @@ void TrapMemoryHandler(ExceptionInfo *info);
 void TrapMathHandler(ExceptionInfo *info);
 void TrapTTYReceiveHandler(ExceptionInfo *info);
 void TrapTTYTransmitHandler(ExceptionInfo *info);
-struct pte *region0Pt, *region1Pt;  //page table pointers
-int freePages;
+void **interruptVector;
 
 /*
     *  This is the primary entry point into the kernel:
@@ -31,7 +32,7 @@ int freePages;
 extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, char **cmd_args)
 {
     /* Initialize interrupt vector table */
-    interruptVector = (int *) Malloc(TRAP_VECTOR_SIZE * sizeof(int*)); // allocate space in physical memory
+    interruptVector = (void **) malloc(TRAP_VECTOR_SIZE * sizeof(int*)); // allocate space in physical memory
     
     // assign handler functions to indices
     interruptVector[TRAP_KERNEL] = TrapKernelHandler;
@@ -43,7 +44,8 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     interruptVector[TRAP_TTY_TRANSMIT] = TrapTTYTransmitHandler;
     
     // fill in rest of empty slots
-    for (size_t i = TRAP_DISK; i < TRAP_VECTOR_SIZE; i++)
+    int i;
+    for (i = TRAP_DISK; i < TRAP_VECTOR_SIZE; i++)
     {
         interruptVector[i] = NULL;
     }
@@ -60,6 +62,10 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     WriteRegister(REG_VM_ENABLE, 1);
     // Create idle process
     // Create init process
+
+    (void)info;
+    (void)cmd_args;
+
     return;
 }
 
@@ -77,7 +83,7 @@ void buildFreePages(unsigned int pmem_size) {
     num_pages = DOWN_TO_PAGE(pmem_size) >> PAGESHIFT;
     int page_itr;
     //keep track of free pages
-    freePages = Malloc(num_pages * sizeof(int));
+    freePages = malloc(num_pages * sizeof(int));
     for (page_itr = 0, page_itr < num_pages; page_itr++) {
         freePages[page_itr] = PAGE_FREE;
     }
@@ -145,8 +151,6 @@ void initPT(*orig_brk) {
     WriteRegister(REG_PTR0, ptr0);
     WriteRegister(REG_PTR1, ptr1);
     TracePrintf(0, "Finished initializing Page Table \n"); 
-
-
 }
 
 
@@ -169,11 +173,11 @@ void TrapKernelHandler(ExceptionInfo *info) {
     */
     TracePrintf(0, "TRAP_KERNEL handler called!\n");
     if (info->code == YALNIX_FORK) {
-        *info->regs[0] = Fork();
+        info->regs[0] = Fork();
     }
     else if (info->code == YALNIX_EXEC)
     {
-        *info->regs[0] = Exec(info->regs[1], info->regs[2]);
+        info->regs[0] = Exec((char *) info->regs[1], (char **)info->regs[2]);
     }
     else if (info->code == YALNIX_EXIT)
     {
@@ -181,27 +185,27 @@ void TrapKernelHandler(ExceptionInfo *info) {
     }
     else if (info->code == YALNIX_WAIT)
     {
-        *info->regs[0] = Wait(info->regs[1]);
+        info->regs[0] = Wait((int *) info->regs[1]);
     }
-    else if (info->code == YALNIX_GetPid)
+    else if (info->code == YALNIX_GETPID)
     {
-        *info->regs[0] = GetPid();
+        info->regs[0] = GetPid();
     }
     else if (info->code == YALNIX_BRK)
     {
-        *info->regs[0] = Brk(info->regs[1]);
+        info->regs[0] = Brk((void *) info->regs[1]);
     }
     else if (info->code == YALNIX_DELAY)
     {
-        *info->regs[0] = Delay(info->regs[1]);
+        info->regs[0] = Delay(info->regs[1]);
     }
     else if (info->code == YALNIX_TTY_READ)
     {
-        *info->regs[0] = TtyRead(info->regs[1], info->regs[2], info->regs[3]);
+        info->regs[0] = TtyRead(info->regs[1], (void *) info->regs[2], info->regs[3]);
     }
     else if (info->code == YALNIX_TTY_WRITE)
     {
-        *info->regs[0] = TtyWrite(info->regs[1], info->regs[2], info->regs[3]);
+        info->regs[0] = TtyWrite(info->regs[1], (void *) info->regs[2], info->regs[3]);
     }
 };
 
@@ -219,6 +223,8 @@ void TrapClockHandler(ExceptionInfo *info){
     */
     TracePrintf(0, "TRAP_CLOCK handler called!\n");
     Delay(2);
+
+    (void) info;
 };
 
 /**
@@ -285,7 +291,7 @@ void TrapIllegalHandler(ExceptionInfo *info){
     {
         printf("Process %d: Linux kernel sent SIGBUS", GetPid());
     } else {
-        printf("Code not found.")
+        printf("Code not found.");
     }
     
     Halt();
@@ -310,12 +316,12 @@ void TrapMemoryHandler(ExceptionInfo *info){
     */
     // check if virtual addr is in region 0, below the stack, and above the break for the process
     TracePrintf(0, "TRAP_MEMORY handler called!\n");
-    void *addr = info->addr;
-    if (addr > VMEM_0_BASE || addr < VMEM_0_LIMIT || addr < KERNEL_STACK_BASE) {
-        SetKernelBrk(addr);
+    int addri = (uintptr_t) info->addr;
+    if (addri > VMEM_0_BASE || addri < VMEM_0_LIMIT || addri < KERNEL_STACK_BASE) {
+        SetKernelBrk(info->addr);
     } 
     else {
-        if (info->code == TRAP_MEMORY_MAPPER)
+        if (info->code == TRAP_MEMORY_MAPERR)
         {
             printf("Process %d: No mapping at addr", GetPid());
         }
@@ -392,7 +398,7 @@ void TrapMathHandler(ExceptionInfo *info){
     }
     else
     {
-        printf("Code not found.")
+        printf("Code not found.");
     }
    Halt();
 };
