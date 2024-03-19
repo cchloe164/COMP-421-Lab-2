@@ -25,6 +25,19 @@ void initPT(void *orig_brk);
 
 void **interruptVector;
 
+extern int SetKernelBrk(void *addr);
+
+extern int Fork(void);
+extern int Exec(char *filename, char **argvec);
+extern void Exit(int status) __attribute__ ((noreturn));;
+extern int Wait(int *status_ptr);
+extern int GetPid(void);
+extern int Brk(void *addr);
+extern int Delay(int clock_ticks);
+extern int TtyRead(int tty_id, void *buf, int len);
+extern int TtyWrite(int tty_id, void *buf, int len);
+
+
 /*
     *  This is the primary entry point into the kernel:
     *
@@ -35,6 +48,7 @@ void **interruptVector;
     */
 extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, char **cmd_args)
 {
+    TracePrintf(0, "Starting Kernel...\n"); 
     /* Initialize interrupt vector table */
     interruptVector = (void **) malloc(TRAP_VECTOR_SIZE * sizeof(int*)); // allocate space in physical memory
     
@@ -108,7 +122,7 @@ void initPT(void *orig_brk) {
     //TODO: set the tags in the free  pages list to 0
     //initial region 0 & 1 page tables are placed at the top page of region 1
     //TODO: check these indice
-    region0Pt = (struct pte *)(DOWN_TO_PAGE(VMEM_1_LIMIT) - 2 * VMEM_REGION_SIZE); //vmem should be the same as pmem at start
+    region0Pt = (struct pte *)(DOWN_TO_PAGE(VMEM_1_LIMIT) - 2 * VMEM_REGION_SIZE); 
     region1Pt = (struct pte *)(DOWN_TO_PAGE(VMEM_1_LIMIT) - VMEM_REGION_SIZE);
 
     //setup initial ptes in region 1 page table and region 0 page table
@@ -120,7 +134,7 @@ void initPT(void *orig_brk) {
         region0Pt[index].uprot = PROT_NONE;
         region0Pt[index].kprot = PROT_READ | PROT_WRITE;
         region0Pt[index].valid = 1;
-        freePages[index] = PAGE_USED;
+        freePages[index] = PAGE_USED; //set the page as used in our freePages structure
     }
 
     //region 1 setup
@@ -441,3 +455,53 @@ void TrapTTYTransmitHandler(ExceptionInfo *info){
     TracePrintf(0, "TRAP_TTYTRANSMIT handler called!\n");
     TtyWrite(info->code, tty_buf, TERMINAL_MAX_LINE);
 };
+
+
+extern int SetKernelBrk(void *addr) {
+    (void)addr;
+    return 0;
+}
+
+/* Kernel Trap Handlers */
+
+
+extern int Fork(void) {
+    return 0;
+}
+extern int Exec(char *filename, char **argvec) {
+    (void)filename;
+    (void)argvec;
+    return 0;
+}
+extern void Exit(int status) {
+    (void)status;
+    while(1){}
+}
+extern int Wait(int *status_ptr) {
+    (void)status_ptr;
+    return 0;
+}
+extern int GetPid(void) {
+    return 0;
+}
+extern int Brk(void *addr) {
+    (void)addr;
+
+    return 0;
+}
+extern int Delay(int clock_ticks) {
+    (void)clock_ticks;
+    return 0;
+}
+extern int TtyRead(int tty_id, void *buf, int len) {
+    (void)tty_id;
+    (void)buf;
+    (void)len;
+    return 0;
+}
+extern int TtyWrite(int tty_id, void *buf, int len) { 
+    (void)tty_id;
+    (void)buf;
+    (void)len;
+    return 0;
+}
