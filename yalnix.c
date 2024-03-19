@@ -10,7 +10,8 @@
 
 void *tty_buf; // buffer in virtual memory region 1
 struct pte *region0Pt, *region1Pt;  //page table pointers
-int freePages;
+int *freePages;
+int num_pages;
 
 void TrapKernelHandler(ExceptionInfo *info);
 void TrapClockHandler(ExceptionInfo *info);
@@ -19,6 +20,9 @@ void TrapMemoryHandler(ExceptionInfo *info);
 void TrapMathHandler(ExceptionInfo *info);
 void TrapTTYReceiveHandler(ExceptionInfo *info);
 void TrapTTYTransmitHandler(ExceptionInfo *info);
+void buildFreePages(unsigned int pmem_size);
+void initPT(void *orig_brk);
+
 void **interruptVector;
 
 /*
@@ -54,7 +58,7 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     //RW: maybe we could do this after 
     buildFreePages(pmem_size);
     // Build 1 initial page table
-    initPT(*orig_brk);
+    initPT(orig_brk);
 
     // Initialize terminals
 
@@ -84,7 +88,7 @@ void buildFreePages(unsigned int pmem_size) {
     int page_itr;
     //keep track of free pages
     freePages = malloc(num_pages * sizeof(int));
-    for (page_itr = 0, page_itr < num_pages; page_itr++) {
+    for (page_itr = 0; page_itr < num_pages; page_itr++) {
         freePages[page_itr] = PAGE_FREE;
     }
     //TODO: iterate through and set freePages to indicate free (do a linked list? or just an array)
@@ -100,7 +104,7 @@ CPU executes instructions, whereas the virtual-to-physical address mapping (the 
 changes relatively infrequently and in accord with the process abstraction and memory protection 
 policy implemented by the kernel.
 */
-void initPT(*orig_brk) {
+void initPT(void *orig_brk) {
     //TODO: set the tags in the free  pages list to 0
     //initial region 0 & 1 page tables are placed at the top page of region 1
     //TODO: check these indice
@@ -110,7 +114,6 @@ void initPT(*orig_brk) {
     //setup initial ptes in region 1 page table and region 0 page table
     int page_itr;
     //init region 0 page table (see pg 22)
-    //TODO: check these values
     for (page_itr = PMEM_BASE; page_itr < KERNEL_STACK_PAGES; page_itr++) {  
         int index = PAGE_TABLE_LEN - page_itr - 1;
         region0Pt[index].pfn = index;
@@ -134,7 +137,7 @@ void initPT(*orig_brk) {
         protection for kernel mode; the user mode protection for both kinds of kernel 
         page table entries should be “none” (no access).
         */
-		if (VMEM_1_BASE + (page_itr << PAGESIZE) < (UP_TO_PAGE(&_etext) << PAGESHIFT)) { //up till the _etext
+		if (VMEM_1_BASE + (page_itr << PAGESHIFT) < (UP_TO_PAGE(&_etext) << PAGESHIFT)) { //up till the _etext
 			region1Pt[page_itr].kprot = (PROT_READ | PROT_EXEC);
 		} else {
 			region1Pt[page_itr].kprot = (PROT_READ | PROT_WRITE);
@@ -146,6 +149,8 @@ void initPT(*orig_brk) {
     //Next: init values for Page Tables
 
     //set the REG_PTR0 and REG_PTR1
+    RCS421RegVal ptr0;
+    RCS421RegVal ptr1;
     ptr0 = (RCS421RegVal) region0Pt;
     ptr1 = (RCS421RegVal) region1Pt;
     WriteRegister(REG_PTR0, ptr0);
