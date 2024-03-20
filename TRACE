@@ -3,21 +3,8 @@
 Kernel   Starting Kernel...
 Kernel   Finished building free pages
 Kernel   
-base: 2080768
-limit: 2097152
-pagesize: 4096
+base: 2097152
+limit: 2095272
 Kernel   
-index: 508
-page_itr: 1
-Kernel   
-index: 509
-page_itr: 508
-Kernel   
-index: 510
-page_itr: 509
-Kernel   
-index: 511
-page_itr: 510
-Kernel   Finished initializing Page Table 
-
-ABORT: EnableVM: PTE for kernel text vpn 512 addr 0x200000 is not valid
+page_itr: 2097152
+index: 512

@@ -129,11 +129,9 @@ void initPT(void *orig_brk) {
     unsigned int page_itr;
     //init region 0 page table (see pg 22)
     // for (page_itr = PMEM_BASE; page_itr < KERNEL_STACK_PAGES; page_itr++) {
-    TracePrintf(0, "\nbase: %d\nlimit: %d\npagesize: %d\n", KERNEL_STACK_BASE, KERNEL_STACK_LIMIT, PAGESIZE);
     for (page_itr = KERNEL_STACK_BASE; page_itr < KERNEL_STACK_LIMIT; page_itr += PAGESIZE) {  
         // int index = PAGE_TABLE_LEN - page_itr - 1;
         int index = page_itr >> PAGESHIFT; // addr -> page number
-        TracePrintf(0, "\nindex: %d\npage_itr: %d\n", index);
         region0Pt[index].pfn = index;
         region0Pt[index].uprot = PROT_NONE;
         region0Pt[index].kprot = PROT_READ | PROT_WRITE;
@@ -142,35 +140,50 @@ void initPT(void *orig_brk) {
     }
     //region 1 setup
     //iterate starting from VMEM_1_Base until the kernel break to establish PTs
-	// for (page_itr = VMEM_1_BASE >> PAGESHIFT; page_itr < (UP_TO_PAGE(orig_brk) >> PAGESHIFT); page_itr++) {
-	for (page_itr = VMEM_1_BASE >> PAGESHIFT; page_itr < (UP_TO_PAGE(KERNEL_BREAK) >> PAGESHIFT); page_itr++) {
-		region1Pt[page_itr].pfn = PAGE_TABLE_LEN + page_itr;
-		region1Pt[page_itr].uprot = PROT_NONE;
-		region1Pt[page_itr].valid = 1;
-        /**
-        from page 24:
-        In particular, the page table entries for your kernel text should be set 
-        to “read” and “execute” protection for kernel mode, and the page table 
-        entries for your kernel data/bss/heap should be set to “read” and “write” 
-        protection for kernel mode; the user mode protection for both kinds of kernel 
-        page table entries should be “none” (no access).
-        */
-		if (VMEM_1_BASE + (page_itr << PAGESHIFT) < (UP_TO_PAGE(&_etext) << PAGESHIFT)) { //up till the _etext
-			region1Pt[page_itr].kprot = (PROT_READ | PROT_EXEC);
-		} else {
-			region1Pt[page_itr].kprot = (PROT_READ | PROT_WRITE);
-		}
+    unsigned int kernel_brk = (uintptr_t) &orig_brk;
+    TracePrintf(0, "\nbase: %d\nbreak: %d\n", VMEM_1_BASE, kernel_brk);
+    for (page_itr = VMEM_1_BASE; page_itr > kernel_brk; page_itr -= PAGESIZE) {
+        int index = page_itr >> PAGESHIFT;
+        TracePrintf(0, "\npage_itr: %d\nindex: %d\n", page_itr, index);
+        region1Pt[page_itr].pfn = PAGE_TABLE_LEN + page_itr;
+        region1Pt[page_itr].uprot = PROT_NONE;
+        region1Pt[page_itr].valid = 1;
 
-        // freePages[PAGE_TABLE_LEN + page_itr] = PAGE_USED;
-	}
+        // 	if (VMEM_1_BASE + (page_itr << PAGESHIFT) < (UP_TO_PAGE(&_etext) << PAGESHIFT)) { //up till the _etext
+        // 		region1Pt[page_itr].kprot = (PROT_READ | PROT_EXEC);
+        // 	} else {
+        // 		region1Pt[page_itr].kprot = (PROT_READ | PROT_WRITE);
+        // 	}
+    };
+    // for (page_itr = VMEM_1_BASE >> PAGESHIFT; page_itr < (UP_TO_PAGE(orig_brk) >> PAGESHIFT); page_itr++) {
+    //     TracePrintf(0, "page_itr: %d\n", page_itr);
+	// 	region1Pt[page_itr].pfn = PAGE_TABLE_LEN + page_itr;
+	// 	region1Pt[page_itr].uprot = PROT_NONE;
+	// 	region1Pt[page_itr].valid = 1;
+    //     /**
+    //     from page 24:
+    //     In particular, the page table entries for your kernel text should be set 
+    //     to “read” and “execute” protection for kernel mode, and the page table 
+    //     entries for your kernel data/bss/heap should be set to “read” and “write” 
+    //     protection for kernel mode; the user mode protection for both kinds of kernel 
+    //     page table entries should be “none” (no access).
+    //     */
+	// 	if (VMEM_1_BASE + (page_itr << PAGESHIFT) < (UP_TO_PAGE(&_etext) << PAGESHIFT)) { //up till the _etext
+	// 		region1Pt[page_itr].kprot = (PROT_READ | PROT_EXEC);
+	// 	} else {
+	// 		region1Pt[page_itr].kprot = (PROT_READ | PROT_WRITE);
+	// 	}
+
+    //     // freePages[PAGE_TABLE_LEN + page_itr] = PAGE_USED;
+	// }
 
     //Next: init values for Page Tables
 
     //set the REG_PTR0 and REG_PTR1
     RCS421RegVal ptr0;
     RCS421RegVal ptr1;
-    ptr0 = (RCS421RegVal) region0Pt;
-    ptr1 = (RCS421RegVal) region1Pt;
+    ptr0 = (RCS421RegVal) &region0Pt;
+    ptr1 = (RCS421RegVal) &region1Pt;
     WriteRegister(REG_PTR0, ptr0);
     WriteRegister(REG_PTR1, ptr1);
     TracePrintf(0, "Finished initializing Page Table \n"); 
