@@ -27,7 +27,7 @@
  *  in this case.
  */
 int
-LoadProgram(char *name, char **args)
+LoadProgram(char *name, char **args)//TODO: add arguments for info and Region0 pointer that way we can clean it
 {
     int fd;
     int status;
@@ -134,14 +134,15 @@ LoadProgram(char *name, char **args)
      *  And make sure there will be enough *physical* memory to
      *  load the new program.
      */
-    >>>> The new program will require text_npg pages of text,
-    >>>> data_bss_npg pages of data/bss, and stack_npg pages of
-    >>>> stack.  In checking that there is enough free physical
-    >>>> memory for this, be sure to allow for the physical memory
-    >>>> pages already allocated to this process that will be
-    >>>> freed below before we allocate the needed pages for
-    >>>> the new program being loaded.
-    if (>>>> not enough free physical memory) {
+    // >>>> The new program will require text_npg pages of text,
+    // >>>> data_bss_npg pages of data/bss, and stack_npg pages of
+    // >>>> stack.  In checking that there is enough free physical
+    // >>>> memory for this, be sure to allow for the physical memory
+    // >>>> pages already allocated to this process that will be
+    // >>>> freed below before we allocate the needed pages for
+    // >>>> the new program being loaded.
+
+    if (data_bss_npg + text_npg + stack_npg > num_free_pages) {
         TracePrintf(0,
             "LoadProgram: program '%s' size too large for PHYSICAL memory\n",
             name);
@@ -150,20 +151,25 @@ LoadProgram(char *name, char **args)
         return (-1);
     }
 
-    >>>> Initialize sp for the current process to (void *)cpp.
-    >>>> The value of cpp was initialized above.
+    // >>>> Initialize sp for the current process to (void *)cpp.
+    // >>>> The value of cpp was initialized above.
+    info->sp = (void *)cpp //TODO: check this (what is the current process? need to set the sp field of that)
+
 
     /*
      *  Free all the old physical memory belonging to this process,
      *  but be sure to leave the kernel stack for this process (which
      *  is also in Region 0) alone.
      */
-    >>>> Loop over all PTEs for the current process's Region 0,
-    >>>> except for those corresponding to the kernel stack (between
-    >>>> address KERNEL_STACK_BASE and KERNEL_STACK_LIMIT).  For
-    >>>> any of these PTEs that are valid, free the physical memory
-    >>>> memory page indicated by that PTE's pfn field.  Set all
-    >>>> of these PTEs to be no longer valid.
+    // >>>> Loop over all PTEs for the current process's Region 0,
+    // >>>> except for those corresponding to the kernel stack (between
+    // >>>> address KERNEL_STACK_BASE and KERNEL_STACK_LIMIT).  For
+    // >>>> any of these PTEs that are valid, free the physical memory
+    // >>>> memory page indicated by that PTE's pfn field.  Set all
+    // >>>> of these PTEs to be no longer valid.
+
+    int currTable;
+    for (currTable = )
 
     /*
      *  Fill in the page table with the right number of text,

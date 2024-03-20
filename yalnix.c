@@ -12,6 +12,7 @@ void *tty_buf; // buffer in virtual memory region 1
 struct pte region0Pt[PAGE_TABLE_LEN], region1Pt[PAGE_TABLE_LEN]; // page table pointers
 int *freePages;
 int num_pages;
+int num_free_pages;
 void *currKernelBrk;
 
 void TrapKernelHandler(ExceptionInfo *info);
@@ -85,7 +86,10 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     WriteRegister(REG_VM_ENABLE, 1);
     TracePrintf(0, "Virtual memory enabled...");
     // Create idle process
+    //call LoadProgram
     // Create init process
+    
+
 
     (void)info;
     (void)cmd_args;
@@ -107,6 +111,7 @@ void buildFreePages(unsigned int pmem_size) {
 	TracePrintf(0, "Building free pages...\n"); 
     //For testing: iterate and print free pages and print used pages
     num_pages = DOWN_TO_PAGE(pmem_size) >> PAGESHIFT;
+    num_free_pages = num_pages;
     int page_itr;
     //keep track of free pages
     freePages = malloc(num_pages * sizeof(int));
@@ -149,7 +154,9 @@ void initPT(void *orig_brk) {
         region0Pt[index].uprot = PROT_NONE;
         region0Pt[index].kprot = PROT_READ | PROT_WRITE;
         region0Pt[index].valid = 1;
-        freePages[index] = PAGE_FREE; //set the page as used in our freePages structure WHY?
+        freePages[index] = PAGE_USED; //set the page as used in our freePages structure WHY?
+        num_free_pages--;
+
     }
     //region 1 setup
     //iterate starting from VMEM_1_Base until the kernel break to establish PTs
@@ -168,7 +175,8 @@ void initPT(void *orig_brk) {
             region1Pt[index].kprot = (PROT_READ | PROT_WRITE);
         }
 
-        // freePages[PAGE_TABLE_LEN + page_itr] = PAGE_FREE;
+        freePages[PAGE_TABLE_LEN + page_itr] = PAGE_USED;
+        num_free_pages--;
     };
     // for (page_itr = VMEM_1_BASE >> PAGESHIFT; page_itr < (UP_TO_PAGE(orig_brk) >> PAGESHIFT); page_itr++) {
     //     TracePrintf(0, "page_itr: %d\n", page_itr);
