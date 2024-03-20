@@ -12,6 +12,7 @@ void *tty_buf; // buffer in virtual memory region 1
 struct pte region0Pt[PAGE_TABLE_LEN], region1Pt[PAGE_TABLE_LEN]; // page table pointers
 int *freePages;
 int num_pages;
+void *currKernelBrk;
 
 void TrapKernelHandler(ExceptionInfo *info);
 void TrapClockHandler(ExceptionInfo *info);
@@ -49,9 +50,12 @@ extern int TtyWrite(int tty_id, void *buf, int len);
 extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, char **cmd_args)
 {
     TracePrintf(0, "Starting Kernel...\n"); 
+    currKernelBrk = orig_brk;
+
     /* Initialize interrupt vector table */
+    TracePrintf(0, "Setting up interrupt vector table...\n"); 
     interruptVector = (void **) malloc(TRAP_VECTOR_SIZE * sizeof(int*)); // allocate space in physical memory
-    
+
     // assign handler functions to indices
     interruptVector[TRAP_KERNEL] = TrapKernelHandler;
     interruptVector[TRAP_CLOCK] = TrapClockHandler;
@@ -67,6 +71,7 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     {
         interruptVector[i] = NULL;
     }
+    WriteRegister(REG_VECTOR_BASE, (RCS421RegVal) &interruptVector[0]);
 
     // Build a boolean array that keeps track of free pages
     //RW: maybe we could do this after 
@@ -78,11 +83,13 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
 
     // Enable virtual memory
     WriteRegister(REG_VM_ENABLE, 1);
+    TracePrintf(0, "Virtual memory enabled...");
     // Create idle process
     // Create init process
 
     (void)info;
     (void)cmd_args;
+
 
     return;
 }
@@ -97,6 +104,7 @@ be careful not include any memory that is already in use by your kernel.
 */
 //will allocate first before the kernel is allocated, then set the bits to PAGE_USED
 void buildFreePages(unsigned int pmem_size) {
+	TracePrintf(0, "Building free pages...\n"); 
     //For testing: iterate and print free pages and print used pages
     num_pages = DOWN_TO_PAGE(pmem_size) >> PAGESHIFT;
     int page_itr;
@@ -119,6 +127,7 @@ changes relatively infrequently and in accord with the process abstraction and m
 policy implemented by the kernel.
 */
 void initPT(void *orig_brk) {
+	TracePrintf(0, "Building page table...\n"); 
     //TODO: set the tags in the free  pages list to 0
     //initial region 0 & 1 page tables are placed at the top page of region 1
     //TODO: check these indice
@@ -126,34 +135,40 @@ void initPT(void *orig_brk) {
     // region1Pt = (struct pte *)(DOWN_TO_PAGE(VMEM_1_LIMIT) - VMEM_REGION_SIZE);
 
     //setup initial ptes in region 1 page table and region 0 page table
-    unsigned int page_itr;
+    unsigned long page_itr;
     //init region 0 page table (see pg 22)
     // for (page_itr = PMEM_BASE; page_itr < KERNEL_STACK_PAGES; page_itr++) {
+    TracePrintf(0, "REGION 0\n");
+    TracePrintf(0, "\nbase: %p\nlimit: %p\n", KERNEL_STACK_BASE, KERNEL_STACK_LIMIT);
     for (page_itr = KERNEL_STACK_BASE; page_itr < KERNEL_STACK_LIMIT; page_itr += PAGESIZE) {  
         // int index = PAGE_TABLE_LEN - page_itr - 1;
         int index = page_itr >> PAGESHIFT; // addr -> page number
+
+        TracePrintf(0, "page: %d addr: %p\n", index, page_itr);
         region0Pt[index].pfn = index;
         region0Pt[index].uprot = PROT_NONE;
         region0Pt[index].kprot = PROT_READ | PROT_WRITE;
         region0Pt[index].valid = 1;
-        // freePages[index] = PAGE_USED; //set the page as used in our freePages structure WHY?
+        freePages[index] = PAGE_FREE; //set the page as used in our freePages structure WHY?
     }
     //region 1 setup
     //iterate starting from VMEM_1_Base until the kernel break to establish PTs
-    unsigned int kernel_brk = (uintptr_t) &orig_brk;
-    TracePrintf(0, "\nbase: %d\nbreak: %d\n", VMEM_1_BASE, kernel_brk);
-    for (page_itr = VMEM_1_BASE; page_itr > kernel_brk; page_itr -= PAGESIZE) {
-        int index = page_itr >> PAGESHIFT;
-        TracePrintf(0, "\npage_itr: %d\nindex: %d\n", page_itr, index);
-        region1Pt[page_itr].pfn = PAGE_TABLE_LEN + page_itr;
-        region1Pt[page_itr].uprot = PROT_NONE;
-        region1Pt[page_itr].valid = 1;
+    TracePrintf(0, "\nbase: %p\nbreak: %p\n", VMEM_1_BASE, currKernelBrk);
+    unsigned int brk = (uintptr_t) currKernelBrk;
+    for (page_itr = VMEM_1_BASE; page_itr < brk; page_itr += PAGESIZE) {
+        int index = (page_itr >> PAGESHIFT) - 512;
+        TracePrintf(0, "\npage_itr: %p\nindex: %d\nbrk: %p\n", page_itr, index, brk);
+        region1Pt[index].pfn = page_itr >> PAGESHIFT;
+        region1Pt[index].uprot = PROT_NONE;
+        region1Pt[index].valid = 1;
 
-        // 	if (VMEM_1_BASE + (page_itr << PAGESHIFT) < (UP_TO_PAGE(&_etext) << PAGESHIFT)) { //up till the _etext
-        // 		region1Pt[page_itr].kprot = (PROT_READ | PROT_EXEC);
-        // 	} else {
-        // 		region1Pt[page_itr].kprot = (PROT_READ | PROT_WRITE);
-        // 	}
+        if (VMEM_1_BASE + (index << PAGESHIFT) < (UP_TO_PAGE(&_etext))) { //up till the _etext
+            region1Pt[index].kprot = (PROT_READ | PROT_EXEC);
+        } else {
+            region1Pt[index].kprot = (PROT_READ | PROT_WRITE);
+        }
+
+        // freePages[PAGE_TABLE_LEN + page_itr] = PAGE_FREE;
     };
     // for (page_itr = VMEM_1_BASE >> PAGESHIFT; page_itr < (UP_TO_PAGE(orig_brk) >> PAGESHIFT); page_itr++) {
     //     TracePrintf(0, "page_itr: %d\n", page_itr);
@@ -186,7 +201,15 @@ void initPT(void *orig_brk) {
     ptr1 = (RCS421RegVal) &region1Pt;
     WriteRegister(REG_PTR0, ptr0);
     WriteRegister(REG_PTR1, ptr1);
+    (void) orig_brk;
     TracePrintf(0, "Finished initializing Page Table \n"); 
+}
+
+extern int SetKernelBrk(void *addr) {
+    TracePrintf(0, "SET currKernelBreak %p to addr %p \n", currKernelBrk, addr); 
+    currKernelBrk = addr;
+
+    return 0;
 }
 
 
@@ -480,10 +503,10 @@ void TrapTTYTransmitHandler(ExceptionInfo *info){
 };
 
 
-extern int SetKernelBrk(void *addr) {
-    (void)addr;
-    return 0;
-}
+// extern int SetKernelBrk(void *addr) {
+//     (void)addr;
+//     return 0;
+// }
 
 /* Kernel Trap Handlers */
 

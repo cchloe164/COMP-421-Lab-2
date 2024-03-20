@@ -1,10 +1,90 @@
 ** Kernel   level 0 tracing enabled **
 ** User     level 0 tracing enabled **
 Kernel   Starting Kernel...
+Kernel   Setting up interrupt vector table...
+Kernel   Building free pages...
+Kernel   SET currKernelBreak 0x20f000 to addr 0x211000 
 Kernel   Finished building free pages
+Kernel   Building page table...
+Kernel   REGION 0
 Kernel   
-base: 2097152
-limit: 2095272
+base: 0x1fc000
+limit: 0x200000
+Kernel   page: 508 addr: 0x1fc000
+Kernel   page: 509 addr: 0x1fd000
+Kernel   page: 510 addr: 0x1fe000
+Kernel   page: 511 addr: 0x1ff000
 Kernel   
-page_itr: 2097152
-index: 512
+base: 0x200000
+break: 0x211000
+Kernel   
+page_itr: 0x200000
+index: 0
+brk: 0x211000
+Kernel   
+page_itr: 0x201000
+index: 1
+brk: 0x211000
+Kernel   
+page_itr: 0x202000
+index: 2
+brk: 0x211000
+Kernel   
+page_itr: 0x203000
+index: 3
+brk: 0x211000
+Kernel   
+page_itr: 0x204000
+index: 4
+brk: 0x211000
+Kernel   
+page_itr: 0x205000
+index: 5
+brk: 0x211000
+Kernel   
+page_itr: 0x206000
+index: 6
+brk: 0x211000
+Kernel   
+page_itr: 0x207000
+index: 7
+brk: 0x211000
+Kernel   
+page_itr: 0x208000
+index: 8
+brk: 0x211000
+Kernel   
+page_itr: 0x209000
+index: 9
+brk: 0x211000
+Kernel   
+page_itr: 0x20a000
+index: 10
+brk: 0x211000
+Kernel   
+page_itr: 0x20b000
+index: 11
+brk: 0x211000
+Kernel   
+page_itr: 0x20c000
+index: 12
+brk: 0x211000
+Kernel   
+page_itr: 0x20d000
+index: 13
+brk: 0x211000
+Kernel   
+page_itr: 0x20e000
+index: 14
+brk: 0x211000
+Kernel   
+page_itr: 0x20f000
+index: 15
+brk: 0x211000
+Kernel   
+page_itr: 0x210000
+index: 16
+brk: 0x211000
+Kernel   Finished initializing Page Table 
+Kernel   Virtual memory enabled...
+ABORT: KernelStart returned with bogus info pc of 0x1a in ExceptionInfo!
