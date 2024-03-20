@@ -138,13 +138,13 @@ void initPT(void *orig_brk) {
     unsigned long page_itr;
     //init region 0 page table (see pg 22)
     // for (page_itr = PMEM_BASE; page_itr < KERNEL_STACK_PAGES; page_itr++) {
-    TracePrintf(0, "REGION 0\n");
-    TracePrintf(0, "\nbase: %p\nlimit: %p\n", KERNEL_STACK_BASE, KERNEL_STACK_LIMIT);
+    // TracePrintf(0, "REGION 0\n");
+    // TracePrintf(0, "\nbase: %p\nlimit: %p\n", KERNEL_STACK_BASE, KERNEL_STACK_LIMIT);
     for (page_itr = KERNEL_STACK_BASE; page_itr < KERNEL_STACK_LIMIT; page_itr += PAGESIZE) {  
         // int index = PAGE_TABLE_LEN - page_itr - 1;
         int index = page_itr >> PAGESHIFT; // addr -> page number
 
-        TracePrintf(0, "page: %d addr: %p\n", index, page_itr);
+        // TracePrintf(0, "page: %d addr: %p\n", index, page_itr);
         region0Pt[index].pfn = index;
         region0Pt[index].uprot = PROT_NONE;
         region0Pt[index].kprot = PROT_READ | PROT_WRITE;
@@ -153,7 +153,7 @@ void initPT(void *orig_brk) {
     }
     //region 1 setup
     //iterate starting from VMEM_1_Base until the kernel break to establish PTs
-    TracePrintf(0, "\nbase: %p\nbreak: %p\n", VMEM_1_BASE, currKernelBrk);
+    // TracePrintf(0, "\nbase: %p\nbreak: %p\n", VMEM_1_BASE, currKernelBrk);
     unsigned int brk = (uintptr_t) currKernelBrk;
     for (page_itr = VMEM_1_BASE; page_itr < brk; page_itr += PAGESIZE) {
         int index = (page_itr >> PAGESHIFT) - 512;
