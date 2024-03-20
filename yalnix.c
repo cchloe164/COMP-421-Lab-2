@@ -9,7 +9,7 @@
 #define PAGE_USED   1       
 
 void *tty_buf; // buffer in virtual memory region 1
-struct pte *region0Pt, *region1Pt;  //page table pointers
+struct pte region0Pt[PAGE_TABLE_LEN], region1Pt[PAGE_TABLE_LEN]; // page table pointers
 int *freePages;
 int num_pages;
 
@@ -122,24 +122,28 @@ void initPT(void *orig_brk) {
     //TODO: set the tags in the free  pages list to 0
     //initial region 0 & 1 page tables are placed at the top page of region 1
     //TODO: check these indice
-    region0Pt = (struct pte *)(DOWN_TO_PAGE(VMEM_1_LIMIT) - 2 * VMEM_REGION_SIZE); 
-    region1Pt = (struct pte *)(DOWN_TO_PAGE(VMEM_1_LIMIT) - VMEM_REGION_SIZE);
+    // region0Pt = (struct pte *)(DOWN_TO_PAGE(VMEM_1_LIMIT) - 2 * VMEM_REGION_SIZE); 
+    // region1Pt = (struct pte *)(DOWN_TO_PAGE(VMEM_1_LIMIT) - VMEM_REGION_SIZE);
 
     //setup initial ptes in region 1 page table and region 0 page table
-    int page_itr;
+    unsigned int page_itr;
     //init region 0 page table (see pg 22)
-    for (page_itr = PMEM_BASE; page_itr < KERNEL_STACK_PAGES; page_itr++) {  
-        int index = PAGE_TABLE_LEN - page_itr - 1;
+    // for (page_itr = PMEM_BASE; page_itr < KERNEL_STACK_PAGES; page_itr++) {
+    TracePrintf(0, "\nbase: %d\nlimit: %d\npagesize: %d\n", KERNEL_STACK_BASE, KERNEL_STACK_LIMIT, PAGESIZE);
+    for (page_itr = KERNEL_STACK_BASE; page_itr < KERNEL_STACK_LIMIT; page_itr += PAGESIZE) {  
+        // int index = PAGE_TABLE_LEN - page_itr - 1;
+        int index = page_itr >> PAGESHIFT; // addr -> page number
+        TracePrintf(0, "\nindex: %d\npage_itr: %d\n", index);
         region0Pt[index].pfn = index;
         region0Pt[index].uprot = PROT_NONE;
         region0Pt[index].kprot = PROT_READ | PROT_WRITE;
         region0Pt[index].valid = 1;
-        freePages[index] = PAGE_USED; //set the page as used in our freePages structure
+        // freePages[index] = PAGE_USED; //set the page as used in our freePages structure WHY?
     }
-
     //region 1 setup
     //iterate starting from VMEM_1_Base until the kernel break to establish PTs
-	for (page_itr = VMEM_1_BASE >> PAGESHIFT; page_itr < (UP_TO_PAGE(orig_brk) >> PAGESHIFT); page_itr++) {
+	// for (page_itr = VMEM_1_BASE >> PAGESHIFT; page_itr < (UP_TO_PAGE(orig_brk) >> PAGESHIFT); page_itr++) {
+	for (page_itr = VMEM_1_BASE >> PAGESHIFT; page_itr < (UP_TO_PAGE(KERNEL_BREAK) >> PAGESHIFT); page_itr++) {
 		region1Pt[page_itr].pfn = PAGE_TABLE_LEN + page_itr;
 		region1Pt[page_itr].uprot = PROT_NONE;
 		region1Pt[page_itr].valid = 1;
@@ -157,7 +161,7 @@ void initPT(void *orig_brk) {
 			region1Pt[page_itr].kprot = (PROT_READ | PROT_WRITE);
 		}
 
-        freePages[PAGE_TABLE_LEN + page_itr] = PAGE_USED;
+        // freePages[PAGE_TABLE_LEN + page_itr] = PAGE_USED;
 	}
 
     //Next: init values for Page Tables
@@ -191,41 +195,42 @@ void TrapKernelHandler(ExceptionInfo *info) {
      * through this single type of trap.
     */
     TracePrintf(0, "TRAP_KERNEL handler called!\n");
-    if (info->code == YALNIX_FORK) {
-        info->regs[0] = Fork();
-    }
-    else if (info->code == YALNIX_EXEC)
-    {
-        info->regs[0] = Exec((char *) info->regs[1], (char **)info->regs[2]);
-    }
-    else if (info->code == YALNIX_EXIT)
-    {
-        Exit(0);
-    }
-    else if (info->code == YALNIX_WAIT)
-    {
-        info->regs[0] = Wait((int *) info->regs[1]);
-    }
-    else if (info->code == YALNIX_GETPID)
-    {
-        info->regs[0] = GetPid();
-    }
-    else if (info->code == YALNIX_BRK)
-    {
-        info->regs[0] = Brk((void *) info->regs[1]);
-    }
-    else if (info->code == YALNIX_DELAY)
-    {
-        info->regs[0] = Delay(info->regs[1]);
-    }
-    else if (info->code == YALNIX_TTY_READ)
-    {
-        info->regs[0] = TtyRead(info->regs[1], (void *) info->regs[2], info->regs[3]);
-    }
-    else if (info->code == YALNIX_TTY_WRITE)
-    {
-        info->regs[0] = TtyWrite(info->regs[1], (void *) info->regs[2], info->regs[3]);
-    }
+    // if (info->code == YALNIX_FORK) {
+    //     info->regs[0] = Fork();
+    // }
+    // else if (info->code == YALNIX_EXEC)
+    // {
+    //     info->regs[0] = Exec((char *) info->regs[1], (char **)info->regs[2]);
+    // }
+    // else if (info->code == YALNIX_EXIT)
+    // {
+    //     Exit(0);
+    // }
+    // else if (info->code == YALNIX_WAIT)
+    // {
+    //     info->regs[0] = Wait((int *) info->regs[1]);
+    // }
+    // else if (info->code == YALNIX_GETPID)
+    // {
+    //     info->regs[0] = GetPid();
+    // }
+    // else if (info->code == YALNIX_BRK)
+    // {
+    //     info->regs[0] = Brk((void *) info->regs[1]);
+    // }
+    // else if (info->code == YALNIX_DELAY)
+    // {
+    //     info->regs[0] = Delay(info->regs[1]);
+    // }
+    // else if (info->code == YALNIX_TTY_READ)
+    // {
+    //     info->regs[0] = TtyRead(info->regs[1], (void *) info->regs[2], info->regs[3]);
+    // }
+    // else if (info->code == YALNIX_TTY_WRITE)
+    // {
+    //     info->regs[0] = TtyWrite(info->regs[1], (void *) info->regs[2], info->regs[3]);
+    // }
+    (void)info;
 };
 
 /**
@@ -241,7 +246,7 @@ void TrapClockHandler(ExceptionInfo *info){
      * queue, perform a context switch to the next runnable process.
     */
     TracePrintf(0, "TRAP_CLOCK handler called!\n");
-    Delay(2);
+    // Delay(2);
 
     (void) info;
 };
@@ -255,65 +260,66 @@ void TrapIllegalHandler(ExceptionInfo *info){
     /**Terminate the currently running Yalnix user process and print a message giving the
     process ID of the process and an explanation of the problem; and continue running other processes.*/
     TracePrintf(0, "TRAP_ILLEGAL handler called!\n");
-    if (info->code == TRAP_ILLEGAL_ILLOPC) {
-        printf("Process %d: Illegal opcode", GetPid());
-    }
-    else if (info->code == TRAP_ILLEGAL_ILLOPN)
-    {
-        printf("Process %d: Illegal operand", GetPid());
-    }
-    else if (info->code == TRAP_ILLEGAL_ILLADR)
-    {
-        printf("Process %d: Illegal addressing mode", GetPid());
-    }
-    else if (info->code == TRAP_ILLEGAL_ILLTRP)
-    {
-        printf("Process %d: Illegal software trap", GetPid());
-    }
-    else if (info->code == TRAP_ILLEGAL_PRVOPC)
-    {
-        printf("Process %d: Privileged opcode", GetPid());
-    }
-    else if (info->code == TRAP_ILLEGAL_PRVREG)
-    {
-        printf("Process %d: Privileged register", GetPid());
-    }
-    else if (info->code == TRAP_ILLEGAL_COPROC)
-    {
-        printf("Process %d: Coprocessor error", GetPid());
-    }
-    else if (info->code == TRAP_ILLEGAL_BADSTK)
-    {
-        printf("Process %d: Bad stack", GetPid());
-    }
-    else if (info->code == TRAP_ILLEGAL_KERNELI)
-    {
-        printf("Process %d: Linux kernel sent SIGILL", GetPid());
-    }
-    else if (info->code == TRAP_ILLEGAL_USERIB)
-    {
-        printf("Process %d: Received SIGILL or SIGBUS from user", GetPid());
-    }
-    else if (info->code == TRAP_ILLEGAL_ADRALN)
-    {
-        printf("Process %d: Invalid address alignment", GetPid());
-    }
-    else if (info->code == TRAP_ILLEGAL_ADRERR)
-    {
-        printf("Process %d: Non-existent physical address", GetPid());
-    }
-    else if (info->code == TRAP_ILLEGAL_OBJERR)
-    {
-        printf("Process %d: Object-specific HW error", GetPid());
-    }
-    else if (info->code == TRAP_ILLEGAL_KERNELB)
-    {
-        printf("Process %d: Linux kernel sent SIGBUS", GetPid());
-    } else {
-        printf("Code not found.");
-    }
+    // if (info->code == TRAP_ILLEGAL_ILLOPC) {
+    //     printf("Process %d: Illegal opcode", GetPid());
+    // }
+    // else if (info->code == TRAP_ILLEGAL_ILLOPN)
+    // {
+    //     printf("Process %d: Illegal operand", GetPid());
+    // }
+    // else if (info->code == TRAP_ILLEGAL_ILLADR)
+    // {
+    //     printf("Process %d: Illegal addressing mode", GetPid());
+    // }
+    // else if (info->code == TRAP_ILLEGAL_ILLTRP)
+    // {
+    //     printf("Process %d: Illegal software trap", GetPid());
+    // }
+    // else if (info->code == TRAP_ILLEGAL_PRVOPC)
+    // {
+    //     printf("Process %d: Privileged opcode", GetPid());
+    // }
+    // else if (info->code == TRAP_ILLEGAL_PRVREG)
+    // {
+    //     printf("Process %d: Privileged register", GetPid());
+    // }
+    // else if (info->code == TRAP_ILLEGAL_COPROC)
+    // {
+    //     printf("Process %d: Coprocessor error", GetPid());
+    // }
+    // else if (info->code == TRAP_ILLEGAL_BADSTK)
+    // {
+    //     printf("Process %d: Bad stack", GetPid());
+    // }
+    // else if (info->code == TRAP_ILLEGAL_KERNELI)
+    // {
+    //     printf("Process %d: Linux kernel sent SIGILL", GetPid());
+    // }
+    // else if (info->code == TRAP_ILLEGAL_USERIB)
+    // {
+    //     printf("Process %d: Received SIGILL or SIGBUS from user", GetPid());
+    // }
+    // else if (info->code == TRAP_ILLEGAL_ADRALN)
+    // {
+    //     printf("Process %d: Invalid address alignment", GetPid());
+    // }
+    // else if (info->code == TRAP_ILLEGAL_ADRERR)
+    // {
+    //     printf("Process %d: Non-existent physical address", GetPid());
+    // }
+    // else if (info->code == TRAP_ILLEGAL_OBJERR)
+    // {
+    //     printf("Process %d: Object-specific HW error", GetPid());
+    // }
+    // else if (info->code == TRAP_ILLEGAL_KERNELB)
+    // {
+    //     printf("Process %d: Linux kernel sent SIGBUS", GetPid());
+    // } else {
+    //     printf("Code not found.");
+    // }
     
     Halt();
+    (void)info;
 };
 
 /**
@@ -335,34 +341,35 @@ void TrapMemoryHandler(ExceptionInfo *info){
     */
     // check if virtual addr is in region 0, below the stack, and above the break for the process
     TracePrintf(0, "TRAP_MEMORY handler called!\n");
-    int addri = (uintptr_t) info->addr;
-    if (addri > VMEM_0_BASE || addri < VMEM_0_LIMIT || addri < KERNEL_STACK_BASE) {
-        SetKernelBrk(info->addr);
-    } 
-    else {
-        if (info->code == TRAP_MEMORY_MAPERR)
-        {
-            printf("Process %d: No mapping at addr", GetPid());
-        }
-        else if (info->code == TRAP_MEMORY_ACCERR)
-        {
-            printf("Process %d: Protection violation at addr", GetPid());
-        }
-        else if (info->code == TRAP_MEMORY_KERNEL)
-        {
-            printf("Process %d: Linux kernel sent SIGSEGV at addr", GetPid());
-        }
-        else if (info->code == TRAP_MEMORY_USER)
-        {
-            printf("Process %d: Received SIGSEGV from user", GetPid());
-        }
-        else
-        {
-            printf("Code not found.");
-        }
+    // int addri = (uintptr_t) info->addr;
+    // if (addri > VMEM_0_BASE || addri < VMEM_0_LIMIT || addri < KERNEL_STACK_BASE) {
+    //     SetKernelBrk(info->addr);
+    // } 
+    // else {
+    //     if (info->code == TRAP_MEMORY_MAPERR)
+    //     {
+    //         printf("Process %d: No mapping at addr", GetPid());
+    //     }
+    //     else if (info->code == TRAP_MEMORY_ACCERR)
+    //     {
+    //         printf("Process %d: Protection violation at addr", GetPid());
+    //     }
+    //     else if (info->code == TRAP_MEMORY_KERNEL)
+    //     {
+    //         printf("Process %d: Linux kernel sent SIGSEGV at addr", GetPid());
+    //     }
+    //     else if (info->code == TRAP_MEMORY_USER)
+    //     {
+    //         printf("Process %d: Received SIGSEGV from user", GetPid());
+    //     }
+    //     else
+    //     {
+    //         printf("Code not found.");
+    //     }
 
-        Halt();
-    }
+    //     Halt();
+    // }
+    (void)info;
 };
 
 /**
@@ -375,51 +382,52 @@ void TrapMathHandler(ExceptionInfo *info){
      * process ID of the process and an explanation of the problem; and continue running other processes
     */
     TracePrintf(0, "TRAP_MATH handler called!\n");
-    if (info->code == TRAP_MATH_INTDIV)
-    {
-        printf("Process %d: Integer divide by zero", GetPid());
-    }
-    else if (info->code == TRAP_MATH_INTOVF)
-    {
-        printf("Process %d: Integer overflow", GetPid());
-    }
-    else if (info->code == TRAP_MATH_FLTDIV)
-    {
-        printf("Process %d: Floating divide by zero", GetPid());
-    }
-    else if (info->code == TRAP_MATH_FLTOVF)
-    {
-        printf("Process %d: Floating overflow", GetPid());
-    }
-    else if (info->code == TRAP_MATH_FLTUND)
-    {
-        printf("Process %d: Floating underflow", GetPid());
-    }
-    else if (info->code == TRAP_MATH_FLTRES)
-    {
-        printf("Process %d: Floating inexact result", GetPid());
-    }
-    else if (info->code == TRAP_MATH_FLTINV)
-    {
-        printf("Process %d: Invalid floating operation", GetPid());
-    }
-    else if (info->code == TRAP_MATH_FLTSUB)
-    {
-        printf("Process %d: FP subscript out of range", GetPid());
-    }
-    else if (info->code == TRAP_MATH_KERNEL)
-    {
-        printf("Process %d: Linux kernel sent SIGFPE", GetPid());
-    }
-    else if (info->code == TRAP_MATH_USER)
-    {
-        printf("Process %d: Received SIGFPE from user", GetPid());
-    }
-    else
-    {
-        printf("Code not found.");
-    }
+    // if (info->code == TRAP_MATH_INTDIV)
+    // {
+    //     printf("Process %d: Integer divide by zero", GetPid());
+    // }
+    // else if (info->code == TRAP_MATH_INTOVF)
+    // {
+    //     printf("Process %d: Integer overflow", GetPid());
+    // }
+    // else if (info->code == TRAP_MATH_FLTDIV)
+    // {
+    //     printf("Process %d: Floating divide by zero", GetPid());
+    // }
+    // else if (info->code == TRAP_MATH_FLTOVF)
+    // {
+    //     printf("Process %d: Floating overflow", GetPid());
+    // }
+    // else if (info->code == TRAP_MATH_FLTUND)
+    // {
+    //     printf("Process %d: Floating underflow", GetPid());
+    // }
+    // else if (info->code == TRAP_MATH_FLTRES)
+    // {
+    //     printf("Process %d: Floating inexact result", GetPid());
+    // }
+    // else if (info->code == TRAP_MATH_FLTINV)
+    // {
+    //     printf("Process %d: Invalid floating operation", GetPid());
+    // }
+    // else if (info->code == TRAP_MATH_FLTSUB)
+    // {
+    //     printf("Process %d: FP subscript out of range", GetPid());
+    // }
+    // else if (info->code == TRAP_MATH_KERNEL)
+    // {
+    //     printf("Process %d: Linux kernel sent SIGFPE", GetPid());
+    // }
+    // else if (info->code == TRAP_MATH_USER)
+    // {
+    //     printf("Process %d: Received SIGFPE from user", GetPid());
+    // }
+    // else
+    // {
+    //     printf("Code not found.");
+    // }
    Halt();
+   (void)info;
 };
 
 /**
@@ -435,7 +443,8 @@ void TrapTTYReceiveHandler(ExceptionInfo *info){
      * call by some user process.
     */
     TracePrintf(0, "TRAP_TTYRECEIVE handler called!\n");
-    TtyReceive(info->code, tty_buf, TERMINAL_MAX_LINE);
+    // TtyReceive(info->code, tty_buf, TERMINAL_MAX_LINE);
+    (void)info;
 };
 
 /**
@@ -453,7 +462,8 @@ void TrapTTYTransmitHandler(ExceptionInfo *info){
      * nal, also start the next one using TtyTransmit.
     */
     TracePrintf(0, "TRAP_TTYTRANSMIT handler called!\n");
-    TtyWrite(info->code, tty_buf, TERMINAL_MAX_LINE);
+    // TtyWrite(info->code, tty_buf, TERMINAL_MAX_LINE);
+    (void)info;
 };
 
 

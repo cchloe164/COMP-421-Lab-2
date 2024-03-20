@@ -1,3 +1,23 @@
 ** Kernel   level 0 tracing enabled **
 ** User     level 0 tracing enabled **
+Kernel   Starting Kernel...
 Kernel   Finished building free pages
+Kernel   
+base: 2080768
+limit: 2097152
+pagesize: 4096
+Kernel   
+index: 508
+page_itr: 1
+Kernel   
+index: 509
+page_itr: 508
+Kernel   
+index: 510
+page_itr: 509
+Kernel   
+index: 511
+page_itr: 510
+Kernel   Finished initializing Page Table 
+
+ABORT: EnableVM: PTE for kernel text vpn 512 addr 0x200000 is not valid
