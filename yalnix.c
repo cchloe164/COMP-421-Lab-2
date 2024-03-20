@@ -208,7 +208,7 @@ void initPT(void *orig_brk) {
 extern int SetKernelBrk(void *addr) {
     TracePrintf(0, "SET currKernelBreak %p to addr %p \n", currKernelBrk, addr); 
     currKernelBrk = addr;
-
+    //after fully enabling VM, need to change it
     return 0;
 }
 
@@ -512,42 +512,51 @@ void TrapTTYTransmitHandler(ExceptionInfo *info){
 
 
 extern int Fork(void) {
+    TracePrintf(0, "Fork called!\n");
     return 0;
 }
 extern int Exec(char *filename, char **argvec) {
     (void)filename;
     (void)argvec;
+    TracePrintf(0, "Exec called!\n");
     return 0;
 }
 extern void Exit(int status) {
     (void)status;
+    TracePrintf(0, "Exit called!\n");
     while(1){}
 }
 extern int Wait(int *status_ptr) {
     (void)status_ptr;
+    TracePrintf(0, "Wait called!\n");
     return 0;
 }
 extern int GetPid(void) {
+    TracePrintf(0, "GetPid called!\n");
     return 0;
 }
 extern int Brk(void *addr) {
+    TracePrintf(0, "Brk called!\n");
     (void)addr;
 
     return 0;
 }
 extern int Delay(int clock_ticks) {
     (void)clock_ticks;
+    TracePrintf(0, "Delay called!\n");
     return 0;
 }
 extern int TtyRead(int tty_id, void *buf, int len) {
     (void)tty_id;
     (void)buf;
     (void)len;
+    TracePrintf(0, "TtyRead called!\n");
     return 0;
 }
 extern int TtyWrite(int tty_id, void *buf, int len) { 
     (void)tty_id;
     (void)buf;
     (void)len;
+    TracePrintf(0, "TtyWrite called!\n");
     return 0;
 }
