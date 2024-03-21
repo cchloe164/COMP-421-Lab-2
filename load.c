@@ -27,7 +27,7 @@
  *  in this case.
  */
 int
-LoadProgram(char *name, char **args)//TODO: add arguments for info and Region0 pointer that way we can clean it
+LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TODO: add arguments for info and Region0 pointer that way we can clean it
 {
     int fd;
     int status;
@@ -153,9 +153,7 @@ LoadProgram(char *name, char **args)//TODO: add arguments for info and Region0 p
 
     // >>>> Initialize sp for the current process to (void *)cpp.
     // >>>> The value of cpp was initialized above.
-    info->sp = (void *)cpp //TODO: check this (what is the current process? need to set the sp field of that)
-
-
+    info->sp = (void *)cpp; //take this from info input
     /*
      *  Free all the old physical memory belonging to this process,
      *  but be sure to leave the kernel stack for this process (which
@@ -169,7 +167,16 @@ LoadProgram(char *name, char **args)//TODO: add arguments for info and Region0 p
     // >>>> of these PTEs to be no longer valid.
 
     int currTable;
-    for (currTable = )
+    for (currTable = 0; currTable < PAGE_TABLE_LEN; currTable++) {
+        if ((currTable < KERNEL_STACK_BASE) | (currTable > KERNEL_STACK_LIMIT)) {
+            
+            if (ptr0[currTable].valid == 1) { //not sure if these are supposed to be pointers or the actual object
+                freePage(ptr0[currTable].pfn); //TODO: may need ptr0[currTable]->pfn here
+                ptr0[currTable].valid = 0;
+
+            }
+        }
+    }
 
     /*
      *  Fill in the page table with the right number of text,
@@ -179,34 +186,64 @@ LoadProgram(char *name, char **args)//TODO: add arguments for info and Region0 p
      *  from the file.  We then change them read/execute.
      */
 
-    >>>> Leave the first MEM_INVALID_PAGES number of PTEs in the
-    >>>> Region 0 page table unused (and thus invalid)
+    // >>>> Leave the first MEM_INVALID_PAGES number of PTEs in the
+    // >>>> Region 0 page table unused (and thus invalid)
+
+    for (i = 0; i < MEM_INVALID_PAGES; i++) {
+        ptr0[i].valid = 0;
+    }
 
     /* First, the text pages */
-    >>>> For the next text_npg number of PTEs in the Region 0
-    >>>> page table, initialize each PTE:
-    >>>>     valid = 1
-    >>>>     kprot = PROT_READ | PROT_WRITE
-    >>>>     uprot = PROT_READ | PROT_EXEC
-    >>>>     pfn   = a new page of physical memory
+    // >>>> For the next text_npg number of PTEs in the Region 0
+    // >>>> page table, initialize each PTE:
+    // >>>>     valid = 1
+    // >>>>     kprot = PROT_READ | PROT_WRITE
+    // >>>>     uprot = PROT_READ | PROT_EXEC
+    // >>>>     pfn   = a new page of physical memory
 
+    int textIter;
+    for (textIter = MEM_INVALID_PAGES; textIter < MEM_INVALID_PAGES + text_npg; textIter++) {
+        ptr0[textIter].valid = 1;
+        ptr0[textIter].kprot = (PROT_READ | PROT_WRITE);
+        ptr0[textIter].uprot = (PROT_READ | PROT_EXEC);
+        ptr0[textIter].pfn = findFreePage();
+    }
     /* Then the data and bss pages */
-    >>>> For the next data_bss_npg number of PTEs in the Region 0
-    >>>> page table, initialize each PTE:
-    >>>>     valid = 1
-    >>>>     kprot = PROT_READ | PROT_WRITE
-    >>>>     uprot = PROT_READ | PROT_WRITE
-    >>>>     pfn   = a new page of physical memory
+    // >>>> For the next data_bss_npg number of PTEs in the Region 0
+    // >>>> page table, initialize each PTE:
+    // >>>>     valid = 1
+    // >>>>     kprot = PROT_READ | PROT_WRITE
+    // >>>>     uprot = PROT_READ | PROT_WRITE
+    // >>>>     pfn   = a new page of physical memory
+    int bssIter;
+    for (bssIter = MEM_INVALID_PAGES + text_npg; bssIter < MEM_INVALID_PAGES + text_npg + data_bss_npg; bssIter++) {
+        ptr0[bssIter].valid = 1;
+        ptr0[bssIter].kprot = (PROT_READ | PROT_WRITE);
+        ptr0[bssIter].uprot = (PROT_READ | PROT_WRITE);
+        ptr0[bssIter].pfn = findFreePage();
+
+    }
+    //TODO: keep track of the top pof the stack here
 
     /* And finally the user stack pages */
-    >>>> For stack_npg number of PTEs in the Region 0 page table
-    >>>> corresponding to the user stack (the last page of the
-    >>>> user stack *ends* at virtual address USER_STACK_LIMIT),
-    >>>> initialize each PTE:
-    >>>>     valid = 1
-    >>>>     kprot = PROT_READ | PROT_WRITE
-    >>>>     uprot = PROT_READ | PROT_WRITE
-    >>>>     pfn   = a new page of physical memory
+    // >>>> For stack_npg number of PTEs in the Region 0 page table
+    // >>>> corresponding to the user stack (the last page of the
+    // >>>> user stack *ends* at virtual address USER_STACK_LIMIT),
+    // >>>> initialize each PTE:
+    // >>>>     valid = 1
+    // >>>>     kprot = PROT_READ | PROT_WRITE
+    // >>>>     uprot = PROT_READ | PROT_WRITE
+    // >>>>     pfn   = a new page of physical memory
+    int userIter;
+    for (userIter = USER_STACK_LIMIT >> PAGESHIFT; userIter > (USER_STACK_LIMIT >> PAGESHIFT) - stack_npg; userIter--) {
+        ptr0[userIter].valid = 1;
+        ptr0[userIter].kprot = (PROT_READ | PROT_WRITE);
+        ptr0[userIter].uprot = (PROT_READ | PROT_WRITE);
+        ptr0[userIter].pfn = findFreePage();
+    }
+
+
+    
 
     /*
      *  All pages for the new address space are now in place.  Flush
@@ -218,14 +255,14 @@ LoadProgram(char *name, char **args)//TODO: add arguments for info and Region0 p
     /*
      *  Read the text and data from the file into memory.
      */
-    if (read(fd, (void *)MEM_INVALID_SIZE, li.text_size+li.data_size) != li.text_size+li.data_size) {
+    if (read(fd, (void *)MEM_INVALID_SIZE, li.text_size+li.data_size) != (int) (li.text_size+li.data_size)) {
         TracePrintf(0, "LoadProgram: couldn't read for '%s'\n", name);
         free(argbuf);
         close(fd);
-        >>>> Since we are returning -2 here, this should mean to
-        >>>> the rest of the kernel that the current process should
-        >>>> be terminated with an exit status of ERROR reported
-        >>>> to its parent process.
+        // >>>> Since we are returning -2 here, this should mean to
+        // >>>> the rest of the kernel that the current process should
+        // >>>> be terminated with an exit status of ERROR reported
+        // >>>> to its parent process.
         return (-2);
     }
 
@@ -235,8 +272,13 @@ LoadProgram(char *name, char **args)//TODO: add arguments for info and Region0 p
      *  Now set the page table entries for the program text to be readable
      *  and executable, but not writable.
      */
-    >>>> For text_npg number of PTEs corresponding to the user text
-    >>>> pages, set each PTE's kprot to PROT_READ | PROT_EXEC.
+    // >>>> For text_npg number of PTEs corresponding to the user text
+    // >>>> pages, set each PTE's kprot to PROT_READ | PROT_EXEC.
+
+    for (textIter = MEM_INVALID_PAGES; textIter < MEM_INVALID_PAGES + text_npg; textIter++) {
+        ptr0[textIter].kprot = (PROT_READ | PROT_EXEC);
+    }
+
 
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
 
@@ -248,14 +290,15 @@ LoadProgram(char *name, char **args)//TODO: add arguments for info and Region0 p
     /*
      *  Set the entry point in the ExceptionInfo.
      */
-    >>>> Initialize pc for the current process to (void *)li.entry
+    // >>>> Initialize pc for the current process to (void *)li.entry
+    info->pc = (void *)li.entry;
 
     /*
      *  Now, finally, build the argument list on the new stack.
      */
     *cpp++ = (char *)argcount;		/* the first value at cpp is argc */
     cp2 = argbuf;
-    for (i = 0; i < argcount; i++) {      /* copy each argument and set argv */
+    for (i = 0; i < (int) argcount; i++) {      /* copy each argument and set argv */
         *cpp++ = cp;
         strcpy(cp, cp2);
         cp += strlen(cp) + 1;
@@ -272,9 +315,36 @@ LoadProgram(char *name, char **args)//TODO: add arguments for info and Region0 p
      *  value for the PSR will make the process run in user mode,
      *  since this PSR value of 0 does not have the PSR_MODE bit set.
      */
-    >>>> Initialize regs[0] through regs[NUM_REGS-1] for the
-    >>>> current process to 0.
-    >>>> Initialize psr for the current process to 0.
+    // >>>> Initialize regs[0] through regs[NUM_REGS-1] for the
+    // >>>> current process to 0.
+    // >>>> Initialize psr for the current process to 0.
+    for (i = 0; i <= NUM_REGS-1; i++) {
+        info->regs[i] = 0;
+    }
+    info->psr = 0;
 
     return (0);
+}
+
+/**
+Finds a free page, returns the PFN or -1 if there are no free pages available.
+*/
+int findFreePage() {
+    int page_itr;
+    for (page_itr = 0; page_itr < num_pages; page_itr++) {
+        if (freePages[page_itr] == PAGE_FREE) {
+            freePages[page_itr] = PAGE_USED;
+            return page_itr;
+        }
+    }
+    return -1;
+} 
+
+/**
+frees a page
+*/
+void freePage(int pfn) {
+
+    freePages[pfn] = PAGE_FREE;
+
 }
