@@ -5,6 +5,7 @@
 int
 main()
 {
+    // process id is 0
     write(2, "idle!\n", 6);
     while(1){
         Pause();

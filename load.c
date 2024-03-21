@@ -6,6 +6,8 @@
 #include <comp421/hardware.h>
 #include <comp421/loadinfo.h>
 
+#include "sharedvar.c"
+
 /*
  *  Load a program into the current process's address space.  The
  *  program comes from the Unix file identified by "name", and its
@@ -348,3 +350,22 @@ void freePage(int pfn) {
     freePages[pfn] = PAGE_FREE;
 
 }
+
+// /**
+//  * Set current process id. Add an id if new process.
+// */
+// void checkProcess(char *name) {
+//     int arr_len = sizeof(processes) / sizeof(processes[0]);
+//     int i;
+//     for (i = 0; i < arr_len; i++)
+//     {
+//         if(strcmp(processes[i], name)) {
+//             cur_process_id = i;
+//             return
+//         }
+//     }
+    
+//     processes[i] = name;
+//     cur_process_id = i;
+//     return
+// }
