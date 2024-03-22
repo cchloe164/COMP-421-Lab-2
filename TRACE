@@ -102,9 +102,9 @@ index: 18
 brk: 0x213000
 Kernel   Still initializing Page Table 
 Kernel   Finished initializing Page Table 
-Kernel   Virtual memory enabled...Kernel   LoadProgram 'idle', args 0x1fffd0
-Kernel   LoadProgram: LoadInfo status 0
-Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
-Kernel   entry 0x10100
-Kernel   LoadProgram: size 5, argcount 1
-Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
+Kernel   Virtual memory enabled...Kernel   LoadProgram 'init1.c', args 0x1fffd0
+Kernel   LoadInfo: ehdr.e_ident EI_MAG0 35 != ELFMAG0
+Kernel   LoadProgram: LoadInfo status 1
+Kernel   LoadProgram: 'init1.c' not in Yalnix format
+
+ABORT: KernelStart returned with bogus info pc of 0x1a in ExceptionInfo!
