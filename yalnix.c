@@ -12,6 +12,7 @@
 // #include "load.c"
 #include "sharedvar.c"
 #include "handlers.c"
+#include "contextswitch.c"
 #include "getpid.c"
 
 void *tty_buf; // buffer in virtual memory region 1

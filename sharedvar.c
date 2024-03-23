@@ -10,6 +10,6 @@ void **interruptVector;
 struct pcb
 {
     int process_id;
-    SavedContext *ctx;
     int kernel_stack;  // first page of kernal stack
+    SavedContext *ctx;
 };

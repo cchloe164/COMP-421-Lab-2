@@ -1,12 +1,13 @@
-#include <hardware.h>
-
-#include "sharedvar.c"
+#include <comp421/hardware.h>
 
 // context switching from an existing process to a new process
-SavedContext *MySwitch(SavedContext *ctxp, void *p1, void *p2) {
+SavedContext *SwitchNewProc(SavedContext *ctxp, void *p1, void *p2) {
     
     struct pcb *proc1 = (struct pcb *) p1;
     struct pcb *proc2 = (struct pcb *) p2;
+
+    // save context of proc 1
+    proc1->ctx = ctxp;
 
     int page;
     for (page = 0; page < KERNEL_STACK_PAGES; page++) {
@@ -15,44 +16,51 @@ SavedContext *MySwitch(SavedContext *ctxp, void *p1, void *p2) {
         for (new_page = 0; new_page < num_pages; new_page++)
         {
             if (freePages[new_page] == PAGE_FREE) {
-                TracePrintf("Page %d is free in Region 0!", new_page);
+                TracePrintf(0, "Page %d is free in Region 0!", new_page);
                 break;
             }
         }
 
         // copy entry from old proc's kernel stack to new proc's
-        memcpy(p1->kernal_stack >> PAGESHIFT ,new_page >> PAGESHIFT, PAGESIZE);
+        long old_addr = proc1->kernel_stack << PAGESHIFT;
+        long new_addr = new_page << PAGESHIFT;
+        memcpy((void *)old_addr, (void *)new_addr, PAGESIZE);
     }
 
     // flush all entries in region 0 from TLB
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
 
     // redirect current region 0 pointer to new process
-    WriteRegister(REG_PTR0, (RCS421RegVal) p2->kernal_stack);
+    WriteRegister(REG_PTR0, (RCS421RegVal) proc2->kernel_stack);
 
     return proc2->ctx;
 }
 
 // context switching from an existing process to another existing process
-SavedContext *MySwitch(SavedContext *ctxp, void *p1, void *p2) {
-    
+SavedContext *SwitchExist(SavedContext *ctxp, void *p1, void *p2) {
     struct pcb *proc1 = (struct pcb *) p1;
     struct pcb *proc2 = (struct pcb *) p2;
+
+    // save context of proc 1
+    proc1->ctx = ctxp;
 
     // flush all entries in region 0 from TLB
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
 
     // redirect current region 0 pointer to new process
-    WriteRegister(REG_PTR0, (RCS421RegVal)p2->kernal_stack);
+    WriteRegister(REG_PTR0, (RCS421RegVal) proc2->kernel_stack);
 
     return proc2->ctx;
 }
 
 // context switching to no process, exiting kernal
-SavedContext *MySwitch(SavedContext *ctxp, void *p1, void *p2) {
+SavedContext *SwitchNoProc(SavedContext *ctxp, void *p1, void *p2) {
     
     free(freePages);
     free(interruptVector);
+
+    (void) p1;
+    (void) p2;
 
     return ctxp;
 }
