@@ -16,9 +16,6 @@
 
 void *tty_buf; // buffer in virtual memory region 1
 struct pte region0Pt[PAGE_TABLE_LEN], region1Pt[PAGE_TABLE_LEN]; // page table pointers
-int *freePages;
-int num_pages;
-int num_free_pages;
 void *currKernelBrk;
 
 void TrapKernelHandler(ExceptionInfo *info);
@@ -31,7 +28,7 @@ void TrapTTYTransmitHandler(ExceptionInfo *info);
 void buildFreePages(unsigned int pmem_size);
 void initPT();
 
-void **interruptVector;
+
 
 void freePage(int pfn);
 int findFreePage();
@@ -146,19 +143,19 @@ void initPT() {
 	TracePrintf(0, "Building page table...\n"); 
     //initial region 0 & 1 page tables are placed at the top page of region 1
     //setup initial ptes in region 1 page table and region 0 page table
-    unsigned long page_itr;
+    unsigned long vaddr;
     //init region 0 page table (see pg 22)
     // TracePrintf(0, "REGION 0\n");
     // TracePrintf(0, "\nbase: %p\nlimit: %p\n", KERNEL_STACK_BASE, KERNEL_STACK_LIMIT);
-    for (page_itr = KERNEL_STACK_BASE; page_itr < KERNEL_STACK_LIMIT; page_itr += PAGESIZE) {  
-        int index = page_itr >> PAGESHIFT; // addr -> page number
+    for (vaddr = KERNEL_STACK_BASE; vaddr < KERNEL_STACK_LIMIT; vaddr += PAGESIZE) {  
+        int page = vaddr >> PAGESHIFT; // addr -> page number
 
-        // TracePrintf(0, "page: %d addr: %p\n", index, page_itr);
-        region0Pt[index].pfn = index;
-        region0Pt[index].uprot = PROT_NONE;
-        region0Pt[index].kprot = PROT_READ | PROT_WRITE;
-        region0Pt[index].valid = 1;
-        freePages[index] = PAGE_USED; //set the page as used in our freePages structure WHY?
+        // TracePrintf(0, "page: %d addr: %p\n", page, page_itr);
+        region0Pt[page].pfn = page;
+        region0Pt[page].uprot = PROT_NONE;
+        region0Pt[page].kprot = PROT_READ | PROT_WRITE;
+        region0Pt[page].valid = 1;
+        freePages[page] = PAGE_USED; //set the page as used in our freePages structure WHY?
         num_free_pages--;
 
     }
@@ -166,12 +163,12 @@ void initPT() {
     //iterate starting from VMEM_1_Base until the kernel break to establish PTs
     // TracePrintf(0, "\nbase: %p\nbreak: %p\n", VMEM_1_BASE, currKernelBrk);
     unsigned int brk = (uintptr_t) currKernelBrk;
-    for (page_itr = VMEM_1_BASE; page_itr < brk; page_itr += PAGESIZE) {
-        int index = (page_itr >> PAGESHIFT) - 512;
-        TracePrintf(0, "\npage_itr: %p\nindex: %d\nbrk: %p\n", page_itr, index, brk);
-        region1Pt[index].pfn = page_itr >> PAGESHIFT;
-        region1Pt[index].uprot = PROT_NONE;
-        region1Pt[index].valid = 1;
+    for (vaddr = VMEM_1_BASE; vaddr < brk; vaddr += PAGESIZE) {
+        int page = (vaddr >> PAGESHIFT) - 512;
+        TracePrintf(0, "\npage_itr: %p\nindex: %d\nbrk: %p\n", vaddr, page, brk);
+        region1Pt[page].pfn = vaddr >> PAGESHIFT;
+        region1Pt[page].uprot = PROT_NONE;
+        region1Pt[page].valid = 1;
 
     //     /**
     //     from page 24:
@@ -181,14 +178,14 @@ void initPT() {
     //     protection for kernel mode; the user mode protection for both kinds of kernel 
     //     page table entries should be “none” (no access).
     //     */
-        if (VMEM_1_BASE + (index << PAGESHIFT) < (UP_TO_PAGE(&_etext))) { //up till the _etext
-            region1Pt[index].kprot = (PROT_READ | PROT_EXEC);
+        if (VMEM_1_BASE + (page << PAGESHIFT) < (UP_TO_PAGE(&_etext))) { //up till the _etext
+            region1Pt[page].kprot = (PROT_READ | PROT_EXEC);
         } else {
-            region1Pt[index].kprot = (PROT_READ | PROT_WRITE);
+            region1Pt[page].kprot = (PROT_READ | PROT_WRITE);
         }
 
         TracePrintf(0, "Still initializing Page Table \n"); 
-        freePages[page_itr >> PAGESHIFT] = PAGE_USED; //page_itr >> PAGESHIFT?
+        freePages[vaddr >> PAGESHIFT] = PAGE_USED; //page_itr >> PAGESHIFT?
         num_free_pages--;
     };
 
