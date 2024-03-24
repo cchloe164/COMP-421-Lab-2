@@ -1,5 +1,7 @@
 #include <comp421/hardware.h>
 
+#include "delay.c"
+
 /* HANDLERS */
 
 /**
@@ -64,14 +66,9 @@ void TrapKernelHandler(ExceptionInfo *info)
  */
 void TrapClockHandler(ExceptionInfo *info)
 {
-    /**
-     * Your Yalnix kernel should implement round-robin process scheduling with a time
-     * quantum per process of 2 clock ticks. After the current process has been running as the current
-     * process continuously for at least 2 clock ticks, if there are other runnable processes on the ready
-     * queue, perform a context switch to the next runnable process.
-     */
+    
     TracePrintf(0, "TRAP_CLOCK handler called!\n");
-    // Delay(2);
+    Tick_();
 
     (void)info;
 };
