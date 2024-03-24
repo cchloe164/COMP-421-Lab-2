@@ -87,6 +87,8 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     //RW: maybe we could do this after 
     buildFreePages(pmem_size);
     // Build 1 initial page table
+    // struct pte *region0Pt = malloc(PAGE_TABLE_LEN * sizeof(struct pte));
+    // initPT(region0Pt);
     initPT();
 
     // Initialize terminals
@@ -95,7 +97,7 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     WriteRegister(REG_VM_ENABLE, 1);
     TracePrintf(0, "Virtual memory enabled...");
     // Create idle process
-    LoadProgram(cmd_args[0], cmd_args, info, (struct pte *)REG_PTR0);
+    LoadProgram(cmd_args[0], cmd_args, info, region0Pt);
     // Create init process
     
 
@@ -140,7 +142,7 @@ CPU executes instructions, whereas the virtual-to-physical address mapping (the 
 changes relatively infrequently and in accord with the process abstraction and memory protection 
 policy implemented by the kernel.
 */
-void initPT() {
+void initPT() { //TODO: add this as input struct pte *region0Pt
 	TracePrintf(0, "Building page table...\n"); 
     //initial region 0 & 1 page tables are placed at the top page of region 1
     //setup initial ptes in region 1 page table and region 0 page table
@@ -195,11 +197,12 @@ void initPT() {
     //set the REG_PTR0 and REG_PTR1
     RCS421RegVal ptr0;
     RCS421RegVal ptr1;
-    ptr0 = (RCS421RegVal) &region0Pt;
+    ptr0 = (RCS421RegVal) &region0Pt; //TODO: maybe take this as input
     ptr1 = (RCS421RegVal) &region1Pt;
     WriteRegister(REG_PTR0, ptr0);
     WriteRegister(REG_PTR1, ptr1);
     TracePrintf(0, "Finished initializing Page Table \n"); 
+    
 }
 
 extern int SetKernelBrk(void *addr) {
@@ -388,6 +391,7 @@ LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TOD
         return (-1);
     }
 
+    TracePrintf(0, "made past virtual memory check\n");
     /*
      *  And make sure there will be enough *physical* memory to
      *  load the new program.
@@ -408,6 +412,7 @@ LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TOD
         close(fd);
         return (-1);
     }
+    TracePrintf(0, "made past phsyical memory check\n");
 
     // >>>> Initialize sp for the current process to (void *)cpp.
     // >>>> The value of cpp was initialized above.
@@ -423,19 +428,24 @@ LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TOD
     // >>>> any of these PTEs that are valid, free the physical memory
     // >>>> memory page indicated by that PTE's pfn field.  Set all
     // >>>> of these PTEs to be no longer valid.
-
+    
     int currTable;
     for (currTable = 0; currTable < PAGE_TABLE_LEN; currTable++) {
-        if ((currTable < KERNEL_STACK_BASE) | (currTable > KERNEL_STACK_LIMIT)) {
-            
+        // TracePrintf(0, "made to this\n");
+        if ((currTable < KERNEL_STACK_BASE >> PAGESHIFT) | (currTable > KERNEL_STACK_LIMIT)) {
+            // TracePrintf(0, "made to this2\n");
             if (ptr0[currTable].valid == 1) { //not sure if these are supposed to be pointers or the actual object
+                // TracePrintf(0, "made to this3\n");
                 freePage(ptr0[currTable].pfn); //TODO: may need ptr0[currTable]->pfn here
                 ptr0[currTable].valid = 0;
 
             }
+            // TracePrintf(0, "made to this4\n");
+            
         }
     }
-
+    TracePrintf(0, "made to looping over PTEs (line 440)\n");
+    
     /*
      *  Fill in the page table with the right number of text,
      *  data+bss, and stack pages.  We set all the text pages
@@ -449,6 +459,7 @@ LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TOD
 
     for (i = 0; i < MEM_INVALID_PAGES; i++) {
         ptr0[i].valid = 0;
+        
     }
 
     /* First, the text pages */
@@ -465,6 +476,7 @@ LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TOD
         ptr0[textIter].kprot = (PROT_READ | PROT_WRITE);
         ptr0[textIter].uprot = (PROT_READ | PROT_EXEC);
         ptr0[textIter].pfn = findFreePage();
+        
     }
     /* Then the data and bss pages */
     // >>>> For the next data_bss_npg number of PTEs in the Region 0
@@ -479,6 +491,7 @@ LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TOD
         ptr0[bssIter].kprot = (PROT_READ | PROT_WRITE);
         ptr0[bssIter].uprot = (PROT_READ | PROT_WRITE);
         ptr0[bssIter].pfn = findFreePage();
+        
 
     }
     //TODO: keep track of the top pof the stack here
@@ -493,7 +506,7 @@ LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TOD
     // >>>>     uprot = PROT_READ | PROT_WRITE
     // >>>>     pfn   = a new page of physical memory
     int userIter;
-    for (userIter = USER_STACK_LIMIT >> PAGESHIFT; userIter > (USER_STACK_LIMIT >> PAGESHIFT) - stack_npg; userIter--) {
+    for (userIter = (int)(USER_STACK_LIMIT >> PAGESHIFT) - 1; userIter > (USER_STACK_LIMIT >> PAGESHIFT) - stack_npg - 1; userIter--) {
         ptr0[userIter].valid = 1;
         ptr0[userIter].kprot = (PROT_READ | PROT_WRITE);
         ptr0[userIter].uprot = (PROT_READ | PROT_WRITE);
@@ -509,7 +522,7 @@ LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TOD
      *  we'll be able to do the read() into the new pages below.
      */
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
-
+    
     /*
      *  Read the text and data from the file into memory.
      */
@@ -523,7 +536,7 @@ LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TOD
         // >>>> to its parent process.
         return (-2);
     }
-
+    
     close(fd);			/* we've read it all now */
 
     /*
@@ -535,38 +548,52 @@ LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TOD
 
     for (textIter = MEM_INVALID_PAGES; textIter < MEM_INVALID_PAGES + text_npg; textIter++) {
         ptr0[textIter].kprot = (PROT_READ | PROT_EXEC);
+        
     }
 
 
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
-
+    
     /*
      *  Zero out the bss
      */
     memset((void *)(MEM_INVALID_SIZE + li.text_size + li.data_size),'\0', li.bss_size);
-
+     
+    int z;
+    for (z = 0; z < PAGE_TABLE_LEN ; z++) {
+        if (ptr0[z].valid == 1) {
+            TracePrintf(0, "PageTables tracing: entry %d contains PFN %d. \n", z, ptr0[z].pfn);
+        } else {
+            TracePrintf(0, "PageTables tracing: entry %d is invalid/empty. \n", z);
+        }
+    }
     /*
      *  Set the entry point in the ExceptionInfo.
      */
     // >>>> Initialize pc for the current process to (void *)li.entry
     info->pc = (void *)li.entry;
-
+    TracePrintf(0, "made to this1. argcount is %d\n", argcount);
     /*
      *  Now, finally, build the argument list on the new stack.
      */
     *cpp++ = (char *)argcount;		/* the first value at cpp is argc */
+    TracePrintf(0, "made to this2.\n");
+
     cp2 = argbuf;
+    
     for (i = 0; i < (int) argcount; i++) {      /* copy each argument and set argv */
         *cpp++ = cp;
         strcpy(cp, cp2);
         cp += strlen(cp) + 1;
         cp2 += strlen(cp2) + 1;
     }
+    
     free(argbuf);
     *cpp++ = NULL;	/* the last argv is a NULL pointer */
     *cpp++ = NULL;	/* a NULL pointer for an empty envp */
     *cpp++ = 0;		/* and terminate the auxiliary vector */
 
+   
     /*
      *  Initialize all regs[] registers for the current process to 0,
      *  initialize the PSR for the current process also to 0.  This
