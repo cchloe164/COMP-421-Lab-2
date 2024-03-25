@@ -249,8 +249,8 @@ extern int SetKernelBrk(void *addr) {
                 region1Pt[currBrkPg + page].uprot = PROT_NONE;
                 region1Pt[currBrkPg + page].valid = 1;
                 region1Pt[currBrkPg + page].kprot = (PROT_READ | PROT_WRITE);
-                freePages[currBrkPg + page] = PAGE_USED; //set the page as used in our freePages structure WHY?
-                num_free_pages--;
+                // freePages[currBrkPg + page] = PAGE_USED; //set the page as used in our freePages structure WHY?
+                // num_free_pages--;
             }
             //TODO: 
 
@@ -672,6 +672,7 @@ int findFreePage() {
     for (page_itr = 0; page_itr < num_pages; page_itr++) {
         if (freePages[page_itr] == PAGE_FREE) {
             freePages[page_itr] = PAGE_USED;
+            num_free_pages--;
             return page_itr;
         }
     }
@@ -684,5 +685,6 @@ frees a page
 void freePage(int pfn) {
 
     freePages[pfn] = PAGE_FREE;
+    num_free_pages++;
 
 }
