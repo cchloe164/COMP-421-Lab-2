@@ -36,7 +36,7 @@ int vm_enabled = false;
 void freePage(int pfn);
 int findFreePage();
 
-int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0);
+struct pcb *LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0);
 
 extern int SetKernelBrk(void *addr);
 
@@ -106,7 +106,8 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     // Create init process; need to call this context switch
     struct pcb *pcb2 = LoadProgram(cmd_args[0], cmd_args, info, region0Pt);
 
-    ContextSwitch(SwitchNewProc, &(process->ctxp), pcb1, pcb2);
+    int res = ContextSwitch(SwitchNewProc, &pcb1->ctx, (void *)pcb1, (void *)pcb2);
+    TracePrintf(0, "Result from ContextSwitch: %d", res);
     //TODO: read piazza @130
 
     return;
@@ -337,8 +338,7 @@ extern int TtyWrite(int tty_id, void *buf, int len) {
  *  is no longer runnable, and this function returns -2 for errors
  *  in this case.
  */
-struct pcb *
-LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TODO: add arguments for info and Region0 pointer that way we can clean it
+struct pcb *LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TODO: add arguments for info and Region0 pointer that way we can clean it
 {
     int fd;
     int status;
@@ -358,7 +358,7 @@ LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TOD
 
     if ((fd = open(name, O_RDONLY)) < 0) {
         TracePrintf(0, "LoadProgram: can't open file '%s'\n", name);
-        return (-1);
+        return (struct pcb *) -1;
     }
 
     status = LoadInfo(fd, &li);
@@ -370,15 +370,15 @@ LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TOD
             TracePrintf(0,
             "LoadProgram: '%s' not in Yalnix format\n", name);
             close(fd);
-            return (-1);
+            return (struct pcb *)-1;
         case LI_OTHER_ERROR:
             TracePrintf(0, "LoadProgram: '%s' other error\n", name);
             close(fd);
-            return (-1);
+            return (struct pcb *)-1;
         default:
             TracePrintf(0, "LoadProgram: '%s' unknown error\n", name);
             close(fd);
-            return (-1);
+            return (struct pcb *)-1;
     }
     TracePrintf(0, "text_size 0x%lx, data_size 0x%lx, bss_size 0x%lx\n",
 	li.text_size, li.data_size, li.bss_size);
@@ -438,7 +438,7 @@ LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TOD
         name);
         free(argbuf);
         close(fd);
-        return (-1);
+        return (struct pcb *)-1;
     }
 
     TracePrintf(0, "made past virtual memory check\n");
@@ -460,7 +460,7 @@ LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TOD
             name);
         free(argbuf);
         close(fd);
-        return (-1);
+        return (struct pcb *)-1;
     }
     TracePrintf(0, "made past phsyical memory check\n");
 
@@ -584,7 +584,7 @@ LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TOD
         // >>>> the rest of the kernel that the current process should
         // >>>> be terminated with an exit status of ERROR reported
         // >>>> to its parent process.
-        return (-2);
+        return (struct pcb *)-2;
     }
     
     close(fd);			/* we've read it all now */
@@ -658,26 +658,15 @@ LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TOD
     }
     info->psr = 0;
 
-    struct pcb proc = { next_proc_id, ptr0[KERNEL_STACK_BASE >> PAGESHIFT], 0 };
+    TracePrintf(0, "Creating PCB structure...");
+    struct pcb *proc = malloc(sizeof(struct pcb));
+    proc->process_id = next_proc_id;
     next_proc_id++;
+    TracePrintf(0, "done\n");
 
-    return *proc;
+    return proc;
 }
 
-/**
-Finds a free page, returns the PFN or -1 if there are no free pages available.
-*/
-int findFreePage() {
-    int page_itr;
-    for (page_itr = 0; page_itr < num_pages; page_itr++) {
-        if (freePages[page_itr] == PAGE_FREE) {
-            freePages[page_itr] = PAGE_USED;
-            num_free_pages--;
-            return page_itr;
-        }
-    }
-    return -1;
-} 
 
 /**
 frees a page

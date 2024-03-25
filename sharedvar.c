@@ -10,7 +10,7 @@ void **interruptVector;
 struct pcb {
     int process_id;
     int kernel_stack;  // first page of kernal stack
-    SavedContext *ctx;
+    SavedContext ctx;
 };
 
 // an informal round-robin queue based on clock ticks
@@ -66,4 +66,22 @@ int SetNextProc() {
         TracePrintf(0, "No ready process on queue.\n");
         return 0;
     }
+}
+
+/**
+Finds a free page, returns the PFN or -1 if there are no free pages available.
+*/
+int findFreePage()
+{
+    int page_itr;
+    for (page_itr = 0; page_itr < num_pages; page_itr++)
+    {
+        if (freePages[page_itr] == PAGE_FREE)
+        {
+            freePages[page_itr] = PAGE_USED;
+            num_free_pages--;
+            return page_itr;
+        }
+    }
+    return -1;
 }
