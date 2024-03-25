@@ -2,11 +2,10 @@
 
 // context switching from an existing process to a new process
 SavedContext *SwitchNewProc(SavedContext *ctxp, void *p1, void *p2) {
-    TracePrintf(0, "no\n");
     struct pcb *proc1 = (struct pcb *) p1;
     struct pcb *proc2 = (struct pcb *) p2;
 
-    TracePrintf(0, "Switching from existing process %d to new process %d", proc1->process_id, proc2->process_id);
+    TracePrintf(0, "Switching from existing process %d to new process %d\n", proc1->process_id, proc2->process_id);
 
     // save context of proc 1
     proc1->ctx = *ctxp;
@@ -18,11 +17,12 @@ SavedContext *SwitchNewProc(SavedContext *ctxp, void *p1, void *p2) {
             TracePrintf(0, "ERROR: No more free pages!\n");
             return (SavedContext *) -1;
         } else {
-            TracePrintf(0, "Page %d is free in Region 0!", free_page);
+            TracePrintf(0, "Page %d is free in Region 0, copying...", free_page);
             // copy entry from old proc's kernel stack to new proc's
             long old_addr = proc1->kernel_stack << PAGESHIFT;
             long new_addr = free_page << PAGESHIFT;
             memcpy((void *)old_addr, (void *)new_addr, PAGESIZE);
+            TracePrintf(0, "done\n");
 
             // flush all entries in region 0 from TLB // at that specific address
             WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
