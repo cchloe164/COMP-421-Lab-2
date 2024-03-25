@@ -11,7 +11,8 @@ extern void Tick_() {
     ticks_passed++;
 
     if (ticks_passed > 2) { // check if current process should be switched out
-        TracePrintf(0, "Time limit reached on Process %d!.\n", curr_proc->process_id);
+        // TracePrintf(0, "Time limit reached on Process %d!.\n", curr_proc->process_id);
+        TracePrintf(0, "Time limit reached on Process!.\n");
         int res = SetNextProc();
         if (res == 1) {
             TracePrintf(0, "Clock ticks reset!\n");

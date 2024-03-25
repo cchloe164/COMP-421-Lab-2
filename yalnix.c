@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include <comp421/hardware.h>
@@ -30,7 +31,7 @@ void buildFreePages(unsigned int pmem_size);
 void initPT();
 
 
-
+int vm_enabled = false;
 void freePage(int pfn);
 int findFreePage();
 
@@ -96,14 +97,16 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     // Enable virtual memory
     WriteRegister(REG_VM_ENABLE, 1);
     TracePrintf(0, "Virtual memory enabled...");
+    vm_enabled = true;
     // Create idle process
+    //TODO:  The idle process should have Yalnix process ID 0. Is this done?
+    LoadProgram("idle", cmd_args, info, region0Pt);
+    //TODO: create pcbs for each process. Write a create pcb function to create pcbs and create pcb for idle program?
+    // Create init process; need to call this context switch
+    // ContextSwitch(SwitchNewProc, &(process->ctxp), pcb1, pcb2);
     LoadProgram(cmd_args[0], cmd_args, info, region0Pt);
-    // Create init process
-    
+    //TODO: read piazza @130
 
-
-    (void)info;
-    (void)cmd_args;
 
 
     return;
@@ -205,9 +208,56 @@ void initPT() { //TODO: add this as input struct pte *region0Pt
     
 }
 
+/*
+Before your kernel has enabled virtual memory, the entire physical memory 
+of the machine is already available to your kernel. The job of SetKernelBrk 
+in this case is very easy. You need only keep track of the location of the 
+current break for the kernel. The initial location of the break is passed to 
+your kernel’s KernelStart procedure as the orig_brk argument, as described in 
+Section 3.3. Calls to SetKernelBrk, before virtual memory has been enabled, 
+simply move this break location to the new location specified as addr in the 
+SetKernelBrk call; for this project, the kernel break will never be moved down
+ to a lower address than where it already is at. You will need to know the current
+  location of your kernel’s break in order to correctly initialize page table entries 
+  for your kernel’s Region 1 before enabling virtual memory.
+
+  After you have enabled virtual memory, the job of the SetKernelBrk
+   function that you will write becomes more complicated. After this point,
+    your implementation of SetKernelBrk, when called with an argument of addr,
+     must allocate physical memory page frames and map virtual pages as necessary
+      to make addr the new kernel break.
+*/
 extern int SetKernelBrk(void *addr) {
     TracePrintf(0, "SET currKernelBreak %p to addr %p \n", currKernelBrk, addr); 
-    currKernelBrk = addr;
+    
+    if (!vm_enabled) {
+        //just need to change kernel break if vm is not enabled. otherwise do other stuff
+        currKernelBrk = addr;// (do this in a separate if bc there's a chance the new addr is invalid)
+    } else {
+        int pagesNeeded;
+        //find how many pages we need to make valid and used in phsyical memory 
+        pagesNeeded = (UP_TO_PAGE((long)addr) >> PAGESHIFT) - ((long)currKernelBrk >> PAGESHIFT);
+        if (num_free_pages < pagesNeeded) {
+            //not enough memory
+            //do something here (TODO)
+        } else {
+            int page;
+            int currBrkPg = (long)addr >> PAGESHIFT;
+            for (page = 0; page < pagesNeeded; page++) {
+                int newPage = findFreePage();
+                region1Pt[currBrkPg + page].pfn = newPage;
+                region1Pt[currBrkPg + page].uprot = PROT_NONE;
+                region1Pt[currBrkPg + page].valid = 1;
+                region1Pt[currBrkPg + page].kprot = (PROT_READ | PROT_WRITE);
+                freePages[currBrkPg + page] = PAGE_USED; //set the page as used in our freePages structure WHY?
+                num_free_pages--;
+            }
+            //TODO: 
+
+            currKernelBrk = addr;
+
+        }
+    }
     //after fully enabling VM, need to change it
     return 0;
 }
