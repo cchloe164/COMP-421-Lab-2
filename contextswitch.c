@@ -11,20 +11,17 @@ SavedContext *SwitchNewProc(SavedContext *ctxp, void *p1, void *p2) {
 
     int page;
     for (page = 0; page < KERNEL_STACK_PAGES; page++) {
-        // find free page in old proc's region 0
-        int new_page;
-        for (new_page = 0; new_page < num_pages; new_page++)
-        {
-            if (freePages[new_page] == PAGE_FREE) {
-                TracePrintf(0, "Page %d is free in Region 0!", new_page);
-                break;
-            }
+        int free_page = findFreePage(); // find free page in old proc's region 0
+        if (free_page == -1) {
+            TracePrintf(0, "ERROR: No more free pages!\n");
+            return -1;
+        } else {
+            TracePrintf(0, "Page %d is free in Region 0!", new_page);
+            // copy entry from old proc's kernel stack to new proc's
+            long old_addr = proc1->kernel_stack << PAGESHIFT;
+            long new_addr = new_page << PAGESHIFT;
+            memcpy((void *)old_addr, (void *)new_addr, PAGESIZE);
         }
-
-        // copy entry from old proc's kernel stack to new proc's
-        long old_addr = proc1->kernel_stack << PAGESHIFT;
-        long new_addr = new_page << PAGESHIFT;
-        memcpy((void *)old_addr, (void *)new_addr, PAGESIZE);
     }
 
     // flush all entries in region 0 from TLB

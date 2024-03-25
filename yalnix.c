@@ -19,6 +19,7 @@
 void *tty_buf; // buffer in virtual memory region 1
 struct pte region0Pt[PAGE_TABLE_LEN], region1Pt[PAGE_TABLE_LEN]; // page table pointers
 void *currKernelBrk;
+int next_proc_id = 0;
 
 void TrapKernelHandler(ExceptionInfo *info);
 void TrapClockHandler(ExceptionInfo *info);
@@ -100,14 +101,13 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     vm_enabled = true;
     // Create idle process
     //TODO:  The idle process should have Yalnix process ID 0. Is this done?
-    LoadProgram("idle", cmd_args, info, region0Pt);
+    struct pcb *pcb1 = LoadProgram("idle", cmd_args, info, region0Pt);
     //TODO: create pcbs for each process. Write a create pcb function to create pcbs and create pcb for idle program?
     // Create init process; need to call this context switch
-    // ContextSwitch(SwitchNewProc, &(process->ctxp), pcb1, pcb2);
-    LoadProgram(cmd_args[0], cmd_args, info, region0Pt);
+    struct pcb *pcb2 = LoadProgram(cmd_args[0], cmd_args, info, region0Pt);
+
+    ContextSwitch(SwitchNewProc, &(process->ctxp), pcb1, pcb2);
     //TODO: read piazza @130
-
-
 
     return;
 }
@@ -337,7 +337,7 @@ extern int TtyWrite(int tty_id, void *buf, int len) {
  *  is no longer runnable, and this function returns -2 for errors
  *  in this case.
  */
-int
+struct pcb *
 LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TODO: add arguments for info and Region0 pointer that way we can clean it
 {
     int fd;
@@ -658,7 +658,10 @@ LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TOD
     }
     info->psr = 0;
 
-    return (0);
+    struct pcb proc = { next_proc_id, ptr0[KERNEL_STACK_BASE >> PAGESHIFT], 0 };
+    next_proc_id++;
+
+    return *proc;
 }
 
 /**
