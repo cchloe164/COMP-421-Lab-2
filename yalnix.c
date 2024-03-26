@@ -172,7 +172,7 @@ void initPT() { //TODO: add this as input struct pte *region0Pt
     unsigned int brk = (uintptr_t) currKernelBrk;
     for (vaddr = VMEM_1_BASE; vaddr < brk; vaddr += PAGESIZE) {
         int page = (vaddr >> PAGESHIFT) - 512;
-        TracePrintf(0, "\npage_itr: %p\nindex: %d\nbrk: %p\n", vaddr, page, brk);
+        TracePrintf(2, "\npage_itr: %p\nindex: %d\nbrk: %p\n", vaddr, page, brk);
         region1Pt[page].pfn = vaddr >> PAGESHIFT;
         region1Pt[page].uprot = PROT_NONE;
         region1Pt[page].valid = 1;
@@ -191,7 +191,7 @@ void initPT() { //TODO: add this as input struct pte *region0Pt
             region1Pt[page].kprot = (PROT_READ | PROT_WRITE);
         }
 
-        TracePrintf(0, "Still initializing Page Table \n"); 
+        TracePrintf(2, "Still initializing Page Table \n"); 
         freePages[vaddr >> PAGESHIFT] = PAGE_USED; //page_itr >> PAGESHIFT?
         num_free_pages--;
     };
@@ -203,6 +203,7 @@ void initPT() { //TODO: add this as input struct pte *region0Pt
     RCS421RegVal ptr1;
     ptr0 = (RCS421RegVal) &region0Pt; //TODO: maybe take this as input
     ptr1 = (RCS421RegVal) &region1Pt;
+    // TracePrintf(0, "PTR0 is here:%d", ptr0);
     WriteRegister(REG_PTR0, ptr0);
     WriteRegister(REG_PTR1, ptr1);
     TracePrintf(0, "Finished initializing Page Table \n"); 
@@ -612,9 +613,9 @@ struct pcb *LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte
     int z;
     for (z = 0; z < PAGE_TABLE_LEN ; z++) {
         if (ptr0[z].valid == 1) {
-            TracePrintf(0, "PageTables tracing: entry %d contains PFN %d. \n", z, ptr0[z].pfn);
+            TracePrintf(1, "PageTables tracing: entry %d contains PFN %d. \n", z, ptr0[z].pfn);
         } else {
-            TracePrintf(0, "PageTables tracing: entry %d is invalid/empty. \n", z);
+            TracePrintf(1, "PageTables tracing: entry %d is invalid/empty. \n", z);
         }
     }
     /*
