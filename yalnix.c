@@ -107,11 +107,31 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     pcb1.region0 = region0Pt;
 
     struct pcb pcb2;
+    //init region 0 page table for init function (PCB2) (Copied from (see pg 22)
+    // TracePrintf(0, "REGION 0\n");
+    // TracePrintf(0, "\nbase: %p\nlimit: %p\n", KERNEL_STACK_BASE, KERNEL_STACK_LIMIT);
+    int vaddr;
+    struct pte secondregion0Pt[PAGE_TABLE_LEN];
+    for (vaddr = KERNEL_STACK_BASE; vaddr < KERNEL_STACK_LIMIT; vaddr += PAGESIZE) {  
+        int page = vaddr >> PAGESHIFT; // addr -> page number
+
+        // TracePrintf(0, "page: %d addr: %p\n", page, page_itr);
+        //TODO: change this Region0pt to be a specific region0pt for the pcb2 (see piazza @130)
+        secondregion0Pt[page].pfn = page;
+        secondregion0Pt[page].uprot = PROT_NONE;
+        secondregion0Pt[page].kprot = PROT_READ | PROT_WRITE;
+        secondregion0Pt[page].valid = 1;
+        freePages[page] = PAGE_USED; 
+        num_free_pages--;
+
+    }
+    pcb2.region0 = secondregion0Pt;
 
     LoadProgram("idle", cmd_args, info, &(pcb1.region0));
     //TODO: create pcbs for each process. Write a create pcb function to create pcbs and create pcb for idle program?
     // Create init process; need to call this context switch
     //create pcb for init
+    
     int res = ContextSwitch(SwitchNewProc, &pcb1->ctx, (void *)pcb1, (void *)pcb2);
     TracePrintf(0, "Result from ContextSwitch: %d", res);
     
