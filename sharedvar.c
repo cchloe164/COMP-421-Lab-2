@@ -1,9 +1,13 @@
+#include <comp421/hardware.h>
+
 #define PAGE_FREE 0
 #define PAGE_USED 1
 
 int *freePages;
 int num_pages;
 int num_free_pages;
+struct pte region0Pt[PAGE_TABLE_LEN], region1Pt[PAGE_TABLE_LEN]; // page table pointers
+void *currKernelBrk;
 
 void **interruptVector;
 
@@ -12,7 +16,7 @@ struct pcb { //TODO: I've added a few fields for some of the other functions but
     int kernel_stack;  // first page of kernal stack
     int reg0_pfn; //stores the physical pfn of reg 0
     int brk; //stores the break position of the current process (for brk.c)
-    int region0; //stores current region 0 pointer
+    struct pte *region0; //stores current region 0 pointer
     SavedContext ctx;
 };
 

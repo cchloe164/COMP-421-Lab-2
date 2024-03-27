@@ -18,8 +18,8 @@
 #include "getpid.c"
 
 void *tty_buf; // buffer in virtual memory region 1
-struct pte region0Pt[PAGE_TABLE_LEN], region1Pt[PAGE_TABLE_LEN]; // page table pointers
-void *currKernelBrk;
+// struct pte region0Pt[PAGE_TABLE_LEN], region1Pt[PAGE_TABLE_LEN]; // page table pointers
+// void *currKernelBrk;
 int next_proc_id = 0;
 
 void TrapKernelHandler(ExceptionInfo *info);
@@ -37,7 +37,7 @@ int vm_enabled = false;
 void freePage(int pfn);
 int findFreePage();
 
-struct pcb *LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0);
+int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0);
 
 extern int SetKernelBrk(void *addr);
 
@@ -103,13 +103,20 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     vm_enabled = true;
     // Create idle process
     //TODO:  The idle process should have Yalnix process ID 0. Is this done?
-    struct pcb *pcb1 = LoadProgram("idle", cmd_args, info, region0Pt);
+    struct pcb pcb1;
+    pcb1.region0 = region0Pt;
+
+    struct pcb pcb2;
+
+    LoadProgram("idle", cmd_args, info, &(pcb1.region0));
     //TODO: create pcbs for each process. Write a create pcb function to create pcbs and create pcb for idle program?
     // Create init process; need to call this context switch
-    struct pcb *pcb2 = LoadProgram(cmd_args[0], cmd_args, info, region0Pt);
-
+    //create pcb for init
     int res = ContextSwitch(SwitchNewProc, &pcb1->ctx, (void *)pcb1, (void *)pcb2);
     TracePrintf(0, "Result from ContextSwitch: %d", res);
+    
+    LoadProgram(cmd_args[0], cmd_args, info, &pcb2.region0);
+
     //TODO: read piazza @130
 
     return;
@@ -344,7 +351,7 @@ extern int TtyWrite(int tty_id, void *buf, int len) {
  *  is no longer runnable, and this function returns -2 for errors
  *  in this case.
  */
-struct pcb *LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TODO: add arguments for info and Region0 pointer that way we can clean it
+int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)//TODO: add arguments for info and Region0 pointer that way we can clean it
 {
     int fd;
     int status;
@@ -364,7 +371,7 @@ struct pcb *LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte
 
     if ((fd = open(name, O_RDONLY)) < 0) {
         TracePrintf(0, "LoadProgram: can't open file '%s'\n", name);
-        return (struct pcb *) -1;
+        return -1;
     }
 
     status = LoadInfo(fd, &li);
@@ -376,15 +383,15 @@ struct pcb *LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte
             TracePrintf(0,
             "LoadProgram: '%s' not in Yalnix format\n", name);
             close(fd);
-            return (struct pcb *)-1;
+            return -1;
         case LI_OTHER_ERROR:
             TracePrintf(0, "LoadProgram: '%s' other error\n", name);
             close(fd);
-            return (struct pcb *)-1;
+            return -1;
         default:
             TracePrintf(0, "LoadProgram: '%s' unknown error\n", name);
             close(fd);
-            return (struct pcb *)-1;
+            return -1;
     }
     TracePrintf(0, "text_size 0x%lx, data_size 0x%lx, bss_size 0x%lx\n",
 	li.text_size, li.data_size, li.bss_size);
@@ -444,7 +451,7 @@ struct pcb *LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte
         name);
         free(argbuf);
         close(fd);
-        return (struct pcb *)-1;
+        return -1;
     }
 
     TracePrintf(0, "made past virtual memory check\n");
@@ -466,7 +473,7 @@ struct pcb *LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte
             name);
         free(argbuf);
         close(fd);
-        return (struct pcb *)-1;
+        return -1;
     }
     TracePrintf(0, "made past phsyical memory check\n");
 
@@ -590,7 +597,7 @@ struct pcb *LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte
         // >>>> the rest of the kernel that the current process should
         // >>>> be terminated with an exit status of ERROR reported
         // >>>> to its parent process.
-        return (struct pcb *)-2;
+        return -2;
     }
     
     close(fd);			/* we've read it all now */
@@ -664,13 +671,13 @@ struct pcb *LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte
     }
     info->psr = 0;
 
-    TracePrintf(0, "Creating PCB structure...");
-    struct pcb *proc = malloc(sizeof(struct pcb));
-    proc->process_id = next_proc_id;
-    next_proc_id++;
-    TracePrintf(0, "done\n");
+    // TracePrintf(0, "Creating PCB structure...");
+    // struct pcb *proc = malloc(sizeof(struct pcb));
+    // proc->process_id = next_proc_id;
+    // next_proc_id++;
+    // TracePrintf(0, "done\n");
 
-    return proc;
+    return 0;
 }
 
 
@@ -682,86 +689,4 @@ void freePage(int pfn) {
     freePages[pfn] = PAGE_FREE;
     num_free_pages++;
 
-}
-
-//workspace for contextswitch (CC has some changes that are unpushed)
-
-// context switching from an existing process to a new process
-SavedContext *SwitchNewProc(SavedContext *ctxp, void *p1, void *p2) {
-    struct pcb *proc1 = (struct pcb *) p1;
-    struct pcb *proc2 = (struct pcb *) p2;
-
-    TracePrintf(0, "Switching from existing process %d to new process %d\n", proc1->process_id, proc2->process_id);
-
-    // save context of proc 1
-    proc1->ctx = *ctxp;
-
-    
-    struct pte *new_reg0 = &region1Pt[(long)currKernelBrk >> PAGESHIFT]; //find a free virtual page to store the region 0 PT
-    //allocate a new page for the second process PCB in 
-    
-    new_reg0->pfn = findFreePage();
-    new_reg0->uprot = PROT_NONE;
-    new_reg0->kprot = (PROT_READ | PROT_WRITE);
-    new_reg0->valid = 1;
-    proc2->reg0_pfn = (long) &new_reg0;
-    // int page;
-    //I'm not sure how this works with separate files but I can't access currKernelBrk. instead was using 512 placeholder
-    struct pte tempPT = ((struct pte *) region1Pt)[PAGE_TABLE_LEN - 1]; //borrow from the top of the Region 1 page table
-    
-    // region1Pt[PAGE_TABLE_LEN - 2] = proc2->pcb_reg0_pfn; //reset the pointer
-    //find a new Region0 virtual pointer (TODO: find this for the bit stuff)
-    // long new_reg0 = 0;
-    long address;
-    for (address = KERNEL_STACK_BASE; address < KERNEL_STACK_LIMIT; address+=PAGESIZE) {
-
-        int page = address >> PAGESHIFT;
-        int free_page = findFreePage(); // find free page in old proc's region 0
-        if (free_page == -1) {
-            TracePrintf(0, "ERROR: No more free pages!\n");
-            // return ERROR; //TODO: fix this output
-        } else {
-            TracePrintf(0, "Page %d is free in Region 0, copying...\n", free_page);
-
-            // copy entry from old proc's kernel stack to new proc's
-            // long old_addr = proc1->kernel_stack << PAGESHIFT; //old code from the beginning. Not sure if this is correct? should point to VMEM_0_LIMIT - page anyways
-            // //I think the above address is wrong bc we should be iterating through *each* PTE in the kernel stack, which each has a differen address
-            // long new_addr = free_page << PAGESHIFT;
-            //first, set up the new region 0 kernel stack to have free pages
-			((struct pte*) new_reg0)[page].pfn = free_page;
-			((struct pte*) new_reg0)[page].uprot = PROT_NONE;
-			((struct pte*) new_reg0)[page].kprot = (PROT_READ | PROT_WRITE);
-			((struct pte*) new_reg0)[page].valid = 1;
-            
-            
-            //set the temp borrowed to have the same pfn as the new region 0 PTE
-            tempPT.uprot = PROT_NONE;
-            tempPT.kprot = PROT_READ | PROT_WRITE;
-            tempPT.valid = 1;
-            tempPT.pfn = free_page;
-            
-            WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_1);
-            
-            TracePrintf(0, "made it here with temp %d andfrom %d\n", (unsigned long)&tempPT, (unsigned long)address);
-            // TracePrintf(0, "Address of old_addr: %d\n", old_addr);
-            // TracePrintf(0, "Address of new_addr: %d\n", new_addr);
-            //copy from the current region 0 to the new region 0 (pseudo region 0)
-            //void *memcpy(void *dest, const void * src, size_t n)
-            //VMEM_0_LIMIT - (page + 1) should be the top pof 
-            //finally copy. 
-            memcpy((void *)(unsigned long)&tempPT, (void *)(unsigned long)(address), PAGESIZE);
-
-            TracePrintf(0, "done\n");
-            // flush all entries in region 0 from TLB // at that specific address
-            WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
-
-        }
-    }
-    
-
-    // redirect current region 0 pointer to new process
-    // region0Pt = *proc2->kernel_stack;
-    WriteRegister(REG_PTR0, (RCS421RegVal) proc2->reg0_pfn);
-    //return the ctx
-    return &proc2->ctx;
 }
