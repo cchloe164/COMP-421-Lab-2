@@ -7,10 +7,12 @@ int num_free_pages;
 
 void **interruptVector;
 
-struct pcb {
+struct pcb { //TODO: I've added a few fields for some of the other functions but haven't updated the pcb creation code for idle/init yet
     int process_id;
     int kernel_stack;  // first page of kernal stack
-    int pcb_reg0_pfn; //stores the physical pfn of reg 0
+    int reg0_pfn; //stores the physical pfn of reg 0
+    int brk; //stores the break position of the current process (for brk.c)
+    int region0; //stores current region 0 pointer
     SavedContext ctx;
 };
 
@@ -28,12 +30,12 @@ struct pcb *curr_proc;
 int queue_size = 0;
 
 //creates pcb
-struct pcb create_pcb(int pid, int kernel_stack, int reg0_pfn, SavedContext context) {
+struct pcb create_pcb(int pid, int kernel_stack, int reg0_pfn, int brk, SavedContext context) {
     struct pcb new_pcb;
     new_pcb.process_id = pid;
     new_pcb.kernel_stack = kernel_stack;
-    new_pcb.pcb_reg0_pfn = reg0_pfn;
-    
+    new_pcb.reg0_pfn = reg0_pfn;
+    new_pcb.brk = brk;
     new_pcb.ctx = context;
     return new_pcb;
 }

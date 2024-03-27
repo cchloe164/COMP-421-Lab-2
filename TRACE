@@ -32,3 +32,5 @@ Kernel   made to this1. argcount is 1
 Kernel   made to this2.
 Kernel   Creating PCB structure...Kernel   done
 Kernel   Switching from existing process 0 to new process 1
+Kernel   Page 13 is free in Region 0, copying...
+Kernel   made it here with temp 202549920 andfrom 2080768
