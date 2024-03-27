@@ -50,7 +50,7 @@ extern int Brk(void *addr);
 extern int Delay(int clock_ticks);
 extern int TtyRead(int tty_id, void *buf, int len);
 extern int TtyWrite(int tty_id, void *buf, int len);
-SavedContext *SwitchNewProc(SavedContext *ctxp, void *p1, void *p2);
+SavedContext *SwitchNewProc(SavedContext *ctx, void *p1, void *p2);
 
 
 /*
@@ -108,24 +108,46 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     vm_enabled = true;
     // Create idle process
     //TODO:  The idle process should have Yalnix process ID 0. Is this done?
-    struct pcb pcb1;
-    pcb1.region0 = region0Pt;
+    struct pcb *pcb1 = malloc(sizeof(struct pcb));
 
-    struct pcb pcb2;
+    pcb1->region0 = &region0Pt[0];
+    pcb1->process_id = next_proc_id;
+    next_proc_id++;
+    LoadProgram("idle", cmd_args, info, pcb1->region0);
+
+    struct pcb *pcb2 = malloc(sizeof(struct pcb));
     //init region 0 page table for init function (PCB2) (Copied from (see pg 22)
     // TracePrintf(0, "REGION 0\n");
-    // TracePrintf(0, "\nbase: %p\nlimit: %p\n", KERNEL_STACK_BASE, KERNEL_STACK_LIMIT);
-    // pcb2.region0 = secondregion0Pt;
+    // TracePrintf(0, "base: %p\nlimit: %p\n", KERNEL_STACK_BASE, KERNEL_STACK_LIMIT);
+    TracePrintf(0, "Allocating and setting up process 2's kernel stack...\n");
+    struct pte region0Pt2[PAGE_TABLE_LEN];
+    int vaddr2;
+    for (vaddr2 = KERNEL_STACK_BASE; vaddr2 < KERNEL_STACK_LIMIT; vaddr2 += PAGESIZE)
+    {
+        int vpn = vaddr2 >> PAGESHIFT; // addr -> page number
+        TracePrintf(0, "vpn: %d vaddr: %p\n", vpn, vaddr2);
 
-    LoadProgram("idle", cmd_args, info, &(pcb1.region0));
+        // TODO: change this Region0pt to be a specific region0pt for the pcb2 (see piazza @130)
+        region0Pt2[vpn].pfn = findFreePage();
+        region0Pt2[vpn].uprot = PROT_NONE;
+        region0Pt2[vpn].kprot = PROT_READ | PROT_WRITE;
+        region0Pt2[vpn].valid = 1;
+    }
+    pcb2->region0 = &region0Pt2[0];
+    pcb2->process_id = next_proc_id;
+    next_proc_id++;
+    TracePrintf(0, "Allocation and setup done.\n");
+
     //TODO: create pcbs for each process. Write a create pcb function to create pcbs and create pcb for idle program?
     // Create init process; need to call this context switch
     //create pcb for init
     
+    // SavedContext *ctxp;
     int res = ContextSwitch(SwitchNewProc, &pcb1->ctx, (void *)pcb1, (void *)pcb2);
-    TracePrintf(0, "Result from ContextSwitch: %d", res);
+    // pcb1->ctx = *ctxp;
+    TracePrintf(0, "Result from ContextSwitch: %d\n", res);
     
-    LoadProgram(cmd_args[0], cmd_args, info, &pcb2.region0);
+    LoadProgram(cmd_args[0], cmd_args, info, pcb1->region0);
 
     // (void) pcb1;
     // (void) pcb2;
@@ -137,24 +159,24 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     return;
 }
 
-struct pte *buildRegion0() {
-    int vaddr;
-    struct pte region_pt[PAGE_TABLE_LEN];
+// struct pte buildRegion0() {
+//     int vaddr2;
+//     struct pte region0Pt2[PAGE_TABLE_LEN];
 
-    for (vaddr = KERNEL_STACK_BASE; vaddr < KERNEL_STACK_LIMIT; vaddr += PAGESIZE)
-    {
-        int vpn = vaddr >> PAGESHIFT; // addr -> page number
-        TracePrintf(0, "vpn: %d vaddr: %p\n", vpn, vaddr);
+//     for (vaddr2 = KERNEL_STACK_BASE; vaddr2 < KERNEL_STACK_LIMIT; vaddr2 += PAGESIZE)
+//     {
+//         int vpn = vaddr2 >> PAGESHIFT; // addr -> page number
+//         TracePrintf(0, "vpn: %d vaddr: %p\n", vpn, vaddr2);
 
-        // TODO: change this Region0pt to be a specific region0pt for the pcb2 (see piazza @130)
-        region_pt[vpn].pfn = findFreePage();
-        region_pt[vpn].uprot = PROT_NONE;
-        region_pt[vpn].kprot = PROT_READ | PROT_WRITE;
-        region_pt[vpn].valid = 1;
-    }
+//         // TODO: change this Region0pt to be a specific region0pt for the pcb2 (see piazza @130)
+//         region0Pt2[vpn].pfn = findFreePage();
+//         region0Pt2[vpn].uprot = PROT_NONE;
+//         region0Pt2[vpn].kprot = PROT_READ | PROT_WRITE;
+//         region0Pt2[vpn].valid = 1;
+//     }
 
-    return &region_pt[0];
-}
+//     return region0Pt2;
+// }
 
 /**
 Build a structure to keep track of what page frames in physical memory are free. 
@@ -196,7 +218,7 @@ void initPT() { //TODO: add this as input struct pte *region0Pt
     unsigned long vaddr;
     //init region 0 page table (see pg 22)
     // TracePrintf(0, "REGION 0\n");
-    // TracePrintf(0, "\nbase: %p\nlimit: %p\n", KERNEL_STACK_BASE, KERNEL_STACK_LIMIT);
+    // TracePrintf(0, "base: %p\nlimit: %p\n", KERNEL_STACK_BASE, KERNEL_STACK_LIMIT);
     for (vaddr = KERNEL_STACK_BASE; vaddr < KERNEL_STACK_LIMIT; vaddr += PAGESIZE) {  
         int page = vaddr >> PAGESHIFT; // addr -> page number
 
@@ -211,7 +233,7 @@ void initPT() { //TODO: add this as input struct pte *region0Pt
     }
     //region 1 setup
     //iterate starting from VMEM_1_Base until the kernel break to establish PTs
-    // TracePrintf(0, "\nbase: %p\nbreak: %p\n", VMEM_1_BASE, currKernelBrk);
+    // TracePrintf(0, "base: %p\nbreak: %p\n", VMEM_1_BASE, currKernelBrk);
     unsigned int brk = (uintptr_t) currKernelBrk;
     for (vaddr = VMEM_1_BASE; vaddr < brk; vaddr += PAGESIZE) {
         int page = (vaddr >> PAGESHIFT) - 512;
@@ -488,7 +510,7 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)/
         return -1;
     }
 
-    TracePrintf(0, "made past virtual memory check\n");
+    TracePrintf(0, "Passed virtual memory check!\n");
     /*
      *  And make sure there will be enough *physical* memory to
      *  load the new program.
@@ -509,7 +531,7 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)/
         close(fd);
         return -1;
     }
-    TracePrintf(0, "made past phsyical memory check\n");
+    TracePrintf(0, "Passed physical memory check!\n");
 
     // >>>> Initialize sp for the current process to (void *)cpp.
     // >>>> The value of cpp was initialized above.
@@ -537,11 +559,9 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)/
                 ptr0[currTable].valid = 0;
 
             }
-            // TracePrintf(0, "made to this4\n");
-            
         }
     }
-    TracePrintf(0, "made to looping over PTEs (line 440)\n");
+    TracePrintf(0, "Freed current Region 0!\n");
     
     /*
      *  Fill in the page table with the right number of text,
@@ -554,10 +574,12 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)/
     // >>>> Leave the first MEM_INVALID_PAGES number of PTEs in the
     // >>>> Region 0 page table unused (and thus invalid)
 
+    TracePrintf(0, "Invalidating MEM_INVALID_PAGES...");
     for (i = 0; i < MEM_INVALID_PAGES; i++) {
         ptr0[i].valid = 0;
         
     }
+    TracePrintf(0, "done\n");
 
     /* First, the text pages */
     // >>>> For the next text_npg number of PTEs in the Region 0
@@ -575,6 +597,8 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)/
         ptr0[textIter].pfn = findFreePage();
         
     }
+    TracePrintf(0, "Text pages setup completed!\n");
+
     /* Then the data and bss pages */
     // >>>> For the next data_bss_npg number of PTEs in the Region 0
     // >>>> page table, initialize each PTE:
@@ -591,6 +615,8 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)/
         
 
     }
+    TracePrintf(0, "Data and BSS pages setup completed!\n");
+
     //TODO: keep track of the top pof the stack here
 
     /* And finally the user stack pages */
@@ -609,6 +635,7 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)/
         ptr0[userIter].uprot = (PROT_READ | PROT_WRITE);
         ptr0[userIter].pfn = findFreePage();
     }
+    TracePrintf(0, "User stack pages setup completed!\n");
 
 
     
@@ -618,7 +645,9 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)/
      *  the TLB to get rid of all the old PTEs from this process, so
      *  we'll be able to do the read() into the new pages below.
      */
+    TracePrintf(0, "Flushing old process' PTEs from Region 0...");
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
+    TracePrintf(0, "done\n");
     
     /*
      *  Read the text and data from the file into memory.
@@ -648,9 +677,10 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)/
         
     }
 
-
+    TracePrintf(0, "Flushing edits to mem_invalid_pages in the new process' Region 0...");
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
-    
+    TracePrintf(0, "done\n");
+
     /*
      *  Zero out the bss
      */
@@ -719,8 +749,7 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)/
 frees a page
 */
 void freePage(int pfn) {
-
+    TracePrintf(0, "Freeing page %d!\n", pfn);
     freePages[pfn] = PAGE_FREE;
     num_free_pages++;
-
 }

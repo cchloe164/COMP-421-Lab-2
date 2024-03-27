@@ -2,14 +2,14 @@
 // //workspace for contextswitch (CC has some changes that are unpushed)
 
 // // context switching from an existing process to a new process
-// SavedContext *SwitchNewProc(SavedContext *ctxp, void *p1, void *p2) {
+// SavedContext *SwitchNewProc(SavedContext *ctx, void *p1, void *p2) {
 //     struct pcb *proc1 = (struct pcb *) p1;
 //     struct pcb *proc2 = (struct pcb *) p2;
 
 //     TracePrintf(0, "Switching from existing process %d to new process %d\n", proc1->process_id, proc2->process_id);
 
 //     // save context of proc 1
-//     proc1->ctx = *ctxp;
+//     proc1->ctx = *ctx;
 
 //     // struct pte new_reg0 = findFreePage();
 //     int page;
@@ -85,12 +85,12 @@
 // }
 
 // // // context switching from an existing process to another existing process
-// // SavedContext *SwitchExist(SavedContext *ctxp, void *p1, void *p2) {
+// // SavedContext *SwitchExist(SavedContext *ctx, void *p1, void *p2) {
 // //     struct pcb *proc1 = (struct pcb *) p1;
 // //     struct pcb *proc2 = (struct pcb *) p2;
 
 // //     // save context of proc 1
-// //     proc1->ctx = ctxp;
+// //     proc1->ctx = ctx;
 
 // //     // flush all entries in region 0 from TLB
 // //     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
@@ -102,7 +102,7 @@
 // // }
 
 // // // context switching to no process, exiting kernal
-// // SavedContext *SwitchNoProc(SavedContext *ctxp, void *p1, void *p2) {
+// // SavedContext *SwitchNoProc(SavedContext *ctx, void *p1, void *p2) {
     
 // //     free(freePages);
 // //     free(interruptVector);
@@ -110,5 +110,5 @@
 // //     (void) p1;
 // //     (void) p2;
 
-// //     return ctxp;
+// //     return ctx;
 // // }

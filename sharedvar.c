@@ -16,7 +16,7 @@ struct pcb { //TODO: I've added a few fields for some of the other functions but
     int kernel_stack;  // first page of kernal stack
     int reg0_pfn; //stores the physical pfn of reg 0
     int brk; //stores the break position of the current process (for brk.c)
-    struct pte *region0; //stores current region 0 pointer
+    struct pte *region0; //stores current region 0
     SavedContext ctx;
 };
 
@@ -33,16 +33,16 @@ struct queue_item *queue_tail;
 struct pcb *curr_proc;
 int queue_size = 0;
 
-//creates pcb
-struct pcb create_pcb(int pid, int kernel_stack, int reg0_pfn, int brk, SavedContext context) {
-    struct pcb new_pcb;
-    new_pcb.process_id = pid;
-    new_pcb.kernel_stack = kernel_stack;
-    new_pcb.reg0_pfn = reg0_pfn;
-    new_pcb.brk = brk;
-    new_pcb.ctx = context;
-    return new_pcb;
-}
+// //creates pcb
+// struct pcb create_pcb(int pid, int kernel_stack, int reg0_pfn, int brk, SavedContext context) {
+//     struct pcb new_pcb;
+//     new_pcb.process_id = pid;
+//     new_pcb.kernel_stack = kernel_stack;
+//     new_pcb.reg0_pfn = reg0_pfn;
+//     new_pcb.brk = brk;
+//     new_pcb.ctx = context;
+//     return new_pcb;
+// }
 
 /**
  * Push new process to queue.
