@@ -96,6 +96,7 @@ int findFreePage()
     {
         if (freePages[page_itr] == PAGE_FREE)
         {
+            TracePrintf(0, "Found free page %d!\n", page_itr);
             freePages[page_itr] = PAGE_USED;
             num_free_pages--;
             return page_itr;

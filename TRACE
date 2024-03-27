@@ -1,36 +1,11 @@
 ** Kernel   level 0 tracing enabled **
 ** User     level 0 tracing enabled **
-Kernel   Starting Kernel...
+Kernel   arr[2] = 3 ord 3Kernel   Starting Kernel...
 Kernel   Setting up interrupt vector table...
 Kernel   Building free pages...
 Kernel   SET currKernelBreak 0x212000 to addr 0x214000 
 Kernel   Finished building free pages
 Kernel   Building page table...
 Kernel   Finished initializing Page Table 
-Kernel   Virtual memory enabled...Kernel   LoadProgram 'idle', args 0x1fffd0
-Kernel   LoadProgram: LoadInfo status 0
-Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
-Kernel   entry 0x10100
-Kernel   LoadProgram: size 6, argcount 1
-Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
-Kernel   made past virtual memory check
-Kernel   made past phsyical memory check
-Kernel   made to looping over PTEs (line 440)
-Kernel   made to this1. argcount is 1
-Kernel   made to this2.
-Kernel   Creating PCB structure...Kernel   done
-Kernel   LoadProgram 'init2', args 0x1fffd0
-Kernel   LoadProgram: LoadInfo status 0
-Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
-Kernel   entry 0x10100
-Kernel   LoadProgram: size 6, argcount 1
-Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
-Kernel   made past virtual memory check
-Kernel   made past phsyical memory check
-Kernel   made to looping over PTEs (line 440)
-Kernel   made to this1. argcount is 1
-Kernel   made to this2.
-Kernel   Creating PCB structure...Kernel   done
-Kernel   Switching from existing process 0 to new process 1
-Kernel   Page 13 is free in Region 0, copying...
-Kernel   made it here with temp 202549920 andfrom 2080768
+Kernel   Virtual memory enabled...
+ABORT: KernelStart returned with bogus info pc of 0x1a in ExceptionInfo!

@@ -63,6 +63,11 @@ SavedContext *SwitchNewProc(SavedContext *ctxp, void *p1, void *p2);
     */
 extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, char **cmd_args)
 {
+    // int arr[5] = {1, 2, 3, 4, 5};
+    // int *a = &arr[0];
+    // TracePrintf(0, "arr[2] = %d ord %d", arr[2], a[2]);
+
+
     TracePrintf(0, "Starting Kernel...\n"); 
     currKernelBrk = orig_brk;
 
@@ -110,22 +115,7 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     //init region 0 page table for init function (PCB2) (Copied from (see pg 22)
     // TracePrintf(0, "REGION 0\n");
     // TracePrintf(0, "\nbase: %p\nlimit: %p\n", KERNEL_STACK_BASE, KERNEL_STACK_LIMIT);
-    int vaddr;
-    struct pte secondregion0Pt[PAGE_TABLE_LEN];
-    for (vaddr = KERNEL_STACK_BASE; vaddr < KERNEL_STACK_LIMIT; vaddr += PAGESIZE) {  
-        int page = vaddr >> PAGESHIFT; // addr -> page number
-
-        // TracePrintf(0, "page: %d addr: %p\n", page, page_itr);
-        //TODO: change this Region0pt to be a specific region0pt for the pcb2 (see piazza @130)
-        secondregion0Pt[page].pfn = page;
-        secondregion0Pt[page].uprot = PROT_NONE;
-        secondregion0Pt[page].kprot = PROT_READ | PROT_WRITE;
-        secondregion0Pt[page].valid = 1;
-        freePages[page] = PAGE_USED; 
-        num_free_pages--;
-
-    }
-    pcb2.region0 = secondregion0Pt;
+    // pcb2.region0 = secondregion0Pt;
 
     LoadProgram("idle", cmd_args, info, &(pcb1.region0));
     //TODO: create pcbs for each process. Write a create pcb function to create pcbs and create pcb for idle program?
@@ -137,9 +127,33 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     
     LoadProgram(cmd_args[0], cmd_args, info, &pcb2.region0);
 
+    // (void) pcb1;
+    // (void) pcb2;
+    // (void) info;
+    // (void) cmd_args;
+
     //TODO: read piazza @130
 
     return;
+}
+
+struct pte *buildRegion0() {
+    int vaddr;
+    struct pte region_pt[PAGE_TABLE_LEN];
+
+    for (vaddr = KERNEL_STACK_BASE; vaddr < KERNEL_STACK_LIMIT; vaddr += PAGESIZE)
+    {
+        int vpn = vaddr >> PAGESHIFT; // addr -> page number
+        TracePrintf(0, "vpn: %d vaddr: %p\n", vpn, vaddr);
+
+        // TODO: change this Region0pt to be a specific region0pt for the pcb2 (see piazza @130)
+        region_pt[vpn].pfn = findFreePage();
+        region_pt[vpn].uprot = PROT_NONE;
+        region_pt[vpn].kprot = PROT_READ | PROT_WRITE;
+        region_pt[vpn].valid = 1;
+    }
+
+    return &region_pt[0];
 }
 
 /**
