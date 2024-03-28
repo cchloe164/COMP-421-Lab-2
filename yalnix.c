@@ -34,8 +34,8 @@ void TrapTTYTransmitHandler(ExceptionInfo *info);
 void buildFreePages(unsigned int pmem_size);
 void initPT();
 int findFreeVirtualPage();
-
-
+void RemoveProcFromReadyQueue(struct pcb *proc);
+void RemoveItemFromReadyQueue(struct queue_item *item);
 int vm_enabled = false;
 void freePage(int pfn);
 int findFreePage();
@@ -55,7 +55,7 @@ extern int TtyRead(int tty_id, void *buf, int len);
 extern int TtyWrite(int tty_id, void *buf, int len);
 SavedContext *SwitchNewProc(SavedContext *ctx, void *p1, void *p2);
 
-
+void RemoveItemFromWaitingQueue(struct queue_item *item);
 /*
     *  This is the primary entry point into the kernel:
     *

@@ -154,7 +154,7 @@ extern int Delay(int clock_ticks) {
     waiting_node->ticks_left = clock_ticks;
     curr_proc->delay_ticks = clock_ticks;
     // TracePrintf(1, "Currentpid %d\n", curr_proc->procfess_id, proc2->process_id);
-
+    RemoveProcFromReadyQueue(curr_proc);
     //keep pcb as a field, next and current, also a counter to know how much to wait for
     // add the item to the waiting queue
     PushItemToWaitingQueue(waiting_node);

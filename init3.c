@@ -17,6 +17,6 @@ main()
     write(0, "init3! testing Delay\n", 6);
     TracePrintf(0, "init2 pid is: %i\n", GetPid());
     Delay(4);
-
+    Delay(2);
     Exit(0);
 }
