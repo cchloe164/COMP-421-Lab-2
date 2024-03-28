@@ -140,6 +140,8 @@ Delay
 */
 extern int Delay(int clock_ticks) {
     //edge cases: clockticks 0; return 0, negative, return error
+
+    TracePrintf(0, "Delay called!\n");
     if (clock_ticks == 0) {
         return 0;
     }
@@ -169,7 +171,6 @@ extern int Delay(int clock_ticks) {
     //currpcb = destpcb
     //return &destpcb->ctx
     // (void)clock_ticks;
-    TracePrintf(0, "Delay called!\n");
     return 0;
 }
 

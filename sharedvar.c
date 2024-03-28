@@ -133,13 +133,13 @@ void RemoveItemFromWaitingQueue(struct queue_item *item) {
 }
 
 /**
- * Push new process to queue.
+ * Push new process to ready queue.
 */
 void PushProcToQueue(struct pcb *proc) {
     // wrap process as new queue item
     struct queue_item new;
     new.proc = proc;
-    new.ticks_left = 2;
+    // new.ticks_left = 2;
 
     // push onto queue
     if (queue_size == 0) {

@@ -83,6 +83,7 @@ Kernel   GetPid: returned 1
 User     init2 pid is: 1
 Kernel   TRAP_KERNEL handler called!
 Kernel   TRAP_KERNEL handler found a delay.
+Kernel   Delay called!
 Kernel   Attempting to set new process from delay call...
 Kernel   Queue is empty right now!
 Kernel   Switching to an existing process, from process 1 to process 0
@@ -132,54 +133,7 @@ Kernel   Current process will keep running!
 Kernel   TRAP_CLOCK handler called!
 Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item!
 Kernel   Item with id 1 delay has expired! now moving to th eready queue
-Kernel   Clock ticks passed: 3
-Kernel   Time limit reached on Process!.
-Kernel   Attempting to set new process...
-Kernel   No ready process on queue.
-Kernel   Current process will keep running!
-Kernel   TRAP_CLOCK handler called!
-Kernel   Clock ticks passed: 4
-Kernel   Time limit reached on Process!.
-Kernel   Attempting to set new process...
-Kernel   Popped Process -2080619127 and added Process 0 back onto queue.
-Kernel   Clock ticks reset!
-Kernel   TRAP_CLOCK handler called!
-Kernel   Clock ticks passed: 0
-Kernel   TRAP_CLOCK handler called!
-Kernel   Clock ticks passed: 1
-Kernel   TRAP_CLOCK handler called!
-Kernel   Clock ticks passed: 2
-Kernel   Time limit reached on Process!.
-Kernel   Attempting to set new process...
-Kernel   No ready process on queue.
-Kernel   Current process will keep running!
-Kernel   TRAP_CLOCK handler called!
-Kernel   Clock ticks passed: 3
-Kernel   Time limit reached on Process!.
-Kernel   Attempting to set new process...
-Kernel   No ready process on queue.
-Kernel   Current process will keep running!
-Kernel   TRAP_CLOCK handler called!
-Kernel   Clock ticks passed: 4
-Kernel   Time limit reached on Process!.
-Kernel   Attempting to set new process...
-Kernel   No ready process on queue.
-Kernel   Current process will keep running!
-Kernel   TRAP_CLOCK handler called!
-Kernel   Clock ticks passed: 5
-Kernel   Time limit reached on Process!.
-Kernel   Attempting to set new process...
-Kernel   No ready process on queue.
-Kernel   Current process will keep running!
-Kernel   TRAP_CLOCK handler called!
-Kernel   Clock ticks passed: 6
-Kernel   Time limit reached on Process!.
-Kernel   Attempting to set new process...
-Kernel   No ready process on queue.
-Kernel   Current process will keep running!
-Kernel   TRAP_CLOCK handler called!
-Kernel   Clock ticks passed: 7
-Kernel   Time limit reached on Process!.
-Kernel   Attempting to set new process...
-Kernel   No ready process on queue.
-Kernel   Current process will keep running!
+Kernel   Switching to an existing process, from process 0 to process 1
+Kernel   TRAP_KERNEL handler called!
+Kernel   TRAP_KERNEL handler found a exit.
+Kernel   Exit called!

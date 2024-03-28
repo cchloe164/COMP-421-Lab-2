@@ -5,6 +5,7 @@
 //TODO: idk if I have to do this
 extern void Tick_();
 extern int GetPid_(struct pcb *info);
+SavedContext *SwitchExist(SavedContext *ctx, void *p1, void *p2);
 /* HANDLERS */
 
 /**
@@ -100,6 +101,7 @@ void TrapClockHandler(ExceptionInfo *info)
             RemoveItemFromWaitingQueue(curr_proc_item);
             PushProcToQueue(current_proc);
             // procs_deleted += 1;//question here: do we update the queue size here or later? 
+            ContextSwitch(SwitchExist, &curr_proc->ctx, (void *)curr_proc, (void *)current_proc);
         }
         curr_proc_item = curr_proc_item->next;
     }
