@@ -2,7 +2,9 @@
 
 #include "delay.c"
 // #include "brk.c"
-
+//TODO: idk if I have to do this
+extern void Tick_();
+extern int GetPid_(struct pcb *info);
 /* HANDLERS */
 
 /**
@@ -22,41 +24,49 @@ void TrapKernelHandler(ExceptionInfo *info)
      * through this single type of trap.
      */
     TracePrintf(0, "TRAP_KERNEL handler called!\n");
-    // if (info->code == YALNIX_FORK) {
-    //     info->regs[0] = Fork();
-    // }
-    // else if (info->code == YALNIX_EXEC)
-    // {
-    //     info->regs[0] = Exec((char *) info->regs[1], (char **)info->regs[2]);
-    // }
-    // else if (info->code == YALNIX_EXIT)
-    // {
-    //     Exit(0);
-    // }
-    // else if (info->code == YALNIX_WAIT)
-    // {
-    //     info->regs[0] = Wait((int *) info->regs[1]);
-    // }
-    // else if (info->code == YALNIX_GETPID)
-    // {
-    //     info->regs[0] = GetPid();
-    // }
-    // else if (info->code == YALNIX_BRK)
-    // {
-    //     info->regs[0] = Brk((void *) info->regs[1]);
-    // }
-    // else if (info->code == YALNIX_DELAY)
-    // {
-    //     info->regs[0] = Delay(info->regs[1]);
-    // }
-    // else if (info->code == YALNIX_TTY_READ)
-    // {
-    //     info->regs[0] = TtyRead(info->regs[1], (void *) info->regs[2], info->regs[3]);
-    // }
-    // else if (info->code == YALNIX_TTY_WRITE)
-    // {
-    //     info->regs[0] = TtyWrite(info->regs[1], (void *) info->regs[2], info->regs[3]);
-    // }
+    if (info->code == YALNIX_FORK) {
+        TracePrintf(0, "TRAP_KERNEL handler found a fork.\n");
+        info->regs[0] = Fork();
+    }
+    else if (info->code == YALNIX_EXEC)
+    {
+        TracePrintf(0, "TRAP_KERNEL handler found a exec.\n");
+        info->regs[0] = Exec((char *) info->regs[1], (char **)info->regs[2]);
+    }
+    else if (info->code == YALNIX_EXIT)
+    {
+        TracePrintf(0, "TRAP_KERNEL handler found a exit.\n");
+        Exit(0);
+    }
+    else if (info->code == YALNIX_WAIT)
+    {
+        TracePrintf(0, "TRAP_KERNEL handler found a wait.\n");
+        info->regs[0] = Wait((int *) info->regs[1]);
+    }
+    else if (info->code == YALNIX_GETPID)
+    {
+        TracePrintf(0, "TRAP_KERNEL handler found a getpid.\n");
+        TracePrintf(0, "currproc: %d\n", curr_proc->process_id);
+        info->regs[0] = GetPid_(curr_proc);
+        
+    }
+    else if (info->code == YALNIX_BRK)
+    {
+        TracePrintf(0, "TRAP_KERNEL handler found a brk.\n");
+        info->regs[0] = Brk((void *) info->regs[1]);
+    }
+    else if (info->code == YALNIX_DELAY)
+    {   TracePrintf(0, "TRAP_KERNEL handler found a delay.\n");
+        info->regs[0] = Delay(info->regs[1]);
+    }
+    else if (info->code == YALNIX_TTY_READ)
+    {
+        info->regs[0] = TtyRead(info->regs[1], (void *) info->regs[2], info->regs[3]);
+    }
+    else if (info->code == YALNIX_TTY_WRITE)
+    {
+        info->regs[0] = TtyWrite(info->regs[1], (void *) info->regs[2], info->regs[3]);
+    }
     (void)info;
 };
 

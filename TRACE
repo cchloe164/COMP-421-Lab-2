@@ -3,7 +3,7 @@
 Kernel   Starting Kernel...
 Kernel   Setting up interrupt vector table...
 Kernel   Building free pages...
-Kernel   SET currKernelBreak 0x212000 to addr 0x214000 
+Kernel   SET currKernelBreak 0x213000 to addr 0x215000 
 Kernel   Finished building free pages
 Kernel   Building page table...
 Kernel   Finished initializing Page Table 
@@ -545,20 +545,20 @@ Kernel   ksb 508Kernel   vpn2: 510 vaddr: 0x1fe000
 Kernel   ksb 508Kernel   vpn2: 511 vaddr: 0x1ff000
 Kernel   ksb 508Kernel   Allocation and setup done.
 Kernel   Switching from existing process 0 to new process 1
-Kernel   Copying source page 508 to dest page 20...
-Kernel   dest addr: 0x214000	source addr: 0x1fc000
+Kernel   Copying source page 508 to dest page 21...
+Kernel   dest addr: 0x215000	source addr: 0x1fc000
 Kernel   dest pfn: 12
 Kernel   done
-Kernel   Copying source page 509 to dest page 20...
-Kernel   dest addr: 0x214000	source addr: 0x1fd000
+Kernel   Copying source page 509 to dest page 21...
+Kernel   dest addr: 0x215000	source addr: 0x1fd000
 Kernel   dest pfn: 13
 Kernel   done
-Kernel   Copying source page 510 to dest page 20...
-Kernel   dest addr: 0x214000	source addr: 0x1fe000
+Kernel   Copying source page 510 to dest page 21...
+Kernel   dest addr: 0x215000	source addr: 0x1fe000
 Kernel   dest pfn: 14
 Kernel   done
-Kernel   Copying source page 511 to dest page 20...
-Kernel   dest addr: 0x214000	source addr: 0x1ff000
+Kernel   Copying source page 511 to dest page 21...
+Kernel   dest addr: 0x215000	source addr: 0x1ff000
 Kernel   dest pfn: 15
 Kernel   done
 Kernel   r0 vpn: 1012
@@ -569,7 +569,7 @@ Kernel   index 1012 created
 Kernel   Region 1 entry 500
 Kernel   phys_addr pfn 1012 created
 Kernel   Result from ContextSwitch: 0
-Kernel   LoadProgram 'init2', args 0x1fffd0
+Kernel   LoadProgram 'init3', args 0x1fffd0
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
 Kernel   entry 0x10100
@@ -1101,6 +1101,136 @@ Kernel   made to this1. argcount is 1
 Kernel   made to this2.
 Kernel   DID WE GET HERE? done contextswitching (second load program)
 Kernel   TRAP_KERNEL handler called!
-User     init2 pid is: 1057
+Kernel   TRAP_KERNEL handler found a getpid.
+Kernel   currproc: 1
+Kernel   GetPid: returned 1
+User     init2 pid is: 1
 Kernel   TRAP_KERNEL handler called!
-Kernel   TRAP_MEMORY handler called!
+Kernel   TRAP_KERNEL handler found a delay.
+Kernel   Attempting to set new process from delay call...
+Kernel   Queue is empty right now!
+Kernel   Switching to an existing process, from process 1 to process 0
+Kernel   Result from ContextSwitch: 0
+Kernel   LoadProgram 'init3', args 0x1fffd0
+Kernel   LoadProgram: LoadInfo status 0
+Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
+Kernel   entry 0x10100
+Kernel   LoadProgram: size 6, argcount 1
+Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
+Kernel   Passed virtual memory check!
+Kernel   Passed physical memory check!
+Kernel   Freeing page 16!
+Kernel   Freeing page 17!
+Kernel   Freeing page 18!
+Kernel   Freeing page 19!
+Kernel   Freeing page 20!
+Kernel   Freeing page 21!
+Kernel   Freeing page 22!
+Kernel   Freeing page 23!
+Kernel   Freeing page 24!
+Kernel   Freeing page 25!
+Kernel   Freeing page 26!
+Kernel   Freeing page 27!
+Kernel   Freed current Region 0!
+Kernel   Invalidating MEM_INVALID_PAGES...Kernel   done1
+Kernel   Text pages setup completed!
+Kernel   Data and BSS pages setup completed!
+Kernel   User stack pages setup completed!
+Kernel   Flushing old process' PTEs from Region 0...
+Kernel   done Flushing 0
+Kernel   LoadProgram: couldn't read for 'init3'
+Kernel   DID WE GET HERE? done contextswitching (second load program)
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 0
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 1
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 2
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 3
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 4
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 5
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 6
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 7
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 8
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 9
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 10
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 11
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 12
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 13
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 14
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 15
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 16
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!

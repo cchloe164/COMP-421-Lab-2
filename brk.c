@@ -1,4 +1,4 @@
-
+void freePage(int pfn);
 int Brk(void *addr){
     TracePrintf(0, "BREAK CALLED!");
     int roundedBrk = UP_TO_PAGE(addr) >> PAGESHIFT;
@@ -9,7 +9,7 @@ int Brk(void *addr){
     //move down case: 
     if (roundedBrk < curr_proc->brk && roundedBrk >= MEM_INVALID_PAGES) {
         TracePrintf(0, "Break moving down the current break position\n");
-        int pgs_down = current_pcb->brk - roundedBrk;
+        int pgs_down = curr_proc->brk - roundedBrk;
         int i;
         for (i = 0; i < pgs_down; i++) {
             //free the page
@@ -19,7 +19,7 @@ int Brk(void *addr){
         curr_proc->brk = roundedBrk;
         return 0;
 
-    } else if (roundedBrk >= curr_proc->brk && roundedBrk < curr_proc->userStack) { //check to make sure it doesn't hit the user stack
+    } else if (roundedBrk >= curr_proc->brk) { //TOOD:  && roundedBrk < curr_proc->userStack check to make sure it doesn't hit the user stack
         int pgs_up = roundedBrk - curr_proc->brk;
         int i;
         for (i = 0; i < pgs_up; i++) {

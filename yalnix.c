@@ -14,8 +14,10 @@
 #include "sharedvar.c"
 #include "handlers.c"
 #include "contextswitch.c"
+#include "delay.c"
 // #include "contextswitch2.c"
 #include "getpid.c"
+#include "brk.c"
 
 void *tty_buf; // buffer in virtual memory region 1
 // struct pte region0Pt[PAGE_TABLE_LEN], region1Pt[PAGE_TABLE_LEN]; // page table pointers
@@ -46,7 +48,7 @@ extern int Fork(void);
 extern int Exec(char *filename, char **argvec);
 extern void Exit(int status) __attribute__ ((noreturn));;
 extern int Wait(int *status_ptr);
-// extern int GetPid_(void);
+extern int GetPid_(struct pcb *info);
 extern int Brk(void *addr);
 extern int Delay(int clock_ticks);
 extern int TtyRead(int tty_id, void *buf, int len);
@@ -118,7 +120,7 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     next_proc_id++;
     LoadProgram("idle", cmd_args, info, pcb1->region0);
 
-    
+    idle_pcb = pcb1;
     //init region 0 page table for init function (PCB2) (Copied from (see pg 22)
     // TracePrintf(0, "REGION 0\n");
     // TracePrintf(0, "base: %p\nlimit: %p\n", KERNEL_STACK_BASE, KERNEL_STACK_LIMIT);
@@ -727,9 +729,9 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)/
     int z;
     for (z = 0; z < PAGE_TABLE_LEN ; z++) {
         if (ptr0[z].valid == 1) {
-            TracePrintf(1, "PageTables tracing: entry %d contains PFN %d. \n", z, ptr0[z].pfn);
+            TracePrintf(2, "PageTables tracing: entry %d contains PFN %d. \n", z, ptr0[z].pfn);
         } else {
-            TracePrintf(1, "PageTables tracing: entry %d is invalid/empty. \n", z);
+            TracePrintf(2, "PageTables tracing: entry %d is invalid/empty. \n", z);
         }
     }
     /*

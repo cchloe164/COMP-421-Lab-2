@@ -39,6 +39,7 @@ struct queue_item *queue_head;
 struct queue_item *queue_tail;
 
 struct pcb *curr_proc;
+struct pcb *idle_pcb;
 int queue_size = 0;
 int waiting_queue_size = 0;
 
@@ -59,19 +60,38 @@ struct pcb create_pcb(int pid, int kernel_stack, int reg0_pfn, int brk, SavedCon
 */
 void PushProcToWaitingQueue(struct pcb *proc) {
     // wrap process as new queue item
-    struct queue_item new;
-    new.proc = proc;
-    new.ticks_left = proc->delay_ticks;
-    new.next = NULL; // no next process (this is useful for the trapclock handler)
+    struct queue_item *new = malloc(sizeof(struct queue_item));
+    new->proc = proc;
+    new->ticks_left = proc->delay_ticks;
+    new->next = NULL; // no next process (this is useful for the trapclock handler)
 
     // push onto queue
     if (waiting_queue_size == 0) {
-        queue_head = &new;
+        queue_head = new;
         queue_tail = queue_head;
     } else {
-        queue_tail->next = &new;
-        new.prev = queue_tail;
-        queue_tail = &new;
+        queue_tail->next = new;
+        new->prev = queue_tail;
+        queue_tail = new;
+    }
+    waiting_queue_size++;
+}
+
+/**
+ * Push new process to waiting queue.
+*/
+void PushItemToWaitingQueue(struct queue_item *new) {
+    // wrap process as new queue item
+    new->next = NULL; // no next process (this is useful for the trapclock handler)
+
+    // push onto queue
+    if (waiting_queue_size == 0) {
+        queue_head = new;
+        queue_tail = queue_head;
+    } else {
+        queue_tail->next = new;
+        new->prev = queue_tail;
+        queue_tail = new;
     }
     waiting_queue_size++;
 }
@@ -131,7 +151,19 @@ void PushProcToQueue(struct pcb *proc) {
     }
     queue_size++;
 }
-
+/**
+ * Find a ready proc, or idle if none on the queue
+*/
+struct pcb * FindReadyPcb() { //TODO: this procedure gets used by delay to find another pcb to switch to
+    TracePrintf(0, "Attempting to set new process from delay call...\n");
+    if (queue_size == 0) {//TODO: check if this is 1? maybe
+        TracePrintf(0, "Queue is empty right now!\n");
+        return idle_pcb; 
+    } else {
+        TracePrintf(0, "Found a ready process to switch to for delay!.\n", queue_head->proc->process_id, curr_proc->process_id);
+        return queue_head->proc;//TODO: might be switching to itself? 
+    }
+}
 /**
  * Assign next ready available process to next_proc and return 1 if successful. 
  * Otherwise, return 0 if none are ready and -1 if queue is empty.

@@ -84,27 +84,40 @@ SavedContext *SwitchNewProc(SavedContext *ctxp, void *p1, void *p2)
     
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
     TracePrintf(2, "Page Table vpnn 468 pfn: %d\tvalid: %d\n", proc2->region0[468].pfn, proc2->region0[468].valid);
-    
+    curr_proc = proc2;
     // return the ctx
     return &proc2->ctx;
 }
+//-make a new switch function ()
 
-// // // context switching from an existing process to another existing process
-// // SavedContext *SwitchExist(SavedContext *ctx, void *p1, void *p2) {
-// //     struct pcb *proc1 = (struct pcb *) p1;
-// //     struct pcb *proc2 = (struct pcb *) p2;
+    //new switch function:
+    //writeregister regptr0, (rcs421) destpcb ->reg0pt
+    //writeregister(flush, flush all)
+    //currpcb = destpcb
+    //return &destpcb->ctx
+// context switching from an existing process to another existing process
+SavedContext *SwitchExist(SavedContext *ctx, void *p1, void *p2) {
 
-// //     // save context of proc 1
-// //     proc1->ctx = ctx;
+    struct pcb *proc1 = (struct pcb *) p1;
+    struct pcb *proc2 = (struct pcb *) p2;
 
-// //     // flush all entries in region 0 from TLB
-// //     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
+    TracePrintf(0, "Switching to an existing process, from process %d to process %d\n", proc1->process_id, proc2->process_id);
+    // save context of proc 1
+    proc1->ctx = *ctx;
 
-// //     // redirect current region 0 pointer to new process
-// //     WriteRegister(REG_PTR0, (RCS421RegVal) proc2->kernel_stack);
+    // flush all entries in region 0 from TLB
+    WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
 
-// //     return proc2->ctx;
-// // }
+    // redirect current region 0 pointer to new process
+    WriteRegister(REG_PTR0, (RCS421RegVal) proc2->region0);
+
+    curr_proc = p2;
+
+    WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_ALL);
+
+    return &proc2->ctx;
+}
+
 
 // // // context switching to no process, exiting kernal
 // // SavedContext *SwitchNoProc(SavedContext *ctx, void *p1, void *p2) {
@@ -117,3 +130,71 @@ SavedContext *SwitchNewProc(SavedContext *ctxp, void *p1, void *p2)
 
 // //     return ctx;
 // // }
+
+//cropped from other file since I couldn't figure out access things
+// #include "contextswitch.c"
+int ticks_passed = 0;
+
+/**
+Delay
+*/
+extern int Delay(int clock_ticks) {
+    //edge cases: clockticks 0; return 0, negative, return error
+    if (clock_ticks == 0) {
+        return 0;
+    }
+    if (clock_ticks < 0) {
+        return ERROR;
+    }
+    
+    //create a waiting node, add this to the waiting queue (malloc it)
+    struct queue_item *waiting_node = malloc(sizeof(struct queue_item));
+    waiting_node->proc = curr_proc;
+    waiting_node->ticks_left = clock_ticks;
+    curr_proc->delay_ticks = clock_ticks;
+    // TracePrintf(1, "Currentpid %d\n", curr_proc->procfess_id, proc2->process_id);
+
+    //keep pcb as a field, next and current, also a counter to know how much to wait for
+    // add the item to the waiting queue
+    PushItemToWaitingQueue(waiting_node);
+    ///could have a global clock var that keeps track of time, but i think it might be better to have timers that decerase for each process
+    struct pcb *next_pcb = FindReadyPcb();
+    (void)next_pcb;
+    ContextSwitch(SwitchExist, &curr_proc->ctx, (void *)curr_proc, (void *)idle_pcb);//TODO: Change this to be next_pcb when FindReadyPcb is done
+    //-make a new switch function ()
+
+    //new switch function:
+    //writeregister regptr0, (rcs421) destpcb ->reg0pt
+    //writeregister(flush, flush all)
+    //currpcb = destpcb
+    //return &destpcb->ctx
+    // (void)clock_ticks;
+    TracePrintf(0, "Delay called!\n");
+    return 0;
+}
+
+/**
+ * Your Yalnix kernel should implement round-robin process scheduling with a time
+ * quantum per process of 2 clock ticks. After the current process has been running as the current
+ * process continuously for at least 2 clock ticks, if there are other runnable processes on the ready
+ * queue, perform a context switch to the next runnable process.
+ */
+extern void Tick_() {
+    TracePrintf(0, "Clock ticks passed: %d\n", ticks_passed);
+    ticks_passed++;
+
+    if (ticks_passed > 2) { // check if current process should be switched out
+        // TracePrintf(0, "Time limit reached on Process %d!.\n", curr_proc->process_id);
+        TracePrintf(0, "Time limit reached on Process!.\n");
+        int res = SetNextProc();
+        if (res == 1) {
+            TracePrintf(0, "Clock ticks reset!\n");
+            ticks_passed = 0; // reset timer
+        } else {
+            TracePrintf(0, "Current process will keep running!\n");
+        }
+    }
+}
+
+
+
