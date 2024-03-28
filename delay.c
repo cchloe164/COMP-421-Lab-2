@@ -4,15 +4,15 @@ int ticks_passed = 0;
 Delay
 */
 extern int Delay(int clock_ticks) {
-    //edge cases: 0; return 0, negative, return error
+    //edge cases: clockticks 0; return 0, negative, return error
     //create a waiting node, add this to the waiting queue (malloc it)
     //keep pcb as a field, next and current, also a counter to know how much to wait for
     //
-    ///they have a global clock var that keeps track of time
+    ///could have a global clock var that keeps track of time, but i think it might be better to have timers that decerase for each process
     //contextswitch(normalswitchfunc, &currpcb->cs, (void *)currPcb, (void *idlePcb);
     //-make a new switch function ()
 
-    //new switch function
+    //new switch function:
     //writeregister regptr0, (rcs421) destpcb ->reg0pt
     //writeregister(flush, flush all)
     //currpcb = destpcb

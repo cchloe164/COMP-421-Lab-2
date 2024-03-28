@@ -75,8 +75,9 @@ void TrapClockHandler(ExceptionInfo *info)
     //start with a dummy head. iterate through and go until you get back to the dummy head. 
     struct queue_item *curr_proc_item = waiting_queue_head; //current item in the queue. iterate throug them all
     //TODO: add a dummy to the tail of the queue or wait until null
-    int procs_deleted = 0;
+    // int procs_deleted = 0;
     // int i;
+    TracePrintf(0, "TRAP_CLOCK handler called!\n");
     while (curr_proc_item != NULL) {
         curr_proc = curr_proc_item->proc;
         
@@ -85,11 +86,10 @@ void TrapClockHandler(ExceptionInfo *info)
         if (curr_proc->delay_ticks <= 0) { // the process is done waiting; remove it from the delay queue and put it on the ready queue
             RemoveItemFromWaitingQueue(curr_proc_item);
             PushProcToQueue(curr_proc);
-            procs_deleted += 1;//question here: do we update the queue size here or later? 
+            // procs_deleted += 1;//question here: do we update the queue size here or later? 
         }
-        curr_proc_item = waiting_queue_head->next;
+        curr_proc_item = curr_proc_item->next;
     }
-    TracePrintf(0, "TRAP_CLOCK handler called!\n");
     Tick_();
 
     (void)info;
