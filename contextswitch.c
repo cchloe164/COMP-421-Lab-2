@@ -81,6 +81,7 @@ SavedContext *SwitchNewProc(SavedContext *ctxp, void *p1, void *p2)
     // WriteRegister(REG_PTR0, (RCS421RegVal)newR0paddr);
     WriteRegister(REG_PTR0, (RCS421RegVal)phys_addr);
     TracePrintf(2, "Page Table vpnn 508 pfn: %d\tvalid: %d\n", proc2->region0[508].pfn, proc2->region0[508].valid);
+    
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
     TracePrintf(2, "Page Table vpnn 468 pfn: %d\tvalid: %d\n", proc2->region0[468].pfn, proc2->region0[468].valid);
     

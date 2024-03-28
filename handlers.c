@@ -65,13 +65,35 @@ void TrapKernelHandler(ExceptionInfo *info)
  * in order to avoid using up too much real CPU time on the shared CLEAR hardware systems.
  */
 void TrapClockHandler(ExceptionInfo *info)
-{
+{   //Notes from justin's group
+    //have a queue: ready queue and delay queue. Delay system call sets in pcb a field for delay. here, iterate through the delay queue and decrement the pcb delay field. 
+    //also for delay, when adding from ready queue to delay queue, context switch to a ready process
+    //also here in TrapClockHandler, have to do the Tick_ for the current active process (after doing the delay handling)
     
+    //Iterate through the delay queue and decrement the clock ticks in the pcb field (could change this to a field in the queue objs)
+    //start with a dummy head. iterate through and go until you get back to the dummy head. 
+    struct queue_item *curr_proc_item = waiting_queue_head; //current item in the queue. iterate throug them all
+    //TODO: add a dummy to the tail of the queue or wait until null
+    int procs_deleted = 0;
+    // int i;
+    while (curr_proc_item != NULL) {
+        curr_proc = curr_proc_item->proc;
+        
+        int ticks_left = curr_proc->delay_ticks;
+        curr_proc->delay_ticks = ticks_left - 1; //tick it down
+        if (curr_proc->delay_ticks <= 0) { // the process is done waiting; remove it from the delay queue and put it on the ready queue
+            RemoveItemFromWaitingQueue(curr_proc_item);
+            PushProcToQueue(curr_proc);
+            procs_deleted += 1;//question here: do we update the queue size here or later? 
+        }
+        curr_proc_item = waiting_queue_head->next;
+    }
     TracePrintf(0, "TRAP_CLOCK handler called!\n");
     Tick_();
 
     (void)info;
 };
+
 
 /**
  * This type of exception results from the execution of an illegal instruction by the
@@ -191,7 +213,7 @@ void TrapMemoryHandler(ExceptionInfo *info)
     //         printf("Code not found.");
     //     }
 
-    //     Halt();
+        Halt();
     // }
     (void)info;
 };

@@ -1,3 +1,5 @@
+
+
 #include <comp421/hardware.h>
 
 #define PAGE_FREE 0
@@ -16,33 +18,99 @@ struct pcb { //TODO: I've added a few fields for some of the other functions but
     int kernel_stack;  // first page of kernal stack
     int reg0_pfn; //stores the physical pfn of reg 0
     int brk; //stores the break position of the current process (for brk.c)
-    struct pte *region0; //stores current region 0
+    struct pte *region0; //stores current region 0 pointer
     SavedContext ctx;
+    
+    int delay_ticks; // the amount of ticks remaining if the process is Delayed
 };
 
 // an informal round-robin queue based on clock ticks
 struct queue_item {
+    struct queue_item *prev; // for waiting queue only; ready queue is only one direction link
     struct pcb *proc;
     int ticks_left;
     struct queue_item *next;
 };
+
+struct queue_item *waiting_queue_head;
+struct queue_item *waiting_queue_tail;
 
 struct queue_item *queue_head;
 struct queue_item *queue_tail;
 
 struct pcb *curr_proc;
 int queue_size = 0;
+int waiting_queue_size = 0;
 
-// //creates pcb
-// struct pcb create_pcb(int pid, int kernel_stack, int reg0_pfn, int brk, SavedContext context) {
-//     struct pcb new_pcb;
-//     new_pcb.process_id = pid;
-//     new_pcb.kernel_stack = kernel_stack;
-//     new_pcb.reg0_pfn = reg0_pfn;
-//     new_pcb.brk = brk;
-//     new_pcb.ctx = context;
-//     return new_pcb;
-// }
+//creates pcb
+struct pcb create_pcb(int pid, int kernel_stack, int reg0_pfn, int brk, SavedContext context, int delay_ticks) {
+    struct pcb new_pcb;
+    new_pcb.process_id = pid;
+    new_pcb.kernel_stack = kernel_stack;
+    new_pcb.reg0_pfn = reg0_pfn;
+    new_pcb.brk = brk;
+    new_pcb.ctx = context;
+    new_pcb.delay_ticks = delay_ticks;
+    return new_pcb;
+}
+
+/**
+ * Push new process to waiting queue.
+*/
+void PushProcToWaitingQueue(struct pcb *proc) {
+    // wrap process as new queue item
+    struct queue_item new;
+    new.proc = proc;
+    new.ticks_left = proc->delay_ticks;
+    new.next = NULL; // no next process (this is useful for the trapclock handler)
+
+    // push onto queue
+    if (waiting_queue_size == 0) {
+        queue_head = &new;
+        queue_tail = queue_head;
+    } else {
+        queue_tail->next = &new;
+        new.prev = queue_tail;
+        queue_tail = &new;
+    }
+    waiting_queue_size++;
+}
+
+/**
+ * remove a queue item from the waiting queue.
+*/
+
+void RemoveItemFromWaitingQueue(struct queue_item *item) {
+    waiting_queue_size--;
+    
+
+    // Case 1: If the item is the only item in the queue
+    if (waiting_queue_head == item && waiting_queue_tail == item) {
+        waiting_queue_head = NULL;
+        waiting_queue_tail = NULL;
+    } else {
+        // Case 2: If the item is the head of the queue
+        if (waiting_queue_head == item) {
+            waiting_queue_head = item->next;
+            waiting_queue_head->prev = NULL;
+        } else {
+            // Case 3: If the item is the tail of the queue
+            if (waiting_queue_tail == item) {
+                waiting_queue_tail = item->prev;
+                waiting_queue_tail->next = NULL;
+            } else {
+                // Case 4: If the item is somewhere in the middle of the queue
+                item->prev->next = item->next;
+                item->next->prev = item->prev;
+            }
+        }
+    }
+
+    // Free memory allocated to the removed item
+    // free((void *)item);
+
+
+}
 
 /**
  * Push new process to queue.
@@ -96,7 +164,6 @@ int findFreePage()
     {
         if (freePages[page_itr] == PAGE_FREE)
         {
-            TracePrintf(0, "Found free page %d!\n", page_itr);
             freePages[page_itr] = PAGE_USED;
             num_free_pages--;
             return page_itr;

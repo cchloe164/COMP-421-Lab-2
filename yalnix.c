@@ -31,6 +31,7 @@ void TrapTTYReceiveHandler(ExceptionInfo *info);
 void TrapTTYTransmitHandler(ExceptionInfo *info);
 void buildFreePages(unsigned int pmem_size);
 void initPT();
+int findFreeVirtualPage();
 
 
 int vm_enabled = false;
@@ -131,14 +132,14 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     TracePrintf(0, "Page Table adddress %p pfn:\n", &region0Pt2);
     //go into Region1[&region0pt2 >> PAGESHIFT]
     //set pfn = findFreePage() offsetof()
-
-    region1Pt[500].valid = 1;
-    region1Pt[500].kprot = PROT_READ | PROT_WRITE;
-    region1Pt[500].uprot = PROT_NONE;
-    region1Pt[500].pfn = PAGE_TABLE_LEN + 500;
+    unsigned long virtualPage = findFreeVirtualPage(); // find a free virtual page. Use this to store the address to the new Region 0.
+    region1Pt[virtualPage].valid = 1;
+    region1Pt[virtualPage].kprot = PROT_READ | PROT_WRITE;
+    region1Pt[virtualPage].uprot = PROT_NONE;
+    region1Pt[virtualPage].pfn = PAGE_TABLE_LEN + virtualPage;
 
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_ALL);
-    pcb2->region0 = (struct pte *)((PAGE_TABLE_LEN + 500) << PAGESHIFT);
+    pcb2->region0 = (struct pte *)((PAGE_TABLE_LEN + virtualPage) << PAGESHIFT); // set it equal to the address
     // pcb2->ctx = (struct SavedContext *)malloc(sizeof(SavedContext));
     // pcb1->ctx = (struct SavedContext *)malloc(sizeof(SavedContext));
     // TracePrintf(0, "ctx vpn = %d\n", (unsigned long) (&pcb2->ctx) >> PAGESHIFT);
@@ -146,27 +147,27 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     // TracePrintf(0, "ctx vpn = %p\n", &pcb2->ctx);
 
     
-    TracePrintf(0, "Page Table vpn 469 pfn: %d\tvalid: %d\n", region0Pt2[469].pfn, region0Pt2[469].valid);
+    TracePrintf(3, "Page Table vpn 469 pfn: %d\tvalid: %d\n", region0Pt2[469].pfn, region0Pt2[469].valid);
     // TracePrintf(0, "Page Table vpn 468 pfn: %d\tvalid: %d\n", pcb2->region0[468].pfn, pcb2->region0[468].valid);
-    int vaddr2;
-    for (vaddr2 = KERNEL_STACK_BASE; vaddr2 < KERNEL_STACK_LIMIT; vaddr2 += PAGESIZE)
-    {
-        int vpn = vaddr2 >> PAGESHIFT; // addr -> page number
-        TracePrintf(0, "vpn: %d vaddr: %p\n", vpn, vaddr2);
+    // int vaddr2;
+    // for (vaddr2 = KERNEL_STACK_BASE; vaddr2 < KERNEL_STACK_LIMIT; vaddr2 += PAGESIZE)
+    // {
+    //     int vpn = vaddr2 >> PAGESHIFT; // addr -> page number
+    //     TracePrintf(0, "vpn: %d vaddr: %p\n", vpn, vaddr2);
 
-        // TODO: change this Region0pt to be a specific region0pt for the pcb2 (see piazza @130)
-        region0Pt2[vpn].pfn = findFreePage();
-        region0Pt2[vpn].uprot = PROT_NONE;
-        region0Pt2[vpn].kprot = PROT_READ | PROT_WRITE;
-        region0Pt2[vpn].valid = 1;
-    }
+    //     // TODO: change this Region0pt to be a specific region0pt for the pcb2 (see piazza @130)
+    //     region0Pt2[vpn].pfn = findFreePage();
+    //     region0Pt2[vpn].uprot = PROT_NONE;
+    //     region0Pt2[vpn].kprot = PROT_READ | PROT_WRITE;
+    //     region0Pt2[vpn].valid = 1;
+    // }
     // pcb2->region0 = &region0Pt2[0];
     
     int vaddr3;
     for (vaddr3 = KERNEL_STACK_BASE; vaddr3 < KERNEL_STACK_LIMIT; vaddr3 += PAGESIZE)
     {
         int vpn = vaddr3 >> PAGESHIFT; // addr -> page number
-        TracePrintf(0, "vpn2: %d vaddr: %p\n", vpn, vaddr2);
+        TracePrintf(0, "vpn2: %d vaddr: %p\n", vpn, vaddr3);
 
         // TODO: change this Region0pt to be a specific region0pt for the pcb2 (see piazza @130)
         pcb2->region0[vpn].pfn = findFreePage();
@@ -192,8 +193,8 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     // pcb1->ctx = *ctxp;
     TracePrintf(0, "Result from ContextSwitch: %d\n", res);
     
-    LoadProgram(cmd_args[0], cmd_args, info, pcb1->region0);
-    TracePrintf(0, "DID WE GET HERE?\n");
+    LoadProgram(cmd_args[0], cmd_args, info, pcb2->region0);
+    TracePrintf(0, "DID WE GET HERE? done contextswitching (second load program)\n");
     // (void) pcb1;
     // (void) pcb2;
     // (void) info;
@@ -408,11 +409,6 @@ extern int Wait(int *status_ptr) {
     return 0;
 }
 
-extern int Brk(void *addr) {
-    TracePrintf(0, "Brk called!\n");
-    (void)addr;
-    return 0;
-}
 extern int Delay(int clock_ticks) {
     (void)clock_ticks;
     TracePrintf(0, "Delay called!\n");
@@ -693,12 +689,13 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)/
     TracePrintf(0, "Flushing old process' PTEs from Region 0...\n");
     // TracePrintf(0, "Page Table vpn 468 pfn: %d\tvalid: %d\n", ptr0[468].pfn, ptr0[468].valid);
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
-    TracePrintf(0, "done2\n");
+    TracePrintf(0, "done Flushing 0\n");
     
     /*
      *  Read the text and data from the file into memory.
      */
     if (read(fd, (void *)MEM_INVALID_SIZE, li.text_size+li.data_size) != (int) (li.text_size+li.data_size)) {
+       
         TracePrintf(0, "LoadProgram: couldn't read for '%s'\n", name);
         free(argbuf);
         close(fd);
@@ -708,7 +705,6 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)/
         // >>>> to its parent process.
         return -2;
     }
-    
     close(fd);			/* we've read it all now */
 
     /*
@@ -722,7 +718,7 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)/
         ptr0[textIter].kprot = (PROT_READ | PROT_EXEC);
         
     }
-
+    
     TracePrintf(0, "Flushing edits to mem_invalid_pages in the new process' Region 0...");
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
     TracePrintf(0, "done3\n");
@@ -798,4 +794,23 @@ void freePage(int pfn) {
     TracePrintf(0, "Freeing page %d!\n", pfn);
     freePages[pfn] = PAGE_FREE;
     num_free_pages++;
+}
+
+/**
+finds a free virtual page (VPN of Region 1), starting from the top of V1
+*/
+int findFreeVirtualPage() {
+    int temp_vpn = 0;   // TODO: implement case where no invalid ptes are found
+    unsigned long vaddr;
+    for (vaddr = PAGE_TABLE_LEN; vaddr > (unsigned long) currKernelBrk; vaddr -= PAGESIZE) {
+        int page = (vaddr >> PAGESHIFT) - 512;
+        TracePrintf(2, "\nvaddr: %p\nvpn: %d\nlimit: %p\n", vaddr, page, VMEM_1_LIMIT);
+        if (region1Pt[page].valid == 0) {
+            temp_vpn = page;
+            break;
+        }
+    }
+    (void)temp_vpn;
+    return 500;
+
 }
