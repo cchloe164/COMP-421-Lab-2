@@ -1,13 +1,18 @@
 ** Kernel   level 1 tracing enabled **
 ** User     level 1 tracing enabled **
 Kernel   Starting Kernel...
+Kernel   SET currKernelBreak from 0x213000 to addr 0x216000 
 Kernel   Setting up interrupt vector table...
 Kernel   Building free pages...
-Kernel   SET currKernelBreak 0x213000 to addr 0x215000 
+Kernel   SET currKernelBreak from 0x216000 to addr 0x218000 
 Kernel   Finished building free pages
 Kernel   Building page table...
 Kernel   Finished initializing Page Table 
-Kernel   Virtual memory enabled...Kernel   LoadProgram 'idle', args 0x1fffd0
+Kernel   Virtual memory enabled...Kernel   SET currKernelBreak from 0x218000 to addr 0x21b000 
+Kernel   -------TraceTraceTrace--------Kernel   -------TraceTraceTrace2--------24
+Kernel   -------TraceTraceTrace2--------25
+Kernel   -------TraceTraceTrace2--------26
+Kernel   -------TraceTraceTrace3--------Kernel   -------TraceTraceTrace4--------Kernel   -------TraceTraceTrace5--------Kernel   LoadProgram 'idle', args 0x1fffd0
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
 Kernel   entry 0x10100
@@ -33,21 +38,21 @@ Kernel   ksb 508Kernel   vpn2: 510 vaddr: 0x1fe000
 Kernel   ksb 508Kernel   vpn2: 511 vaddr: 0x1ff000
 Kernel   ksb 508Kernel   Allocation and setup done.
 Kernel   Switching from existing process 0 to new process 1
-Kernel   Copying source page 508 to dest page 21...
-Kernel   dest addr: 0x215000	source addr: 0x1fc000
-Kernel   dest pfn: 12
-Kernel   done
-Kernel   Copying source page 509 to dest page 21...
-Kernel   dest addr: 0x215000	source addr: 0x1fd000
-Kernel   dest pfn: 13
-Kernel   done
-Kernel   Copying source page 510 to dest page 21...
-Kernel   dest addr: 0x215000	source addr: 0x1fe000
-Kernel   dest pfn: 14
-Kernel   done
-Kernel   Copying source page 511 to dest page 21...
-Kernel   dest addr: 0x215000	source addr: 0x1ff000
+Kernel   Copying source page 508 to dest page 27...
+Kernel   dest addr: 0x21b000	source addr: 0x1fc000
 Kernel   dest pfn: 15
+Kernel   done
+Kernel   Copying source page 509 to dest page 27...
+Kernel   dest addr: 0x21b000	source addr: 0x1fd000
+Kernel   dest pfn: 16
+Kernel   done
+Kernel   Copying source page 510 to dest page 27...
+Kernel   dest addr: 0x21b000	source addr: 0x1fe000
+Kernel   dest pfn: 17
+Kernel   done
+Kernel   Copying source page 511 to dest page 27...
+Kernel   dest addr: 0x21b000	source addr: 0x1ff000
+Kernel   dest pfn: 18
 Kernel   done
 Kernel   r0 vpn: 1012
 Kernel   r0 offset: 0
@@ -57,7 +62,11 @@ Kernel   index 1012 created
 Kernel   Region 1 entry 500
 Kernel   phys_addr pfn 1012 created
 Kernel   Result from ContextSwitch: 0
-Kernel   LoadProgram 'init3', args 0x1fffd0
+Kernel   SET currKernelBreak from 0x21b000 to addr 0x21e000 
+Kernel   -------TraceTraceTrace--------Kernel   -------TraceTraceTrace2--------27
+Kernel   -------TraceTraceTrace2--------28
+Kernel   -------TraceTraceTrace2--------29
+Kernel   -------TraceTraceTrace3--------Kernel   -------TraceTraceTrace4--------Kernel   LoadProgram 'init3', args 0x1fffd0
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
 Kernel   entry 0x10100
@@ -89,7 +98,11 @@ Kernel   Attempting to set new process from delay call...
 Kernel   Queue is empty right now!
 Kernel   Switching to an existing process, from process 1 to process 0
 Kernel   Result from ContextSwitch: 0
-Kernel   LoadProgram 'init3', args 0x1fffd0
+Kernel   SET currKernelBreak from 0x21e000 to addr 0x221000 
+Kernel   -------TraceTraceTrace--------Kernel   -------TraceTraceTrace2--------30
+Kernel   -------TraceTraceTrace2--------31
+Kernel   -------TraceTraceTrace2--------32
+Kernel   -------TraceTraceTrace3--------Kernel   -------TraceTraceTrace4--------Kernel   LoadProgram 'init3', args 0x1fffd0
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
 Kernel   entry 0x10100
@@ -97,18 +110,18 @@ Kernel   LoadProgram: size 6, argcount 1
 Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
 Kernel   Passed virtual memory check!
 Kernel   Passed physical memory check!
-Kernel   Freeing page 16!
-Kernel   Freeing page 17!
-Kernel   Freeing page 18!
-Kernel   Freeing page 19!
-Kernel   Freeing page 20!
-Kernel   Freeing page 21!
 Kernel   Freeing page 22!
 Kernel   Freeing page 23!
 Kernel   Freeing page 24!
 Kernel   Freeing page 25!
 Kernel   Freeing page 26!
 Kernel   Freeing page 27!
+Kernel   Freeing page 28!
+Kernel   Freeing page 29!
+Kernel   Freeing page 30!
+Kernel   Freeing page 31!
+Kernel   Freeing page 32!
+Kernel   Freeing page 33!
 Kernel   Freed current Region 0!
 Kernel   Invalidating MEM_INVALID_PAGES...Kernel   done1
 Kernel   Text pages setup completed!
