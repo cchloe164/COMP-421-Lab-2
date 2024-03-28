@@ -1,5 +1,3 @@
-
-
 #include <comp421/hardware.h>
 
 #define PAGE_FREE 0
@@ -102,7 +100,6 @@ void PushItemToWaitingQueue(struct queue_item *new) {
 
 void RemoveItemFromWaitingQueue(struct queue_item *item) {
     waiting_queue_size--;
-    
 
     // Case 1: If the item is the only item in the queue
     if (waiting_queue_head == item && waiting_queue_tail == item) {

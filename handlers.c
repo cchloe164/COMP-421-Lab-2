@@ -1,10 +1,12 @@
-#include <comp421/hardware.h>
+// #include <comp421/hardware.h>
 
 #include "delay.c"
-// #include "brk.c"
+#include "fork.c"
+#include "brk.c"
+#include "getpid.c"
+
 //TODO: idk if I have to do this
 extern void Tick_();
-extern int GetPid_(struct pcb *info);
 SavedContext *SwitchExist(SavedContext *ctx, void *p1, void *p2);
 /* HANDLERS */
 
@@ -27,7 +29,7 @@ void TrapKernelHandler(ExceptionInfo *info)
     TracePrintf(0, "TRAP_KERNEL handler called!\n");
     if (info->code == YALNIX_FORK) {
         TracePrintf(0, "TRAP_KERNEL handler found a fork.\n");
-        info->regs[0] = Fork();
+        info->regs[0] = Fork_();
     }
     else if (info->code == YALNIX_EXEC)
     {

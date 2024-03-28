@@ -6,18 +6,12 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include <comp421/hardware.h>
+// #include <comp421/hardware.h>
 #include <comp421/yalnix.h>
 #include <comp421/loadinfo.h>
 
-// #include "load.c"
 #include "sharedvar.c"
 #include "handlers.c"
-#include "contextswitch.c"
-#include "delay.c"
-// #include "contextswitch2.c"
-#include "getpid.c"
-#include "brk.c"
 
 void *tty_buf; // buffer in virtual memory region 1
 // struct pte region0Pt[PAGE_TABLE_LEN], region1Pt[PAGE_TABLE_LEN]; // page table pointers
@@ -118,7 +112,7 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     pcb1->region0 = &region0Pt[0];
     pcb1->process_id = next_proc_id;
     next_proc_id++;
-    // LoadProgram("idle", cmd_args, info, pcb1->region0);
+    LoadProgram("idle", cmd_args, info, pcb1->region0);
 
     idle_pcb = pcb1;
     //init region 0 page table for init function (PCB2) (Copied from (see pg 22)
@@ -365,10 +359,7 @@ extern int SetKernelBrk(void *addr) {
 /* Kernel Trap Handlers */
 
 
-extern int Fork(void) {
-    TracePrintf(0, "Fork called!\n");
-    return 0;
-}
+
 extern int Exec(char *filename, char **argvec) {
     (void)filename;
     (void)argvec;
@@ -385,7 +376,6 @@ extern int Wait(int *status_ptr) {
     TracePrintf(0, "Wait called!\n");
     return 0;
 }
-
 
 extern int TtyRead(int tty_id, void *buf, int len) {
     (void)tty_id;
