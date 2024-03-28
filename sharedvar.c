@@ -18,9 +18,9 @@ struct pcb { //TODO: I've added a few fields for some of the other functions but
     int kernel_stack;  // first page of kernal stack
     int reg0_pfn; //stores the physical pfn of reg 0
     int brk; //stores the break position of the current process (for brk.c)
-    struct pte *region0; //stores current region 0 pointer
+    struct pte *region0; //stores pointer to physical address of region 0
     SavedContext ctx;
-    int region1Va;
+    unsigned long free_vpn; // free virtual page number
     int delay_ticks; // the amount of ticks remaining if the process is Delayed
 };
 
@@ -262,3 +262,23 @@ int findFreePage()
     return -1;
 }
 
+/**
+ * Finds a free virtual page (VPN of Region 1), starting from the top of V1. Returns -1 if no free pages found.
+ */
+int findFreeVirtualPage()
+{
+    TracePrintf(0, "Starting at addr %p and searching until addr %p, decrementing by %d:\n", VMEM_1_LIMIT, (unsigned long)&currKernelBrk, PAGESIZE);
+    unsigned long vaddr;
+    for (vaddr = VMEM_1_LIMIT - (3 * PAGESIZE); vaddr > (unsigned long)&currKernelBrk; vaddr -= PAGESIZE)
+    {
+        int page = (vaddr >> PAGESHIFT) - PAGE_TABLE_LEN;
+        if (region1Pt[page].valid == 0)
+        {
+            TracePrintf(0, "Found free page %d in Region 1!\n", page);
+            freePages[page + PAGE_TABLE_LEN] = PAGE_USED;
+            return page;
+        }
+    }
+    TracePrintf(0, "ERROR: No free page found in region 1!\n");
+    return -1;
+}
