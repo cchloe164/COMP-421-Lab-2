@@ -78,12 +78,9 @@ SavedContext *SwitchNewProc(SavedContext *ctxp, void *p1, void *p2)
     TracePrintf(0, "index %d created\n", newR0paddr >> PAGESHIFT);
     TracePrintf(0, "Region 1 entry %d\n", (newR0paddr >> PAGESHIFT)- PAGE_TABLE_LEN);
     TracePrintf(0, "phys_addr pfn %d created\n", region1Pt[(newR0paddr >> PAGESHIFT)- PAGE_TABLE_LEN].pfn); // this is correct
-    // WriteRegister(REG_PTR0, (RCS421RegVal)newR0paddr);
     WriteRegister(REG_PTR0, (RCS421RegVal)phys_addr);
-    TracePrintf(2, "Page Table vpnn 508 pfn: %d\tvalid: %d\n", proc2->region0[508].pfn, proc2->region0[508].valid);
-    
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
-    TracePrintf(2, "Page Table vpnn 468 pfn: %d\tvalid: %d\n", proc2->region0[468].pfn, proc2->region0[468].valid);
+
     curr_proc = proc2;
     // return the ctx
     return &proc2->ctx;

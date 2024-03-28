@@ -203,3 +203,24 @@ int findFreePage()
     }
     return -1;
 }
+
+/**
+ * Finds a free virtual page (VPN of Region 1), starting from the top of V1. Returns -1 if no free pages found.
+ */
+int findFreeVirtualPage()
+{
+    TracePrintf(0, "Starting at addr %p and searching until addr %p, decrementing by %d:\n", VMEM_1_LIMIT, (unsigned long)&currKernelBrk, PAGESIZE);
+    unsigned long vaddr;
+    for (vaddr = VMEM_1_LIMIT - (3 * PAGESIZE); vaddr > (unsigned long)&currKernelBrk; vaddr -= PAGESIZE)
+    {
+        int page = (vaddr >> PAGESHIFT) - PAGE_TABLE_LEN;
+        if (region1Pt[page].valid == 0)
+        {
+            TracePrintf(0, "Found free page %d in Region 1!\n", page);
+            freePages[page] = PAGE_USED;
+            return page;
+        }
+    }
+    TracePrintf(0, "ERROR: No free page found in region 1!\n");
+    return -1;
+}

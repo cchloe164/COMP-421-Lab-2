@@ -109,7 +109,7 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     struct pcb *pcb1 = malloc(sizeof(struct pcb));
     struct pcb *pcb2 = malloc(sizeof(struct pcb));
     WriteRegister(REG_VM_ENABLE, 1);
-    TracePrintf(0, "Virtual memory enabled...");
+    TracePrintf(0, "Virtual memory enabled...\n");
     vm_enabled = true;
     // Create idle process
     //TODO:  The idle process should have Yalnix process ID 0. Is this done?
@@ -118,7 +118,7 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     pcb1->region0 = &region0Pt[0];
     pcb1->process_id = next_proc_id;
     next_proc_id++;
-    LoadProgram("idle", cmd_args, info, pcb1->region0);
+    // LoadProgram("idle", cmd_args, info, pcb1->region0);
 
     idle_pcb = pcb1;
     //init region 0 page table for init function (PCB2) (Copied from (see pg 22)
@@ -129,78 +129,53 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     // pcb2->physaddr = findFreePage();
 
 
-    TracePrintf(0, "Allocating and setting up process 2's kernel stack...\n");
     struct pte region0Pt2[PAGE_TABLE_LEN]; //automatically allocated by compiler
-    TracePrintf(0, "Page Table adddress %p pfn:\n", &region0Pt2);
-    //go into Region1[&region0pt2 >> PAGESHIFT]
-    //set pfn = findFreePage() offsetof()
+    TracePrintf(0, "Proc2 R0 original vaddr %p\n", &region0Pt2);
+
     unsigned long virtualPage = findFreeVirtualPage(); // find a free virtual page. Use this to store the address to the new Region 0.
     region1Pt[virtualPage].valid = 1;
     region1Pt[virtualPage].kprot = PROT_READ | PROT_WRITE;
     region1Pt[virtualPage].uprot = PROT_NONE;
     region1Pt[virtualPage].pfn = PAGE_TABLE_LEN + virtualPage;
-
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_ALL);
+
     pcb2->region0 = (struct pte *)((PAGE_TABLE_LEN + virtualPage) << PAGESHIFT); // set it equal to the address
-    // pcb2->ctx = (struct SavedContext *)malloc(sizeof(SavedContext));
-    // pcb1->ctx = (struct SavedContext *)malloc(sizeof(SavedContext));
-    // TracePrintf(0, "ctx vpn = %d\n", (unsigned long) (&pcb2->ctx) >> PAGESHIFT);
-
-    // TracePrintf(0, "ctx vpn = %p\n", &pcb2->ctx);
-
+    TracePrintf(0, "Proc2 R0 new paddr %p\n", &pcb2->region0);
     
-    TracePrintf(3, "Page Table vpn 469 pfn: %d\tvalid: %d\n", region0Pt2[469].pfn, region0Pt2[469].valid);
-    // TracePrintf(0, "Page Table vpn 468 pfn: %d\tvalid: %d\n", pcb2->region0[468].pfn, pcb2->region0[468].valid);
-    // int vaddr2;
-    // for (vaddr2 = KERNEL_STACK_BASE; vaddr2 < KERNEL_STACK_LIMIT; vaddr2 += PAGESIZE)
+    // TracePrintf(0, "Allocating and setting up process 2's kernel stack...\n");
+    // int vaddr3;
+    // for (vaddr3 = KERNEL_STACK_BASE; vaddr3 < KERNEL_STACK_LIMIT; vaddr3 += PAGESIZE)
     // {
-    //     int vpn = vaddr2 >> PAGESHIFT; // addr -> page number
-    //     TracePrintf(0, "vpn: %d vaddr: %p\n", vpn, vaddr2);
+    //     int vpn = vaddr3 >> PAGESHIFT; // addr -> page number
+    //     // TracePrintf(0, "vpn2: %d vaddr: %p\n", vpn, vaddr3);
 
     //     // TODO: change this Region0pt to be a specific region0pt for the pcb2 (see piazza @130)
-    //     region0Pt2[vpn].pfn = findFreePage();
-    //     region0Pt2[vpn].uprot = PROT_NONE;
-    //     region0Pt2[vpn].kprot = PROT_READ | PROT_WRITE;
-    //     region0Pt2[vpn].valid = 1;
+    //     pcb2->region0[vpn].pfn = findFreePage();
+    //     pcb2->region0[vpn].uprot = PROT_NONE;
+    //     pcb2->region0[vpn].kprot = PROT_READ | PROT_WRITE;
+    //     pcb2->region0[vpn].valid = 1;
+    //     // TracePrintf(0, "ksb %d", KERNEL_STACK_BASE >> PAGESHIFT);
     // }
-    // pcb2->region0 = &region0Pt2[0];
     
-    int vaddr3;
-    for (vaddr3 = KERNEL_STACK_BASE; vaddr3 < KERNEL_STACK_LIMIT; vaddr3 += PAGESIZE)
-    {
-        int vpn = vaddr3 >> PAGESHIFT; // addr -> page number
-        TracePrintf(0, "vpn2: %d vaddr: %p\n", vpn, vaddr3);
+    // pcb2->process_id = next_proc_id;
+    // next_proc_id++;
+    // TracePrintf(0, "Allocation and setup done.\n");
 
-        // TODO: change this Region0pt to be a specific region0pt for the pcb2 (see piazza @130)
-        pcb2->region0[vpn].pfn = findFreePage();
-        pcb2->region0[vpn].uprot = PROT_NONE;
-        pcb2->region0[vpn].kprot = PROT_READ | PROT_WRITE;
-        pcb2->region0[vpn].valid = 1;
-        TracePrintf(0, "ksb %d", KERNEL_STACK_BASE >> PAGESHIFT);
-    }
-    // pcb2->region0[15].valid = 0;
+    // //TODO: create pcbs for each process. Write a create pcb function to create pcbs and create pcb for idle program?
+    // // Create init process; need to call this context switch
+    // //create pcb for init
     
-    // TracePrintf(0, "Page Table vpn 468 pfn: %d\tvalid: %d\n", pcb2->region0[468].pfn, pcb2->region0[468].valid);
-    pcb2->process_id = next_proc_id;
-    // pcb2->reg0_pfn = region1Pt[(void *)region0Pt2 >> PAGESHIFT].pfn;
-    next_proc_id++;
-    TracePrintf(0, "Allocation and setup done.\n");
-
-    //TODO: create pcbs for each process. Write a create pcb function to create pcbs and create pcb for idle program?
-    // Create init process; need to call this context switch
-    //create pcb for init
+    // // SavedContext *ctxp;
+    // int res = ContextSwitch(SwitchNewProc, &pcb1->ctx, (void *)pcb1, (void *)pcb2);
+    // // pcb1->ctx = *ctxp;
+    // TracePrintf(0, "Result from ContextSwitch: %d\n", res);
     
-    // SavedContext *ctxp;
-    int res = ContextSwitch(SwitchNewProc, &pcb1->ctx, (void *)pcb1, (void *)pcb2);
-    // pcb1->ctx = *ctxp;
-    TracePrintf(0, "Result from ContextSwitch: %d\n", res);
-    
-    LoadProgram(cmd_args[0], cmd_args, info, pcb2->region0);
-    TracePrintf(0, "DID WE GET HERE? done contextswitching (second load program)\n");
+    // LoadProgram(cmd_args[0], cmd_args, info, pcb2->region0);
+    // TracePrintf(0, "DID WE GET HERE? done contextswitching (second load program)\n");
     // (void) pcb1;
     // (void) pcb2;
-    // (void) info;
-    // (void) cmd_args;
+    (void) info;
+    (void) cmd_args;
 
     //TODO: read piazza @130
 
@@ -794,21 +769,4 @@ void freePage(int pfn) {
     num_free_pages++;
 }
 
-/**
-finds a free virtual page (VPN of Region 1), starting from the top of V1
-*/
-int findFreeVirtualPage() {
-    int temp_vpn = 0;   // TODO: implement case where no invalid ptes are found
-    unsigned long vaddr;
-    for (vaddr = PAGE_TABLE_LEN; vaddr > (unsigned long) currKernelBrk; vaddr -= PAGESIZE) {
-        int page = (vaddr >> PAGESHIFT) - 512;
-        TracePrintf(2, "\nvaddr: %p\nvpn: %d\nlimit: %p\n", vaddr, page, VMEM_1_LIMIT);
-        if (region1Pt[page].valid == 0) {
-            temp_vpn = page;
-            break;
-        }
-    }
-    (void)temp_vpn;
-    return 500;
 
-}
