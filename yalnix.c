@@ -34,8 +34,8 @@ void TrapTTYTransmitHandler(ExceptionInfo *info);
 void buildFreePages(unsigned int pmem_size);
 void initPT();
 int findFreeVirtualPage();
-
-
+void RemoveProcFromReadyQueue(struct pcb *proc);
+void RemoveItemFromReadyQueue(struct queue_item *item);
 int vm_enabled = false;
 void freePage(int pfn);
 int findFreePage();
@@ -55,7 +55,7 @@ extern int TtyRead(int tty_id, void *buf, int len);
 extern int TtyWrite(int tty_id, void *buf, int len);
 SavedContext *SwitchNewProc(SavedContext *ctx, void *p1, void *p2);
 
-
+void RemoveItemFromWaitingQueue(struct queue_item *item);
 /*
     *  This is the primary entry point into the kernel:
     *
@@ -800,15 +800,15 @@ finds a free virtual page (VPN of Region 1), starting from the top of V1
 int findFreeVirtualPage() {
     int temp_vpn = 0;   // TODO: implement case where no invalid ptes are found
     unsigned long vaddr;
-    for (vaddr = PAGE_TABLE_LEN; vaddr > (unsigned long) currKernelBrk; vaddr -= PAGESIZE) {
+    for (vaddr = PAGE_TABLE_LEN - 2; vaddr > (unsigned long) currKernelBrk; vaddr -= PAGESIZE) {
         int page = (vaddr >> PAGESHIFT) - 512;
-        TracePrintf(2, "\nvaddr: %p\nvpn: %d\nlimit: %p\n", vaddr, page, VMEM_1_LIMIT);
+        TracePrintf(1, "Found a free virtual page! \nvaddr: %p\nvpn: %d\nlimit: %p\n", vaddr, page, VMEM_1_LIMIT);
         if (region1Pt[page].valid == 0) {
             temp_vpn = page;
             break;
         }
     }
     (void)temp_vpn;
-    return 500;
+    return 500;//TODO: fix this to actually return a virtual page
 
 }

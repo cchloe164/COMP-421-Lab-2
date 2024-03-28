@@ -20,7 +20,7 @@ struct pcb { //TODO: I've added a few fields for some of the other functions but
     int brk; //stores the break position of the current process (for brk.c)
     struct pte *region0; //stores current region 0 pointer
     SavedContext ctx;
-    
+    int region1Va;
     int delay_ticks; // the amount of ticks remaining if the process is Delayed
 };
 
@@ -67,12 +67,12 @@ void PushProcToWaitingQueue(struct pcb *proc) {
 
     // push onto queue
     if (waiting_queue_size == 0) {
-        queue_head = new;
-        queue_tail = queue_head;
+        waiting_queue_head = new;
+        waiting_queue_tail = queue_head;
     } else {
-        queue_tail->next = new;
+        waiting_queue_tail->next = new;
         new->prev = queue_tail;
-        queue_tail = new;
+        waiting_queue_tail = new;
     }
     waiting_queue_size++;
 }
@@ -125,6 +125,7 @@ void RemoveItemFromWaitingQueue(struct queue_item *item) {
             }
         }
     }
+    free(item);
 
     // Free memory allocated to the removed item
     // free((void *)item);
@@ -136,20 +137,79 @@ void RemoveItemFromWaitingQueue(struct queue_item *item) {
  * Push new process to ready queue.
 */
 void PushProcToQueue(struct pcb *proc) {
+    TracePrintf(0, "Pushing process id %d to the ready queue\n", proc->process_id);
     // wrap process as new queue item
-    struct queue_item new;
-    new.proc = proc;
+    struct queue_item *new = malloc(sizeof(struct queue_item));
+    new->proc = proc;
     // new.ticks_left = 2;
 
     // push onto queue
     if (queue_size == 0) {
-        queue_head = &new;
+        queue_head = new;
         queue_tail = queue_head;
     } else {
-        queue_tail->next = &new;
-        queue_tail = &new;
+        queue_tail->next = new;
+        queue_tail = new;
     }
     queue_size++;
+}
+
+void RemoveItemFromReadyQueue(struct queue_item *item) {
+    queue_size--;
+    TracePrintf(0, "removing item from ready queue.\n");
+    // Case 1: If the item is the only item in the queue
+    if (queue_head == item && queue_tail == item) {
+        queue_head = NULL;
+        queue_tail = NULL;
+    } else {
+        // Case 2: If the item is the head of the queue
+        if (queue_head == item) {
+            queue_head = item->next;
+            queue_head->prev = NULL;
+        } else {
+            // Case 3: If the item is the tail of the queue
+            if (queue_tail == item) {
+                queue_tail = item->prev;
+                queue_tail->next = NULL;
+            } else {
+                // Case 4: If the item is somewhere in the middle of the queue
+                item->prev->next = item->next;
+                item->next->prev = item->prev;
+            }
+        }
+    }
+    free(item);
+}
+/**
+Removes the process from the ready queue, if it exists
+*/
+void RemoveProcFromReadyQueue(struct pcb *proc) {
+
+    struct queue_item *curr_proc_item = queue_head; //current item in the queue. iterate throug them all
+    //TODO: add a dummy to the tail of the queue or wait until null
+    // int procs_deleted = 0;
+    // int i;
+    struct pcb *current_proc;
+    TracePrintf(0, "RemoveProcFromReadyQueue for process id %d!\n", proc->process_id);
+    while (curr_proc_item != NULL) {
+        current_proc = curr_proc_item->proc;
+        if (current_proc->process_id == proc->process_id) {
+            //found a proc that matches
+            TracePrintf(1, "Found a matching process in the ready queue to remove! Removing it now.\n");
+            RemoveItemFromReadyQueue(curr_proc_item);
+        }
+        // if (current_proc->delay_ticks <= 0) { // the process is done waiting; remove it from the delay queue and put it on the ready queue
+        //     TracePrintf(1, "Item with id %d delay has expired! now moving to the ready queue\n", current_proc->process_id);
+        //     RemoveItemFromWaitingQueue(curr_proc_item);
+        //     PushProcToQueue(current_proc);
+
+        //     TracePrintf(1, "Switching from process %d to process id %d\n", curr_proc->process_id, current_proc->process_id);
+        //     ContextSwitch(SwitchExist, &curr_proc->ctx, (void *)curr_proc, (void *)current_proc);
+
+        // }
+        curr_proc_item = curr_proc_item->next;
+    }
+
 }
 /**
  * Find a ready proc, or idle if none on the queue
@@ -173,16 +233,14 @@ int SetNextProc() {
     if (queue_size == 0) {
         TracePrintf(0, "Queue is empty right now!\n");
         return -1; 
-    } else if (queue_head->ticks_left == 0) {
-        TracePrintf(0, "Popped Process %d and added Process %d back onto queue.\n", queue_head->proc->process_id, curr_proc->process_id);
+    } else {
+        struct pcb *curhead = queue_head->proc;
+        TracePrintf(0, "Popped Process %d and added Process %d back onto queue.\n", curhead->process_id, curr_proc->process_id);
         PushProcToQueue(curr_proc); // push old process onto queue
         curr_proc = queue_head->proc;   // set new current process
         queue_head = queue_head->next;  // shift queue forward
         queue_size--;
         return 1;
-    } else {
-        TracePrintf(0, "No ready process on queue.\n");
-        return 0;
     }
 }
 
@@ -203,3 +261,4 @@ int findFreePage()
     }
     return -1;
 }
+

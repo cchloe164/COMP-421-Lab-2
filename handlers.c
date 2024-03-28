@@ -91,17 +91,19 @@ void TrapClockHandler(ExceptionInfo *info)
     struct pcb *current_proc;
     TracePrintf(0, "TRAP_CLOCK handler called!\n");
     while (curr_proc_item != NULL) {
-        TracePrintf(1, "TRAP_CLOCK handler decrementing clock for waiting queue item!\n");
         current_proc = curr_proc_item->proc;
+        TracePrintf(1, "TRAP_CLOCK handler decrementing clock for waiting queue item with pid %d!\n", current_proc->process_id);
         
         int ticks_left = current_proc->delay_ticks;
         current_proc->delay_ticks = ticks_left - 1; //tick it down
         if (current_proc->delay_ticks <= 0) { // the process is done waiting; remove it from the delay queue and put it on the ready queue
-            TracePrintf(1, "Item with id %d delay has expired! now moving to th eready queue\n", current_proc->process_id);
+            TracePrintf(1, "Item with id %d delay has expired! now moving to the ready queue\n", current_proc->process_id);
             RemoveItemFromWaitingQueue(curr_proc_item);
             PushProcToQueue(current_proc);
-            // procs_deleted += 1;//question here: do we update the queue size here or later? 
+
+            TracePrintf(1, "Switching from process %d to process id %d\n", curr_proc->process_id, current_proc->process_id);
             ContextSwitch(SwitchExist, &curr_proc->ctx, (void *)curr_proc, (void *)current_proc);
+
         }
         curr_proc_item = curr_proc_item->next;
     }

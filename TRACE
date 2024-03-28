@@ -84,6 +84,7 @@ User     init2 pid is: 1
 Kernel   TRAP_KERNEL handler called!
 Kernel   TRAP_KERNEL handler found a delay.
 Kernel   Delay called!
+Kernel   RemoveProcFromReadyQueue for process id 1!
 Kernel   Attempting to set new process from delay call...
 Kernel   Queue is empty right now!
 Kernel   Switching to an existing process, from process 1 to process 0
@@ -118,21 +119,50 @@ Kernel   done Flushing 0
 Kernel   LoadProgram: couldn't read for 'init3'
 Kernel   DID WE GET HERE? done contextswitching (second load program)
 Kernel   TRAP_CLOCK handler called!
-Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item!
+Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item with pid 1!
 Kernel   Clock ticks passed: 0
 Kernel   TRAP_CLOCK handler called!
-Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item!
+Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item with pid 1!
 Kernel   Clock ticks passed: 1
 Kernel   TRAP_CLOCK handler called!
-Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item!
+Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item with pid 1!
 Kernel   Clock ticks passed: 2
 Kernel   Time limit reached on Process!.
 Kernel   Attempting to set new process...
 Kernel   Queue is empty right now!
 Kernel   Current process will keep running!
 Kernel   TRAP_CLOCK handler called!
-Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item!
-Kernel   Item with id 1 delay has expired! now moving to th eready queue
+Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item with pid 1!
+Kernel   Item with id 1 delay has expired! now moving to the ready queue
+Kernel   Pushing process id 1 to the ready queue
+Kernel   Switching from process 0 to process id 1
+Kernel   Switching to an existing process, from process 0 to process 1
+Kernel   TRAP_KERNEL handler called!
+Kernel   TRAP_KERNEL handler found a delay.
+Kernel   Delay called!
+Kernel   RemoveProcFromReadyQueue for process id 1!
+Kernel   Found a matching process in the ready queue to remove! Removing it now.
+Kernel   removing item from ready queue.
+Kernel   Attempting to set new process from delay call...
+Kernel   Queue is empty right now!
+Kernel   Switching to an existing process, from process 1 to process 0
+Kernel   Clock ticks passed: 3
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item with pid 1!
+Kernel   Clock ticks passed: 4
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item with pid 1!
+Kernel   Item with id 1 delay has expired! now moving to the ready queue
+Kernel   Pushing process id 1 to the ready queue
+Kernel   Switching from process 0 to process id 1
 Kernel   Switching to an existing process, from process 0 to process 1
 Kernel   TRAP_KERNEL handler called!
 Kernel   TRAP_KERNEL handler found a exit.
