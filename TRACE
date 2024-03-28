@@ -32,7 +32,9 @@ Kernel   Found free page 10!
 Kernel   Data and BSS pages setup completed!
 Kernel   Found free page 11!
 Kernel   User stack pages setup completed!
-Kernel   Flushing old process' PTEs from Region 0...Kernel   done
+Kernel   Flushing old process' PTEs from Region 0...Kernel   Page Table vpn 468 pfn: 0	valid: 0
+Kernel   done
+Kernel   Flushing edits to mem_invalid_pages in the new process' Region 0...Kernel   done
 Kernel   PageTables tracing: entry 0 is invalid/empty. 
 Kernel   PageTables tracing: entry 1 is invalid/empty. 
 Kernel   PageTables tracing: entry 2 is invalid/empty. 
@@ -548,6 +550,7 @@ Kernel   PageTables tracing: entry 511 contains PFN 511.
 Kernel   made to this1. argcount is 1
 Kernel   made to this2.
 Kernel   Allocating and setting up process 2's kernel stack...
+Kernel   Page Table vpn 468 pfn: 982783	valid: 1
 Kernel   vpn: 508 vaddr: 0x1fc000
 Kernel   Found free page 12!
 Kernel   vpn: 509 vaddr: 0x1fd000
@@ -556,6 +559,7 @@ Kernel   vpn: 510 vaddr: 0x1fe000
 Kernel   Found free page 14!
 Kernel   vpn: 511 vaddr: 0x1ff000
 Kernel   Found free page 15!
+Kernel   Page Table vpn 468 pfn: 982783	valid: 1
 Kernel   Allocation and setup done.
 Kernel   Switching from existing process 0 to new process 1
 Kernel   Copying source page 508 to dest page 20...
@@ -574,6 +578,7 @@ Kernel   Copying source page 511 to dest page 20...
 Kernel   dest addr: 0x214000	source addr: 0x1ff000
 Kernel   dest pfn: 15
 Kernel   done
+Kernel   Page Table vpn 468 pfn: 982783	valid: 1
 Kernel   Result from ContextSwitch: 0
 Kernel   LoadProgram 'init2', args 0x1fffd0
 Kernel   LoadProgram: LoadInfo status 0
@@ -612,5 +617,6 @@ Kernel   Found free page 10!
 Kernel   Data and BSS pages setup completed!
 Kernel   Found free page 11!
 Kernel   User stack pages setup completed!
-Kernel   Flushing old process' PTEs from Region 0...
+Kernel   Flushing old process' PTEs from Region 0...Kernel   Page Table vpn 468 pfn: 0	valid: 0
+
 ABORT: FlushTLB: PTE for other vpn 468 addr 0x1d4000 has illegal pfn 982783

@@ -121,6 +121,7 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     // TracePrintf(0, "base: %p\nlimit: %p\n", KERNEL_STACK_BASE, KERNEL_STACK_LIMIT);
     TracePrintf(0, "Allocating and setting up process 2's kernel stack...\n");
     struct pte region0Pt2[PAGE_TABLE_LEN];
+    TracePrintf(0, "Page Table vpn 468 pfn: %d\tvalid: %d\n", region0Pt2[468].pfn, region0Pt2[468].valid);
     int vaddr2;
     for (vaddr2 = KERNEL_STACK_BASE; vaddr2 < KERNEL_STACK_LIMIT; vaddr2 += PAGESIZE)
     {
@@ -134,6 +135,7 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
         region0Pt2[vpn].valid = 1;
     }
     pcb2->region0 = &region0Pt2[0];
+    TracePrintf(0, "Page Table vpn 468 pfn: %d\tvalid: %d\n", pcb2->region0[468].pfn, pcb2->region0[468].valid);
     pcb2->process_id = next_proc_id;
     next_proc_id++;
     TracePrintf(0, "Allocation and setup done.\n");
@@ -646,6 +648,7 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)/
      *  we'll be able to do the read() into the new pages below.
      */
     TracePrintf(0, "Flushing old process' PTEs from Region 0...");
+    TracePrintf(0, "Page Table vpn 468 pfn: %d\tvalid: %d\n", ptr0[468].pfn, ptr0[468].valid);
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
     TracePrintf(0, "done\n");
     

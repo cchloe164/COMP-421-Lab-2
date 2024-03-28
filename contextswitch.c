@@ -62,7 +62,11 @@ SavedContext *SwitchNewProc(SavedContext *ctxp, void *p1, void *p2)
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_1);
     // redirect current region 0 pointer to new process
     // region0Pt = *proc2->kernel_stack;
-    WriteRegister(REG_PTR0, (RCS421RegVal)proc2->region0);
+    // unsigned long newR0paddr = (unsigned long)&proc2->region0;
+    unsigned long newR0paddr = (unsigned long)&proc2->region0[0];
+    WriteRegister(REG_PTR0, (RCS421RegVal)newR0paddr);
+    TracePrintf(0, "Page Table vpn 468 pfn: %d\tvalid: %d\n", proc2->region0[468].pfn, proc2->region0[468].valid);
+    
     // return the ctx
     return &proc2->ctx;
 }
