@@ -394,13 +394,3 @@ extern int TtyWrite(int tty_id, void *buf, int len) {
 }
 
 
-/**
-frees a page
-*/
-void freePage(int pfn) {
-    TracePrintf(0, "Freeing page %d!\n", pfn);
-    freePages[pfn] = PAGE_FREE;
-    num_free_pages++;
-}
-
-

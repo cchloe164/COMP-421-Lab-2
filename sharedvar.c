@@ -279,3 +279,13 @@ int findFreeVirtualPage()
     TracePrintf(0, "ERROR: No free page found in region 1!\n");
     return -1;
 }
+
+/**
+frees a page
+*/
+void freePage(int pfn)
+{
+    TracePrintf(0, "Freeing page %d!\n", pfn);
+    freePages[pfn] = PAGE_FREE;
+    num_free_pages++;
+}
