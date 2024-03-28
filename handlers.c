@@ -1,6 +1,7 @@
 #include <comp421/hardware.h>
 
 #include "delay.c"
+// #include "brk.c"
 
 /* HANDLERS */
 
@@ -38,7 +39,7 @@ void TrapKernelHandler(ExceptionInfo *info)
     // }
     // else if (info->code == YALNIX_GETPID)
     // {
-    //     info->regs[0] = GetPid_();
+    //     info->regs[0] = GetPid();
     // }
     // else if (info->code == YALNIX_BRK)
     // {

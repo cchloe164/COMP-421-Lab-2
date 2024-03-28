@@ -409,11 +409,7 @@ extern int Wait(int *status_ptr) {
     return 0;
 }
 
-extern int Delay(int clock_ticks) {
-    (void)clock_ticks;
-    TracePrintf(0, "Delay called!\n");
-    return 0;
-}
+
 extern int TtyRead(int tty_id, void *buf, int len) {
     (void)tty_id;
     (void)buf;
