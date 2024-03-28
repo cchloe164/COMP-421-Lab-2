@@ -139,45 +139,45 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     region1Pt[virtualPage].pfn = PAGE_TABLE_LEN + virtualPage;
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_ALL);
 
-    pcb2->region0 = (struct pte *)((PAGE_TABLE_LEN + virtualPage) << PAGESHIFT); // set it equal to the address
+    pcb2->region0 = (struct pte*)((PAGE_TABLE_LEN + virtualPage) << PAGESHIFT); // set it equal to the address
+    pcb2->free_vpn = virtualPage;
     TracePrintf(0, "Proc2 R0 new paddr %p\n", &pcb2->region0);
     
-    // TracePrintf(0, "Allocating and setting up process 2's kernel stack...\n");
-    // int vaddr3;
-    // for (vaddr3 = KERNEL_STACK_BASE; vaddr3 < KERNEL_STACK_LIMIT; vaddr3 += PAGESIZE)
-    // {
-    //     int vpn = vaddr3 >> PAGESHIFT; // addr -> page number
-    //     // TracePrintf(0, "vpn2: %d vaddr: %p\n", vpn, vaddr3);
+    TracePrintf(0, "Allocating and setting up process 2's kernel stack...\n");
+    int vaddr3;
+    for (vaddr3 = KERNEL_STACK_BASE; vaddr3 < KERNEL_STACK_LIMIT; vaddr3 += PAGESIZE)
+    {
+        int vpn = vaddr3 >> PAGESHIFT; // addr -> page number
+        // TracePrintf(0, "vpn2: %d vaddr: %p\n", vpn, vaddr3);
 
-    //     // TODO: change this Region0pt to be a specific region0pt for the pcb2 (see piazza @130)
-    //     pcb2->region0[vpn].pfn = findFreePage();
-    //     pcb2->region0[vpn].uprot = PROT_NONE;
-    //     pcb2->region0[vpn].kprot = PROT_READ | PROT_WRITE;
-    //     pcb2->region0[vpn].valid = 1;
-    //     // TracePrintf(0, "ksb %d", KERNEL_STACK_BASE >> PAGESHIFT);
-    // }
+        // TODO: change this Region0pt to be a specific region0pt for the pcb2 (see piazza @130)
+        pcb2->region0[vpn].pfn = findFreePage();
+        pcb2->region0[vpn].uprot = PROT_NONE;
+        pcb2->region0[vpn].kprot = PROT_READ | PROT_WRITE;
+        pcb2->region0[vpn].valid = 1;
+        // TracePrintf(0, "ksb %d", KERNEL_STACK_BASE >> PAGESHIFT);
+    }
     
-    // pcb2->process_id = next_proc_id;
-    // next_proc_id++;
-    // TracePrintf(0, "Allocation and setup done.\n");
+    pcb2->process_id = next_proc_id;
+    next_proc_id++;
+    TracePrintf(0, "Allocation and setup done.\n");
 
     // //TODO: create pcbs for each process. Write a create pcb function to create pcbs and create pcb for idle program?
     // // Create init process; need to call this context switch
     // //create pcb for init
     
-    // // SavedContext *ctxp;
-    // int res = ContextSwitch(SwitchNewProc, &pcb1->ctx, (void *)pcb1, (void *)pcb2);
-    // // pcb1->ctx = *ctxp;
-    // TracePrintf(0, "Result from ContextSwitch: %d\n", res);
+    // SavedContext *ctxp;
+    int res = ContextSwitch(SwitchNewProc, &pcb1->ctx, (void *)pcb1, (void *)pcb2);
+    // pcb1->ctx = *ctxp;
+    TracePrintf(0, "Result from ContextSwitch: %d\n", res);
+    if (res == 0) {
+        TracePrintf(0, "ContextSwitch was successful!\n", res);
+    } else {
+        TracePrintf(0, "ERROR: ContextSwitch was unsuccessful.\n", res);
+    }
     
-    // LoadProgram(cmd_args[0], cmd_args, info, pcb2->region0);
-    // TracePrintf(0, "DID WE GET HERE? done contextswitching (second load program)\n");
-    // (void) pcb1;
-    // (void) pcb2;
-    (void) info;
-    (void) cmd_args;
-
-    //TODO: read piazza @130
+    LoadProgram(cmd_args[0], cmd_args, info, pcb2->region0);
+    TracePrintf(0, "END OF CODE REACHED!!!!\n");
 
     return;
 }
@@ -714,12 +714,12 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)/
      */
     // >>>> Initialize pc for the current process to (void *)li.entry
     info->pc = (void *)li.entry;
-    TracePrintf(0, "made to this1. argcount is %d\n", argcount);
+    // TracePrintf(0, "made to this1. argcount is %d\n", argcount);
     /*
      *  Now, finally, build the argument list on the new stack.
      */
     *cpp++ = (char *)argcount;		/* the first value at cpp is argc */
-    TracePrintf(0, "made to this2.\n");
+    // TracePrintf(0, "made to this2.\n");
 
     cp2 = argbuf;
     

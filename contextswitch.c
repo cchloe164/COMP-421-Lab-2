@@ -18,7 +18,7 @@ SavedContext *SwitchNewProc(SavedContext *ctxp, void *p1, void *p2)
     int temp_vpn = 0;   // TODO: implement case where no invalid ptes are found
     unsigned long vaddr;
     for (vaddr = VMEM_1_BASE; vaddr < VMEM_1_LIMIT; vaddr += PAGESIZE) {
-        int page = (vaddr >> PAGESHIFT) - 512;
+        int page = (vaddr >> PAGESHIFT) - PAGE_TABLE_LEN;
         TracePrintf(2, "\nvaddr: %p\nvpn: %d\nlimit: %p\n", vaddr, page, VMEM_1_LIMIT);
         if (region1Pt[page].valid == 0) {
             temp_vpn = page;
@@ -60,28 +60,30 @@ SavedContext *SwitchNewProc(SavedContext *ctxp, void *p1, void *p2)
     }
 
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_1);
+    curr_proc = proc2;
     // redirect current region 0 pointer to new process
     // region0Pt = *proc2->kernel_stack;
     // unsigned long newR0paddr = (unsigned long)&proc2->region0[0];
-    unsigned long newR0paddr = (unsigned long)proc2->region0;
-    TracePrintf(0, "r0 vpn: %d\n", newR0paddr >> PAGESHIFT);
-    TracePrintf(0, "r0 offset: %d\n", newR0paddr & PAGEOFFSET);
+    // unsigned long newR0paddr = (unsigned long)proc2->region0;
+    // TracePrintf(0, "r0 vpn: %d\n", newR0paddr >> PAGESHIFT);
+    // TracePrintf(0, "r0 offset: %d\n", newR0paddr & PAGEOFFSET);
 
     // proc2->region0[508].valid=1;
     // proc2->region0[507].valid=1;
     // proc2->region0[509].valid=1;
-    TracePrintf(0, "newr0paddr created\n");
+    // TracePrintf(0, "newr0paddr created\n");
     //unsigned long phys_addr = (unsigned long)((region1Pt[(newR0paddr >> PAGESHIFT)- PAGE_TABLE_LEN].pfn << PAGESHIFT)| (newR0paddr & PAGEOFFSET));
-    unsigned long phys_addr = (unsigned long)((PAGE_TABLE_LEN + 500) << PAGESHIFT);
+    unsigned long phys_addr = (unsigned long)((PAGE_TABLE_LEN + proc2->free_vpn) << PAGESHIFT);
+    // unsigned long phys_addr = proc2->region0;
     
-    TracePrintf(0, "phys_addr %p created\n", phys_addr);
-    TracePrintf(0, "index %d created\n", newR0paddr >> PAGESHIFT);
-    TracePrintf(0, "Region 1 entry %d\n", (newR0paddr >> PAGESHIFT)- PAGE_TABLE_LEN);
-    TracePrintf(0, "phys_addr pfn %d created\n", region1Pt[(newR0paddr >> PAGESHIFT)- PAGE_TABLE_LEN].pfn); // this is correct
+    TracePrintf(0, "Writing REG0_PTR0 to %p...", phys_addr);
+    // TracePrintf(0, "index %d created\n", newR0paddr >> PAGESHIFT);
+    // TracePrintf(0, "Region 1 entry %d\n", (newR0paddr >> PAGESHIFT)- PAGE_TABLE_LEN);
+    // TracePrintf(0, "phys_addr pfn %d created\n", region1Pt[(newR0paddr >> PAGESHIFT)- PAGE_TABLE_LEN].pfn); // this is correct
     WriteRegister(REG_PTR0, (RCS421RegVal)phys_addr);
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
+    TracePrintf(0, "done\n");
 
-    curr_proc = proc2;
     // return the ctx
     return &proc2->ctx;
 }
