@@ -86,12 +86,12 @@ void PushItemToWaitingQueue(struct queue_item *new) {
 
     // push onto queue
     if (waiting_queue_size == 0) {
-        queue_head = new;
-        queue_tail = queue_head;
+        waiting_queue_head = new;
+        waiting_queue_tail = waiting_queue_head;
     } else {
-        queue_tail->next = new;
-        new->prev = queue_tail;
-        queue_tail = new;
+        waiting_queue_tail->next = new;
+        new->prev = waiting_queue_tail;
+        waiting_queue_tail = new;
     }
     waiting_queue_size++;
 }

@@ -87,15 +87,18 @@ void TrapClockHandler(ExceptionInfo *info)
     //TODO: add a dummy to the tail of the queue or wait until null
     // int procs_deleted = 0;
     // int i;
+    struct pcb *current_proc;
     TracePrintf(0, "TRAP_CLOCK handler called!\n");
     while (curr_proc_item != NULL) {
-        curr_proc = curr_proc_item->proc;
+        TracePrintf(1, "TRAP_CLOCK handler decrementing clock for waiting queue item!\n");
+        current_proc = curr_proc_item->proc;
         
-        int ticks_left = curr_proc->delay_ticks;
-        curr_proc->delay_ticks = ticks_left - 1; //tick it down
-        if (curr_proc->delay_ticks <= 0) { // the process is done waiting; remove it from the delay queue and put it on the ready queue
+        int ticks_left = current_proc->delay_ticks;
+        current_proc->delay_ticks = ticks_left - 1; //tick it down
+        if (current_proc->delay_ticks <= 0) { // the process is done waiting; remove it from the delay queue and put it on the ready queue
+            TracePrintf(1, "Item with id %d delay has expired! now moving to th eready queue\n", current_proc->process_id);
             RemoveItemFromWaitingQueue(curr_proc_item);
-            PushProcToQueue(curr_proc);
+            PushProcToQueue(current_proc);
             // procs_deleted += 1;//question here: do we update the queue size here or later? 
         }
         curr_proc_item = curr_proc_item->next;
