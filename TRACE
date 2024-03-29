@@ -12,23 +12,38 @@ Kernel   LoadProgram 'idle', args 0x1fffd0
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
 Kernel   entry 0x10100
-Kernel   LoadProgram: size 6, argcount 1
+Kernel   LoadProgram: size 7, argcount 1
 Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
 Kernel   Passed virtual memory check!
 Kernel   Passed physical memory check!
 Kernel   Freed current Region 0!
 Kernel   Invalidating MEM_INVALID_PAGES...Kernel   done1
+Kernel   Found free page 0 in Region 0!
+Kernel   Found free page 1 in Region 0!
+Kernel   Found free page 2 in Region 0!
+Kernel   Found free page 3 in Region 0!
+Kernel   Found free page 4 in Region 0!
+Kernel   Found free page 5 in Region 0!
+Kernel   Found free page 6 in Region 0!
 Kernel   Text pages setup completed!
+Kernel   Found free page 7 in Region 0!
+Kernel   Found free page 8 in Region 0!
+Kernel   Found free page 9 in Region 0!
+Kernel   Found free page 10 in Region 0!
 Kernel   Data and BSS pages setup completed!
+Kernel   Found free page 11 in Region 0!
 Kernel   User stack pages setup completed!
 Kernel   Flushing old process' PTEs from Region 0...
 Kernel   done Flushing 0
 Kernel   Flushing edits to mem_invalid_pages in the new process' Region 0...Kernel   done3
 Kernel   Building Region 0 for process 1!
-Kernel   Starting at addr 0x400000 and searching until addr 0x212360, decrementing by 4096:
 Kernel   Found free page 509 in Region 1!
 Kernel   Proc R0 paddr 0x214398
 Kernel   Allocating and setting up kernel stack...
+Kernel   Found free page 12 in Region 0!
+Kernel   Found free page 13 in Region 0!
+Kernel   Found free page 14 in Region 0!
+Kernel   Found free page 15 in Region 0!
 Kernel   Allocation and setup done.
 Kernel   Switching from existing process 0 to new process 1
 Kernel   Copying source page 508 to dest page 21...
@@ -49,28 +64,65 @@ Kernel   dest pfn: 15
 Kernel   done
 Kernel   Writing REG0_PTR0 to 0x3fd000...Kernel   done
 Kernel   ContextSwitch was successful!
-Kernel   LoadProgram 'init2', args 0x1fffd0
+Kernel   LoadProgram 'init10', args 0x1fffd0
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
 Kernel   entry 0x10100
-Kernel   LoadProgram: size 6, argcount 1
+Kernel   LoadProgram: size 7, argcount 1
 Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
 Kernel   Passed virtual memory check!
 Kernel   Passed physical memory check!
 Kernel   Freed current Region 0!
 Kernel   Invalidating MEM_INVALID_PAGES...Kernel   done1
+Kernel   Found free page 16 in Region 0!
+Kernel   Found free page 17 in Region 0!
+Kernel   Found free page 18 in Region 0!
+Kernel   Found free page 19 in Region 0!
+Kernel   Found free page 20 in Region 0!
+Kernel   Found free page 21 in Region 0!
+Kernel   Found free page 22 in Region 0!
 Kernel   Text pages setup completed!
+Kernel   Found free page 23 in Region 0!
+Kernel   Found free page 24 in Region 0!
+Kernel   Found free page 25 in Region 0!
+Kernel   Found free page 26 in Region 0!
 Kernel   Data and BSS pages setup completed!
+Kernel   Found free page 27 in Region 0!
 Kernel   User stack pages setup completed!
 Kernel   Flushing old process' PTEs from Region 0...
 Kernel   done Flushing 0
 Kernel   Flushing edits to mem_invalid_pages in the new process' Region 0...Kernel   done3
 Kernel   END OF CODE REACHED!!!!
 Kernel   TRAP_KERNEL handler called!
-Kernel   TRAP_KERNEL handler found a getpid.
-Kernel   currproc: 1
-Kernel   GetPid: returned 1
-User     init2 pid is: 1
+Kernel   TRAP_KERNEL handler found a fork.
+Kernel   Fork called!
+Kernel   Building Region 0 for process 2!
+Kernel   Found free page 508 in Region 1!
+Kernel   Proc R0 paddr 0x214710
+Kernel   Allocating and setting up kernel stack...
+Kernel   Found free page 28 in Region 0!
+Kernel   Found free page 29 in Region 0!
+Kernel   Found free page 30 in Region 0!
+Kernel   Found free page 31 in Region 0!
+Kernel   Allocation and setup done.
+Kernel   Copying parent process 1 to child process 2
+Kernel   Copying source page 508 to dest page 22...
+Kernel   dest addr: 0x216000	source addr: 0x1fc000
+Kernel   dest pfn: 28
+Kernel   done
+Kernel   Copying source page 509 to dest page 22...
+Kernel   dest addr: 0x216000	source addr: 0x1fd000
+Kernel   dest pfn: 29
+Kernel   done
+Kernel   Copying source page 510 to dest page 22...
+Kernel   dest addr: 0x216000	source addr: 0x1fe000
+Kernel   dest pfn: 30
+Kernel   done
+Kernel   Copying source page 511 to dest page 22...
+Kernel   dest addr: 0x216000	source addr: 0x1ff000
+Kernel   dest pfn: 31
+Kernel   done
+Kernel   ContextSwitch was successful!
 Kernel   TRAP_KERNEL handler called!
 Kernel   TRAP_KERNEL handler found a exit.
 Kernel   Exit called!

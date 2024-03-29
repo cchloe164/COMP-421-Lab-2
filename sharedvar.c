@@ -247,16 +247,18 @@ Finds a free page, returns the PFN or -1 if there are no free pages available.
 */
 int findFreePage()
 {
-    int page_itr;
-    for (page_itr = 0; page_itr < num_pages; page_itr++)
+    int page;
+    for (page = 0; page < num_pages; page++)
     {
-        if (freePages[page_itr] == PAGE_FREE)
+        if (freePages[page] == PAGE_FREE)
         {
-            freePages[page_itr] = PAGE_USED;
+            TracePrintf(0, "Found free page %d in Region 0!\n", page);
+            freePages[page] = PAGE_USED;
             num_free_pages--;
-            return page_itr;
+            return page;
         }
     }
+    TracePrintf(0, "ERROR: No free page found in region 0!\n");
     return -1;
 }
 
@@ -265,7 +267,6 @@ int findFreePage()
  */
 int findFreeVirtualPage()
 {
-    TracePrintf(0, "Starting at addr %p and searching until addr %p, decrementing by %d:\n", VMEM_1_LIMIT, (unsigned long)&currKernelBrk, PAGESIZE);
     unsigned long vaddr;
     for (vaddr = VMEM_1_LIMIT - (3 * PAGESIZE); vaddr > (unsigned long)&currKernelBrk; vaddr -= PAGESIZE)
     {
