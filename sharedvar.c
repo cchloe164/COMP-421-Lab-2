@@ -68,23 +68,22 @@ void SetProcID(struct pcb *proc) {
     next_proc_id++;
 }
 
-
 //creates pcb
 struct pcb *create_pcb() {
-    struct pcb *new = malloc(sizeof(struct pcb*));
+    struct pcb *new = malloc(sizeof(struct pcb));
     SetProcID(new);
-    new->brk = 0;      
-    new->reg0_pfn = 0; 
+    new->brk = -1;      
+    new->reg0_pfn = -1; 
     new->region0 = NULL;  
-    new->free_vpn = 0; 
-    new->delay_ticks = 0;       
+    new->free_vpn = -1; 
+    new->delay_ticks = -1;       
     new->children_head = NULL; 
     new->children_tail = NULL;
     new->next_sibling = NULL;
     new->prev_sibling = NULL;
     new->exited_children_head = NULL;
     new->exited_children_tail = NULL;
-    new->waiting = 0;
+    new->waiting = false;
 
     return new;
 }

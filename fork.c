@@ -18,7 +18,7 @@ int ForkFunc(void)
 {
     TracePrintf(0, "Fork called!\n");
     struct pcb *parent = curr_proc;
-    struct pcb *child = malloc(sizeof(struct pcb));
+    struct pcb *child = create_pcb();
 
     // set parent-child relations
     TracePrintf(0, "Set family relationships!\n");
@@ -31,7 +31,6 @@ int ForkFunc(void)
     }
     parent->children_tail = child;
 
-    SetProcID(child);
     BuildRegion0(child);    // Allocate and set up kernel stack
     int res = ContextSwitch(SwitchFork, &parent->ctx, (void *)parent, (void *)child);
     if (res == 0) {

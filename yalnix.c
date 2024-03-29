@@ -69,19 +69,14 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     // Create idle process
     
     TracePrintf(1, "-------TraceTraceTrace5--------");
-    struct pcb *pcb1 = malloc(sizeof(struct pcb));
+    struct pcb *pcb1 = create_pcb();
     pcb1->region0 = &region0Pt[0];
-    SetProcID(pcb1);
     LoadProgram("idle", cmd_args, info, pcb1->region0);
     curr_proc = pcb1;
     idle_pcb = pcb1;
 
-    struct pcb *pcb2 = malloc(sizeof(struct pcb));
-    SetProcID(pcb2);
+    struct pcb *pcb2 = create_pcb();
     BuildRegion0(pcb2);
-
-    pcb1->waiting = false;
-    pcb2->waiting = false;
 
     int res = ContextSwitch(SwitchNewProc, &pcb1->ctx, (void *)pcb1, (void *)pcb2);
     if (res == 0) {
@@ -90,7 +85,6 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
         TracePrintf(0, "ERROR: ContextSwitch was unsuccessful.\n", res);
     }
 
-    
     LoadProgram(cmd_args[0], cmd_args, info, pcb2->region0);
     TracePrintf(0, "END OF CODE REACHED!!!!\n");
 
