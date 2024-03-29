@@ -31,8 +31,7 @@ int DelayFunc(int clock_ticks)
     PushItemToWaitingQueue(waiting_node);
     /// could have a global clock var that keeps track of time, but i think it might be better to have timers that decerase for each process
     struct pcb *next_pcb = FindReadyPcb();
-    (void)next_pcb;
-    ContextSwitch(SwitchExist, &curr_proc->ctx, (void *)curr_proc, (void *)idle_pcb); // TODO: Change this to be next_pcb when FindReadyPcb is done
+    ContextSwitch(SwitchExist, &curr_proc->ctx, (void *)curr_proc, (void *)next_pcb); // TODO: Change this to be next_pcb when FindReadyPcb is done
     //-make a new switch function ()
 
     // new switch function:

@@ -156,19 +156,26 @@ void RemoveChildFromParent(struct pcb *item, struct pcb *parent_proc) {
     TracePrintf(0, "Removing child %d from parent %d\n", item->process_id, parent_proc->process_id);
     // Case 1: If the item is the only item in the queue
     if (parent_proc->children_head == item && parent_proc->children_tail == item) {
+        TracePrintf(1, "This child is the only child in the queue\n");
         parent_proc->children_head = NULL;
         parent_proc->children_tail = NULL;
+        item->next_sibling = NULL;
+        item->prev_sibling = NULL;
+        // TracePrintf(1, "This child is the only child in the queue. removed!\n");
     } else {
         // Case 2: If the item is the head of the queue
         if (parent_proc->children_head == item) {
+            TracePrintf(1, "This child is at the head of the queue\n");
             parent_proc->children_head = item->next_sibling;
             parent_proc->children_head->prev_sibling = NULL;
         } else {
             // Case 3: If the item is the tail of the queue
             if (parent_proc->children_tail == item) {
+                TracePrintf(1, "This child is at the tail of the queue\n");
                 parent_proc->children_tail = item->prev_sibling;
                 parent_proc->children_tail->next_sibling = NULL;
             } else {
+                TracePrintf(1, "This child is in the middle of the queue\n");
                 // Case 4: If the item is somewhere in the middle of the queue
                 item->prev_sibling->next_sibling = item->next_sibling;
                 item->next_sibling->prev_sibling = item->prev_sibling;
@@ -301,8 +308,10 @@ struct pcb * FindReadyPcb() { //TODO: this procedure gets used by delay to find 
     } else {
         TracePrintf(1, "Found a ready process to switch to for delay! PID %d from PID %d.\n", queue_head->proc->process_id, curr_proc->process_id);
         // TracePrintf(1, "Valid bit 508: %d", (struct pte *) ((queue_head->proc)->region0)[508].valid);
-        
-        return queue_head->proc;//TODO: might be switching to itself? 
+        struct pcb *popped = queue_head->proc;
+        RemoveItemFromReadyQueue(queue_head);
+        return popped;//TODO: might be switching to itself? 
+
     }
 }
 /**

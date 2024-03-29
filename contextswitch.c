@@ -154,7 +154,7 @@ SavedContext *SwitchExist(SavedContext *ctx, void *p1, void *p2) {
 
 
 
-// context switching from an existing process to another existing process
+// context switching from an exiting process to an existing process
 SavedContext *SwitchExit(SavedContext *ctx, void *p1, void *p2) {
 
     struct pcb *proc1 = (struct pcb *) p1;
@@ -188,5 +188,6 @@ SavedContext *SwitchExit(SavedContext *ctx, void *p1, void *p2) {
     curr_proc = p2;
 
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_ALL);
+    // TracePrintf(0, "We have arrived here2 in SwitchExit!\n");
     return &proc2->ctx;
 }
