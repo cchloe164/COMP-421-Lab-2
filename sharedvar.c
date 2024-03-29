@@ -61,9 +61,21 @@ int queue_size = 0;
 int waiting_queue_size = 0;
 
 // Terminal variables
-struct term {
-    int tty_id;
+
+// Terminal variables
+struct line {
+    char *content;
+    int len;
+    int read_i;
+    struct line *next_line;
 };
+
+struct term {
+    int tty_id; // terminal id
+    struct line *read_in;  // store read-in lines
+    struct line *write_out;
+};
+struct term *terms; // array of terminals
 
 /**
  * Set process id.
