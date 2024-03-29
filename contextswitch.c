@@ -12,7 +12,7 @@ SavedContext *SwitchNewProc(SavedContext *ctxp, void *p1, void *p2)
     proc2->ctx = *ctxp;
 
     // borrow from the top of the Region 1 page table
-    int temp_vpn = findFreeVirtualPage();
+    int temp_vpn = BorrowR1Page();
     struct pte *temp = &region1Pt[temp_vpn]; 
     struct pte temp_copy = *temp;   // store original pte info
 
@@ -64,13 +64,13 @@ SavedContext *SwitchFork(SavedContext *ctxp, void *p1, void *p2)
     struct pcb *parent = (struct pcb *)p1;
     struct pcb *child = (struct pcb *)p2;
 
-    TracePrintf(0, "Copying parent process %d to child process %d\n", parent->process_id, child->process_id);
+    TracePrintf(0, "Context switching from parent process %d to child process %d\n", parent->process_id, child->process_id);
 
     // save context of proc 1
     child->ctx = *ctxp;
 
     // borrow from the top of the Region 1 page table
-    int temp_vpn = findFreeVirtualPage();
+    int temp_vpn = BorrowR1Page();
     struct pte *temp = &region1Pt[temp_vpn];
     struct pte temp_copy = *temp; // store original pte info
 

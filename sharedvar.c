@@ -271,7 +271,7 @@ int findFreePage()
 int findFreeVirtualPage()
 {
     unsigned long vaddr;
-    for (vaddr = VMEM_1_LIMIT - (3 * PAGESIZE); vaddr > (unsigned long)&currKernelBrk; vaddr -= PAGESIZE)
+    for (vaddr = VMEM_1_LIMIT - (3 * PAGESIZE); vaddr > (unsigned long)&currKernelBrk; vaddr -= PAGESIZE) //TODO: try removing 3*pagesize
     {
         int page = (vaddr >> PAGESHIFT) - PAGE_TABLE_LEN;
         if (region1Pt[page].valid == 0)
@@ -282,6 +282,24 @@ int findFreeVirtualPage()
         }
     }
     TracePrintf(0, "ERROR: No free page found in region 1!\n");
+    return -1;
+}
+
+/**
+ * Return free page number from Region 1 for borrowing. If none available, return -1.
+*/
+int BorrowR1Page() {
+    unsigned long vaddr;
+    for (vaddr = VMEM_1_BASE; vaddr < VMEM_1_LIMIT; vaddr += PAGESIZE)
+    {
+        int page = (vaddr >> PAGESHIFT) - PAGE_TABLE_LEN;
+        if (region1Pt[page].valid == 0)
+        {
+            TracePrintf(0, "Borrowing page %d from Region 1!\n", page);
+            return page;
+        }
+    }
+    TracePrintf(0, "ERROR: No more free pages in Region 1 to borrow!\n");
     return -1;
 }
 

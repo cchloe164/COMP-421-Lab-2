@@ -46,21 +46,21 @@ Kernel   Found free page 14 in Region 0!
 Kernel   Found free page 15 in Region 0!
 Kernel   Allocation and setup done.
 Kernel   Switching from existing process 0 to new process 1
-Kernel   Found free page 508 in Region 1!
-Kernel   Copying source page 508 to dest page 508...
-Kernel   dest addr: 0x3fc000	source addr: 0x1fc000
+Kernel   Borrowing page 22 from Region 1!
+Kernel   Copying source page 508 to dest page 22...
+Kernel   dest addr: 0x216000	source addr: 0x1fc000
 Kernel   dest pfn: 12
 Kernel   done
-Kernel   Copying source page 509 to dest page 508...
-Kernel   dest addr: 0x3fc000	source addr: 0x1fd000
+Kernel   Copying source page 509 to dest page 22...
+Kernel   dest addr: 0x216000	source addr: 0x1fd000
 Kernel   dest pfn: 13
 Kernel   done
-Kernel   Copying source page 510 to dest page 508...
-Kernel   dest addr: 0x3fc000	source addr: 0x1fe000
+Kernel   Copying source page 510 to dest page 22...
+Kernel   dest addr: 0x216000	source addr: 0x1fe000
 Kernel   dest pfn: 14
 Kernel   done
-Kernel   Copying source page 511 to dest page 508...
-Kernel   dest addr: 0x3fc000	source addr: 0x1ff000
+Kernel   Copying source page 511 to dest page 22...
+Kernel   dest addr: 0x216000	source addr: 0x1ff000
 Kernel   dest pfn: 15
 Kernel   done
 Kernel   Writing REG0_PTR0 to 0x3fd000...Kernel   done
@@ -106,27 +106,27 @@ Kernel   Found free page 29 in Region 0!
 Kernel   Found free page 30 in Region 0!
 Kernel   Found free page 31 in Region 0!
 Kernel   Allocation and setup done.
-Kernel   Copying parent process 1 to child process 2
-Kernel   Found free page 507 in Region 1!
-Kernel   Copying source page 508 to dest page 507...
-Kernel   dest addr: 0x3fb000	source addr: 0x1fc000
+Kernel   Context switching from parent process 1 to child process 2
+Kernel   Borrowing page 22 from Region 1!
+Kernel   Copying source page 508 to dest page 22...
+Kernel   dest addr: 0x216000	source addr: 0x1fc000
 Kernel   dest pfn: 28
 Kernel   done
-Kernel   Copying source page 509 to dest page 507...
-Kernel   dest addr: 0x3fb000	source addr: 0x1fd000
+Kernel   Copying source page 509 to dest page 22...
+Kernel   dest addr: 0x216000	source addr: 0x1fd000
 Kernel   dest pfn: 29
 Kernel   done
-Kernel   Copying source page 510 to dest page 507...
-Kernel   dest addr: 0x3fb000	source addr: 0x1fe000
+Kernel   Copying source page 510 to dest page 22...
+Kernel   dest addr: 0x216000	source addr: 0x1fe000
 Kernel   dest pfn: 30
 Kernel   done
-Kernel   Copying source page 511 to dest page 507...
-Kernel   dest addr: 0x3fb000	source addr: 0x1ff000
+Kernel   Copying source page 511 to dest page 22...
+Kernel   dest addr: 0x216000	source addr: 0x1ff000
 Kernel   dest pfn: 31
 Kernel   done
 Kernel   ContextSwitch was successful!
 Kernel   Copying content from parent to child...
-Kernel   Found free page 507 in Region 1!
+Kernel   Borrowing page 22 from Region 1!
 Kernel   BEFORE USING PFN: 0
 Kernel   Found free page 32 in Region 0!
 Kernel   Found free page 33 in Region 0!
@@ -143,26 +143,4 @@ Kernel   Found free page 43 in Region 0!
 Kernel   Content copied successfully!
 Kernel   USING PFN: 43
 Kernel   AFTER USING PFN: 0
-Kernel   Switching to an existing process, from process 1 to process 2
-Kernel   ContextSwitch was successful!
-Kernel   Copying content from parent to child...
-Kernel   Found free page 507 in Region 1!
-Kernel   BEFORE USING PFN: 0
-Kernel   Found free page 44 in Region 0!
-Kernel   Found free page 45 in Region 0!
-Kernel   Found free page 46 in Region 0!
-Kernel   Found free page 47 in Region 0!
-Kernel   Found free page 48 in Region 0!
-Kernel   Found free page 49 in Region 0!
-Kernel   Found free page 50 in Region 0!
-Kernel   Found free page 51 in Region 0!
-Kernel   Found free page 52 in Region 0!
-Kernel   Found free page 53 in Region 0!
-Kernel   Found free page 54 in Region 0!
-Kernel   Found free page 55 in Region 0!
-Kernel   Content copied successfully!
-Kernel   USING PFN: 55
-Kernel   AFTER USING PFN: 0
-Kernel   Switching to an existing process, from process 1 to process 2
-Kernel   What
-Kernel   TRAP_MEMORY handler called!
+Kernel   Writing REG0_PTR0 to 0x3fc000...

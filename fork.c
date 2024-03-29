@@ -30,7 +30,7 @@ int Fork_(void)
 
     TracePrintf(0, "Copying content from parent to child...\n");
     // borrow a pte from R1
-    int temp_vpn = findFreeVirtualPage();
+    int temp_vpn = BorrowR1Page();
     struct pte *temp = &region1Pt[temp_vpn];
     TracePrintf(0, "BEFORE USING PFN: %d\n", region1Pt[temp_vpn].pfn);
     struct pte temp_copy = *temp; // store original pte info
@@ -70,22 +70,17 @@ int Fork_(void)
 
     TracePrintf(0, "Content copied successfully!\n");
 
-    TracePrintf(0, "USING PFN: %d\n", region1Pt[temp_vpn].pfn);
     region1Pt[temp_vpn] = temp_copy;    // free borrowed pte
-    TracePrintf(0, "AFTER USING PFN: %d\n", region1Pt[temp_vpn].pfn);
     freePages[temp_vpn + PAGE_TABLE_LEN] = PAGE_FREE;
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_1);
 
-    ContextSwitch(SwitchExist, &parent->ctx, (void *)parent, (void *)child);
-    TracePrintf(0, "What\n");
+    curr_proc = child;
+    unsigned long phys_addr = (unsigned long)((PAGE_TABLE_LEN + child->free_vpn) << PAGESHIFT);
 
-    // curr_proc = child;
-    // unsigned long phys_addr = (unsigned long)((PAGE_TABLE_LEN + child->free_vpn) << PAGESHIFT);
+    TracePrintf(0, "Writing REG0_PTR0 to %p...", phys_addr);
+    WriteRegister(REG_PTR0, (RCS421RegVal)phys_addr);
+    WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
+    TracePrintf(0, "done\n");
 
-    // TracePrintf(0, "Writing REG0_PTR0 to %p...", phys_addr);
-    // WriteRegister(REG_PTR0, (RCS421RegVal)phys_addr);
-    // WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
-    // TracePrintf(0, "done\n");
-
-    return 0;
+    return child->process_id;
 }
