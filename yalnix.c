@@ -82,6 +82,15 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
 
     pcb1->waiting = false;
     pcb2->waiting = false;
+    pcb1->children_head = NULL;
+    pcb1->children_tail = NULL;
+    pcb2->children_tail = NULL;
+    pcb2->children_head = NULL;
+
+    pcb1->exited_children_head = NULL;
+    pcb1->exited_children_tail = NULL;
+    pcb2->exited_children_head = NULL;
+    pcb2->exited_children_tail = NULL;
 
     int res = ContextSwitch(SwitchNewProc, &pcb1->ctx, (void *)pcb1, (void *)pcb2);
     if (res == 0) {

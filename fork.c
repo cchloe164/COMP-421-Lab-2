@@ -22,6 +22,23 @@ int ForkFunc(void)
     struct pcb *parent = curr_proc;
     struct pcb *child = malloc(sizeof(struct pcb));
 
+    
+    SetProcID(child);
+
+    
+    BuildRegion0(child);    // Allocate and set up kernel stack
+    // TracePrintf(0, "Child PID is %d\n", child->process_id);
+    child->waiting = false;
+    child->waiting = false;
+    child->children_head = NULL;
+    child->children_tail = NULL;
+    child->children_tail = NULL;
+    child->children_head = NULL;
+
+    child->exited_children_head = NULL;
+    child->exited_children_tail = NULL;
+    child->exited_children_head = NULL;
+    child->exited_children_tail = NULL;
     // set parent-child relations
     TracePrintf(0, "Set family relationships!\n");
     child->parent = parent;
@@ -33,16 +50,20 @@ int ForkFunc(void)
     }
     parent->children_tail = child;
 
-    SetProcID(child);
-    BuildRegion0(child);    // Allocate and set up kernel stack
     int res = ContextSwitch(SwitchFork, &parent->ctx, (void *)parent, (void *)child);
     if (res == 0) {
-        TracePrintf(0, "ContextSwitch was successful!\n", res);
+        TracePrintf(0, "ForkSwitch was successful!\n", res);
     } else {
-        TracePrintf(0, "ERROR: ContextSwitch was unsuccessful.\n", res);
+        TracePrintf(0, "ERROR: ForkSwitch was unsuccessful.\n", res);
     }
 
-    PushProcToWaitingQueue(parent);
-
-    return child->process_id;
+    // PushProcToWaitingQueue(parent);
+    //     The only
+    //  * distinction is the fact that the return value in the calling (parent) process is the (nonzero) process ID
+    //  * of the new (child) process, while the value returned in the child is 0
+    if (curr_proc->process_id == child->process_id) {
+        return 0;
+    } else {
+        return child->process_id;
+    }
 }
