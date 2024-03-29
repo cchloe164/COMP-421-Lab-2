@@ -14,5 +14,6 @@ int main()
 {
     write(0, "init10! Testing Fork!\n", 6);
     Fork();
+    TracePrintf(0, "child pid is: %i\n", GetPid());
     Exit(0);
 }

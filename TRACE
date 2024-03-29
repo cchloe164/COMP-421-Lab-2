@@ -38,7 +38,7 @@ Kernel   done Flushing 0
 Kernel   Flushing edits to mem_invalid_pages in the new process' Region 0...Kernel   done3
 Kernel   Building Region 0 for process 1!
 Kernel   Found free page 509 in Region 1!
-Kernel   Proc R0 paddr 0x2156f0
+Kernel   Proc R0 paddr 0x215708
 Kernel   Allocating and setting up kernel stack...
 Kernel   Found free page 12 in Region 0!
 Kernel   Found free page 13 in Region 0!
@@ -97,9 +97,10 @@ Kernel   END OF CODE REACHED!!!!
 Kernel   TRAP_KERNEL handler called!
 Kernel   TRAP_KERNEL handler found a fork.
 Kernel   Fork called!
+Kernel   Set family relationships!
 Kernel   Building Region 0 for process 2!
 Kernel   Found free page 508 in Region 1!
-Kernel   Proc R0 paddr 0x215a78
+Kernel   Proc R0 paddr 0x215aa8
 Kernel   Allocating and setting up kernel stack...
 Kernel   Found free page 28 in Region 0!
 Kernel   Found free page 29 in Region 0!
@@ -108,26 +109,6 @@ Kernel   Found free page 31 in Region 0!
 Kernel   Allocation and setup done.
 Kernel   Context switching from parent process 1 to child process 2
 Kernel   Borrowing page 22 from Region 1!
-Kernel   Copying source page 508 to dest page 22...
-Kernel   dest addr: 0x216000	source addr: 0x1fc000
-Kernel   dest pfn: 28
-Kernel   done
-Kernel   Copying source page 509 to dest page 22...
-Kernel   dest addr: 0x216000	source addr: 0x1fd000
-Kernel   dest pfn: 29
-Kernel   done
-Kernel   Copying source page 510 to dest page 22...
-Kernel   dest addr: 0x216000	source addr: 0x1fe000
-Kernel   dest pfn: 30
-Kernel   done
-Kernel   Copying source page 511 to dest page 22...
-Kernel   dest addr: 0x216000	source addr: 0x1ff000
-Kernel   dest pfn: 31
-Kernel   done
-Kernel   ContextSwitch was successful!
-Kernel   Copying content from parent to child...
-Kernel   Borrowing page 22 from Region 1!
-Kernel   BEFORE USING PFN: 0
 Kernel   Found free page 32 in Region 0!
 Kernel   Found free page 33 in Region 0!
 Kernel   Found free page 34 in Region 0!
@@ -140,7 +121,18 @@ Kernel   Found free page 40 in Region 0!
 Kernel   Found free page 41 in Region 0!
 Kernel   Found free page 42 in Region 0!
 Kernel   Found free page 43 in Region 0!
-Kernel   Content copied successfully!
-Kernel   USING PFN: 43
-Kernel   AFTER USING PFN: 0
-Kernel   Writing REG0_PTR0 to 0x3fc000...
+Kernel   Found free page 44 in Region 0!
+Kernel   Found free page 45 in Region 0!
+Kernel   Found free page 46 in Region 0!
+Kernel   Found free page 47 in Region 0!
+Kernel   Writing REG0_PTR0 to 0x3fc000...Kernel   done
+Kernel   ContextSwitch was successful!
+Kernel   Pushing proc 1 to waiting queue!
+Kernel   TRAP_KERNEL handler called!
+Kernel   TRAP_KERNEL handler found a getpid.
+Kernel   currproc: 2
+Kernel   GetPid: returned 2
+User     child pid is: 2
+Kernel   TRAP_KERNEL handler called!
+Kernel   TRAP_KERNEL handler found a exit.
+Kernel   Exit called!

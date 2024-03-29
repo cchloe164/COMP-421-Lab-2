@@ -24,6 +24,9 @@ struct pcb { //TODO: I've added a few fields for some of the other functions but
 
     struct pcb *parent; // this process's parent if it has one
     struct pcb *children_head;  // head child of children chain
+    struct pcb *children_tail;  
+    struct pcb *next_sibling;
+    struct pcb *prev_sibling;
 };
 
 // an informal round-robin queue based on clock ticks
@@ -61,6 +64,7 @@ struct pcb create_pcb(int pid, int kernel_stack, int reg0_pfn, int brk, SavedCon
  * Push new process to waiting queue.
 */
 void PushProcToWaitingQueue(struct pcb *proc) {
+    TracePrintf(0, "Pushing proc %d to waiting queue!\n", proc->process_id);
     // wrap process as new queue item
     struct queue_item *new = malloc(sizeof(struct queue_item));
     new->proc = proc;
@@ -83,6 +87,7 @@ void PushProcToWaitingQueue(struct pcb *proc) {
  * Push new process to waiting queue.
 */
 void PushItemToWaitingQueue(struct queue_item *new) {
+    TracePrintf(0, "Pushing proc %d to waiting queue!\n", new->proc->process_id);
     // wrap process as new queue item
     new->next = NULL; // no next process (this is useful for the trapclock handler)
 
@@ -103,6 +108,7 @@ void PushItemToWaitingQueue(struct queue_item *new) {
 */
 
 void RemoveItemFromWaitingQueue(struct queue_item *item) {
+    TracePrintf(0, "Removing proc %d to waiting queue!\n", item->proc->process_id);
     waiting_queue_size--;
 
     // Case 1: If the item is the only item in the queue
@@ -156,8 +162,8 @@ void PushProcToQueue(struct pcb *proc) {
 }
 
 void RemoveItemFromReadyQueue(struct queue_item *item) {
+    TracePrintf(0, "Removing proc %d to waiting queue!\n", item->proc->process_id);
     queue_size--;
-    TracePrintf(0, "removing item from ready queue.\n");
     // Case 1: If the item is the only item in the queue
     if (queue_head == item && queue_tail == item) {
         queue_head = NULL;

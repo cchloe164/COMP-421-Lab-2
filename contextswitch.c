@@ -73,35 +73,54 @@ SavedContext *SwitchFork(SavedContext *ctxp, void *p1, void *p2)
     int temp_vpn = BorrowR1Page();
     struct pte *temp = &region1Pt[temp_vpn];
     struct pte temp_copy = *temp; // store original pte info
+    temp->uprot = PROT_NONE;
+    temp->kprot = PROT_READ | PROT_WRITE;
+    temp->valid = 1;
 
     // find a new Region0 virtual pointer
-    unsigned long source_addr;
-    for (source_addr = KERNEL_STACK_BASE; source_addr < KERNEL_STACK_LIMIT; source_addr += PAGESIZE)
+    unsigned long addr;
+    for (addr = VMEM_0_BASE; addr < VMEM_0_LIMIT; addr += PAGESIZE)
     {
-        int page = source_addr >> PAGESHIFT;
-        TracePrintf(0, "Copying source page %d to dest page %d...\n", page, temp_vpn);
-        
-        // set the temp borrowed to have the same pfn as the new region 0 PTE
-        temp->uprot = PROT_NONE;
-        temp->kprot = PROT_READ | PROT_WRITE;
-        temp->valid = 1;
-        temp->pfn = (child->region0[page]).pfn;
+        int page = addr >> PAGESHIFT;
+        TracePrintf(1, "Copying source page %d to dest page %d...\n", page, temp_vpn);
 
-        // copy from the current region 0 to the new region 0 (pseudo region 0)
-        unsigned long dest_addr = (temp_vpn + PAGE_TABLE_LEN) << PAGESHIFT;
-        TracePrintf(0, "dest addr: %p\tsource addr: %p\n", dest_addr, source_addr);
-        TracePrintf(0, "dest pfn: %d\n", temp->pfn);
-        memcpy((void *) dest_addr, (void *) source_addr, PAGESIZE);
+        // copy over pte settings
+        child->region0[page].valid = parent->region0[page].valid;
 
-        TracePrintf(0, "done\n");
+        if (child->region0[page].valid == 1)
+        {
+            TracePrintf(1, "Setting up valid PTE...\n");
+            child->region0[page].uprot = parent->region0[page].uprot;
+            child->region0[page].kprot = parent->region0[page].kprot;
+            child->region0[page].pfn = findFreePage(); // allocate physical memory
 
-        // flush all entries in region 0 from TLB at that specific address
-        WriteRegister(REG_TLB_FLUSH, dest_addr);
+            // set the temp borrowed to have the same pfn as the new region 0 PTE
+            temp->pfn = (child->region0[page]).pfn;
+
+            // copy from the current region 0 to the new region 0 (pseudo region 0)
+            unsigned long dest_addr = (temp_vpn + PAGE_TABLE_LEN) << PAGESHIFT;
+            TracePrintf(1, "dest addr: %p\tsource addr: %p\n", dest_addr, addr);
+            TracePrintf(1, "dest pfn: %d\n", temp->pfn);
+            TracePrintf(1, "memcpying content from page %d to page %d using R1 page %d...", page, child->region0[page].pfn, temp_vpn);
+            memcpy((void *)dest_addr, (void *)addr, PAGESIZE);
+            TracePrintf(1, "done\n");
+
+            // flush all entries in region 0 from TLB at that specific address
+            WriteRegister(REG_TLB_FLUSH, dest_addr);
+        }
     }
 
     region1Pt[temp_vpn] = temp_copy; // restore borrowed pte from R1
     freePages[temp_vpn + PAGE_TABLE_LEN] = PAGE_FREE;
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_1);
+
+    curr_proc = child;
+    unsigned long phys_addr = (unsigned long)((PAGE_TABLE_LEN + child->free_vpn) << PAGESHIFT);
+
+    TracePrintf(0, "Writing REG0_PTR0 to %p...", phys_addr);
+    WriteRegister(REG_PTR0, (RCS421RegVal)phys_addr);
+    WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
+    TracePrintf(0, "done\n");
 
     // return the ctx
     return &child->ctx;
