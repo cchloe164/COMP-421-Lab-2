@@ -127,64 +127,65 @@ void TrapIllegalHandler(ExceptionInfo *info)
     /**Terminate the currently running Yalnix user process and print a message giving the
     process ID of the process and an explanation of the problem; and continue running other processes.*/
     TracePrintf(0, "TRAP_ILLEGAL handler called!\n");
-    // if (info->code == TRAP_ILLEGAL_ILLOPC) {
-    //     printf("Process %d: Illegal opcode", GetPid_());
-    // }
-    // else if (info->code == TRAP_ILLEGAL_ILLOPN)
-    // {
-    //     printf("Process %d: Illegal operand", GetPid_());
-    // }
-    // else if (info->code == TRAP_ILLEGAL_ILLADR)
-    // {
-    //     printf("Process %d: Illegal addressing mode", GetPid_());
-    // }
-    // else if (info->code == TRAP_ILLEGAL_ILLTRP)
-    // {
-    //     printf("Process %d: Illegal software trap", GetPid_());
-    // }
-    // else if (info->code == TRAP_ILLEGAL_PRVOPC)
-    // {
-    //     printf("Process %d: Privileged opcode", GetPid_());
-    // }
-    // else if (info->code == TRAP_ILLEGAL_PRVREG)
-    // {
-    //     printf("Process %d: Privileged register", GetPid_());
-    // }
-    // else if (info->code == TRAP_ILLEGAL_COPROC)
-    // {
-    //     printf("Process %d: Coprocessor error", GetPid_());
-    // }
-    // else if (info->code == TRAP_ILLEGAL_BADSTK)
-    // {
-    //     printf("Process %d: Bad stack", GetPid_());
-    // }
-    // else if (info->code == TRAP_ILLEGAL_KERNELI)
-    // {
-    //     printf("Process %d: Linux kernel sent SIGILL", GetPid_());
-    // }
-    // else if (info->code == TRAP_ILLEGAL_USERIB)
-    // {
-    //     printf("Process %d: Received SIGILL or SIGBUS from user", GetPid_());
-    // }
-    // else if (info->code == TRAP_ILLEGAL_ADRALN)
-    // {
-    //     printf("Process %d: Invalid address alignment", GetPid_());
-    // }
-    // else if (info->code == TRAP_ILLEGAL_ADRERR)
-    // {
-    //     printf("Process %d: Non-existent physical address", GetPid_());
-    // }
-    // else if (info->code == TRAP_ILLEGAL_OBJERR)
-    // {
-    //     printf("Process %d: Object-specific HW error", GetPid_());
-    // }
-    // else if (info->code == TRAP_ILLEGAL_KERNELB)
-    // {
-    //     printf("Process %d: Linux kernel sent SIGBUS", GetPid_());
-    // } else {
-    //     printf("Code not found.");
-    // }
-
+    
+    if (info->code == TRAP_ILLEGAL_ILLOPC) {
+        printf("Process %d: Illegal opcode", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_ILLEGAL_ILLOPN)
+    {
+        printf("Process %d: Illegal operand", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_ILLEGAL_ILLADR)
+    {
+        printf("Process %d: Illegal addressing mode", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_ILLEGAL_ILLTRP)
+    {
+        printf("Process %d: Illegal software trap", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_ILLEGAL_PRVOPC)
+    {
+        printf("Process %d: Privileged opcode", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_ILLEGAL_PRVREG)
+    {
+        printf("Process %d: Privileged register", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_ILLEGAL_COPROC)
+    {
+        printf("Process %d: Coprocessor error", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_ILLEGAL_BADSTK)
+    {
+        printf("Process %d: Bad stack", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_ILLEGAL_KERNELI)
+    {
+        printf("Process %d: Linux kernel sent SIGILL", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_ILLEGAL_USERIB)
+    {
+        printf("Process %d: Received SIGILL or SIGBUS from user", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_ILLEGAL_ADRALN)
+    {
+        printf("Process %d: Invalid address alignment", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_ILLEGAL_ADRERR)
+    {
+        printf("Process %d: Non-existent physical address", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_ILLEGAL_OBJERR)
+    {
+        printf("Process %d: Object-specific HW error", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_ILLEGAL_KERNELB)
+    {
+        printf("Process %d: Linux kernel sent SIGBUS", GetPid_(curr_proc));
+    } else {
+        printf("Code not found.");
+    }
+    ExitFunc(1);
     Halt();
     (void)info;
 };
@@ -209,32 +210,35 @@ void TrapMemoryHandler(ExceptionInfo *info)
      */
     // check if virtual addr is in region 0, below the stack, and above the break for the process
     TracePrintf(0, "TRAP_MEMORY handler called!\n");
-    // int addri = (uintptr_t) info->addr;
-    // if (addri > VMEM_0_BASE || addri < VMEM_0_LIMIT || addri < KERNEL_STACK_BASE) {
-    //     SetKernelBrk(info->addr);
-    // }
-    // else {
-    //     if (info->code == TRAP_MEMORY_MAPERR)
-    //     {
-    //         printf("Process %d: No mapping at addr", GetPid_());
-    //     }
-    //     else if (info->code == TRAP_MEMORY_ACCERR)
-    //     {
-    //         printf("Process %d: Protection violation at addr", GetPid_());
-    //     }
-    //     else if (info->code == TRAP_MEMORY_KERNEL)
-    //     {
-    //         printf("Process %d: Linux kernel sent SIGSEGV at addr", GetPid_());
-    //     }
-    //     else if (info->code == TRAP_MEMORY_USER)
-    //     {
-    //         printf("Process %d: Received SIGSEGV from user", GetPid_());
-    //     }
-    //     else
-    //     {
-    //         printf("Code not found.");
-    //     }
+    int addri = (uintptr_t) info->addr;
+    if (addri > VMEM_0_BASE || addri < VMEM_0_LIMIT || addri < KERNEL_STACK_BASE) {
+        SetKernelBrk(info->addr);
+    }
+    else {
+        if (info->code == TRAP_MEMORY_MAPERR)
+        {
+            printf("Process %d: No mapping at addr", GetPid_(curr_proc));
 
+        }
+        else if (info->code == TRAP_MEMORY_ACCERR)
+        {
+            printf("Process %d: Protection violation at addr", GetPid_(curr_proc));
+        }
+        else if (info->code == TRAP_MEMORY_KERNEL)
+        {
+            printf("Process %d: Linux kernel sent SIGSEGV at addr", GetPid_(curr_proc));
+        }
+        else if (info->code == TRAP_MEMORY_USER)
+        {
+            printf("Process %d: Received SIGSEGV from user", GetPid_(curr_proc));
+        }
+        else
+        {
+            printf("Code not found.");
+        }
+    if (terminate) {
+        ExitFunc(1);
+    }
         Halt();
     // }
     (void)info;
@@ -251,50 +255,51 @@ void TrapMathHandler(ExceptionInfo *info)
      * process ID of the process and an explanation of the problem; and continue running other processes
      */
     TracePrintf(0, "TRAP_MATH handler called!\n");
-    // if (info->code == TRAP_MATH_INTDIV)
-    // {
-    //     printf("Process %d: Integer divide by zero", GetPid_());
-    // }
-    // else if (info->code == TRAP_MATH_INTOVF)
-    // {
-    //     printf("Process %d: Integer overflow", GetPid_());
-    // }
-    // else if (info->code == TRAP_MATH_FLTDIV)
-    // {
-    //     printf("Process %d: Floating divide by zero", GetPid_());
-    // }
-    // else if (info->code == TRAP_MATH_FLTOVF)
-    // {
-    //     printf("Process %d: Floating overflow", GetPid_());
-    // }
-    // else if (info->code == TRAP_MATH_FLTUND)
-    // {
-    //     printf("Process %d: Floating underflow", GetPid_());
-    // }
-    // else if (info->code == TRAP_MATH_FLTRES)
-    // {
-    //     printf("Process %d: Floating inexact result", GetPid_());
-    // }
-    // else if (info->code == TRAP_MATH_FLTINV)
-    // {
-    //     printf("Process %d: Invalid floating operation", GetPid_());
-    // }
-    // else if (info->code == TRAP_MATH_FLTSUB)
-    // {
-    //     printf("Process %d: FP subscript out of range", GetPid_());
-    // }
-    // else if (info->code == TRAP_MATH_KERNEL)
-    // {
-    //     printf("Process %d: Linux kernel sent SIGFPE", GetPid_());
-    // }
-    // else if (info->code == TRAP_MATH_USER)
-    // {
-    //     printf("Process %d: Received SIGFPE from user", GetPid_());
-    // }
-    // else
-    // {
-    //     printf("Code not found.");
-    // }
+    if (info->code == TRAP_MATH_INTDIV)
+    {
+        printf("Process %d: Integer divide by zero", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_MATH_INTOVF)
+    {
+        printf("Process %d: Integer overflow", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_MATH_FLTDIV)
+    {
+        printf("Process %d: Floating divide by zero", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_MATH_FLTOVF)
+    {
+        printf("Process %d: Floating overflow", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_MATH_FLTUND)
+    {
+        printf("Process %d: Floating underflow", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_MATH_FLTRES)
+    {
+        printf("Process %d: Floating inexact result", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_MATH_FLTINV)
+    {
+        printf("Process %d: Invalid floating operation", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_MATH_FLTSUB)
+    {
+        printf("Process %d: FP subscript out of range", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_MATH_KERNEL)
+    {
+        printf("Process %d: Linux kernel sent SIGFPE", GetPid_(curr_proc));
+    }
+    else if (info->code == TRAP_MATH_USER)
+    {
+        printf("Process %d: Received SIGFPE from user", GetPid_(curr_proc));
+    }
+    else
+    {
+        printf("Code not found.");
+    }
+    ExitFunc(1);
     Halt();
     (void)info;
 };
