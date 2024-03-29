@@ -66,9 +66,10 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     // TracePrintf(0, "arr[2] = %d ord %d", arr[2], a[2]);
 
 
+    
     TracePrintf(0, "Starting Kernel...\n"); 
     currKernelBrk = orig_brk;
-
+    malloc(10000);
     /* Initialize interrupt vector table */
     TracePrintf(0, "Setting up interrupt vector table...\n"); 
     interruptVector = (void **) malloc(TRAP_VECTOR_SIZE * sizeof(int*)); // allocate space in physical memory
@@ -108,8 +109,8 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     vm_enabled = true;
     // Create idle process
     //TODO:  The idle process should have Yalnix process ID 0. Is this done?
-    
-
+    malloc(10000);
+    TracePrintf(1, "-------TraceTraceTrace5--------");
     pcb1->region0 = &region0Pt[0];
     pcb1->process_id = next_proc_id;
     next_proc_id++;
@@ -170,7 +171,7 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     } else {
         TracePrintf(0, "ERROR: ContextSwitch was unsuccessful.\n", res);
     }
-    
+    malloc(10000);
     LoadProgram(cmd_args[0], cmd_args, info, pcb2->region0);
     TracePrintf(0, "END OF CODE REACHED!!!!\n");
 
@@ -313,7 +314,7 @@ SetKernelBrk call; for this project, the kernel break will never be moved down
       to make addr the new kernel break.
 */
 extern int SetKernelBrk(void *addr) {
-    TracePrintf(0, "SET currKernelBreak %p to addr %p \n", currKernelBrk, addr); 
+    TracePrintf(0, "SET currKernelBreak from %p to addr %p \n", currKernelBrk, addr); 
     
     if (!vm_enabled) {
         //just need to change kernel break if vm is not enabled. otherwise do other stuff
@@ -322,7 +323,7 @@ extern int SetKernelBrk(void *addr) {
     } else { //after fully enabling VM, need to change it
         int pagesNeeded;
         //find how many pages we need to make valid and used in phsyical memory 
-        pagesNeeded = (UP_TO_PAGE((long)addr) >> PAGESHIFT) - ((long)currKernelBrk >> PAGESHIFT);
+        pagesNeeded = (UP_TO_PAGE((long)addr) >> PAGESHIFT) - (DOWN_TO_PAGE((long)currKernelBrk) >> PAGESHIFT);
         if (num_free_pages < pagesNeeded) {
             //not enough memory
             //do something here (TODO)
@@ -330,10 +331,12 @@ extern int SetKernelBrk(void *addr) {
             return ERROR;
         } else {
             int page;
-            int currBrkPg = (long)currKernelBrk >> PAGESHIFT;
+            int currBrkPg = ((long)currKernelBrk >> PAGESHIFT) - PAGE_TABLE_LEN;
+            TracePrintf(1, "-------TraceTraceTrace--------"); 
             for (page = 0; page < pagesNeeded; page++) {
-                
+                TracePrintf(1, "-------TraceTraceTrace2--------%d\n", currBrkPg + page);
                 int newPage = findFreePage();
+
                 region1Pt[currBrkPg + page].pfn = newPage;
                 region1Pt[currBrkPg + page].uprot = PROT_NONE;
                 region1Pt[currBrkPg + page].valid = 1;
@@ -342,8 +345,11 @@ extern int SetKernelBrk(void *addr) {
                 // num_free_pages--;
             }
             //TODO: flush?
-
+            TracePrintf(1, "-------TraceTraceTrace3--------");
+            WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_ALL);
+            
             currKernelBrk = addr;
+            TracePrintf(1, "-------TraceTraceTrace4--------");
             return 0;
 
         }
