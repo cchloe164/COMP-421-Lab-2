@@ -8,11 +8,11 @@ Kernel   Finished building free pages
 Kernel   Building page table...
 Kernel   Finished initializing Page Table 
 Kernel   Virtual memory enabled...
-Kernel   -------TraceTraceTrace5--------Kernel   LoadProgram 'idle', args 0x1fffc0
+Kernel   LoadProgram 'idle', args 0x1fffd0
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
 Kernel   entry 0x10100
-Kernel   LoadProgram: size 9, argcount 1
+Kernel   LoadProgram: size 7, argcount 1
 Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
 Kernel   Passed virtual memory check!
 Kernel   Passed physical memory check!
@@ -65,11 +65,11 @@ Kernel   dest pfn: 15
 Kernel   done
 Kernel   Writing REG0_PTR0 to 0x3fd000...Kernel   done
 Kernel   ContextSwitch was successful!
-Kernel   LoadProgram 'execTest', args 0x1fffc0
+Kernel   LoadProgram 'init10', args 0x1fffd0
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
 Kernel   entry 0x10100
-Kernel   LoadProgram: size 9, argcount 1
+Kernel   LoadProgram: size 7, argcount 1
 Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
 Kernel   Passed virtual memory check!
 Kernel   Passed physical memory check!
@@ -95,158 +95,87 @@ Kernel   done Flushing 0
 Kernel   Flushing edits to mem_invalid_pages in the new process' Region 0...Kernel   done3
 Kernel   END OF CODE REACHED!!!!
 Kernel   TRAP_KERNEL handler called!
-Kernel   TRAP_KERNEL handler found a exec.
-Kernel   LoadProgram 'execTestProg', args 0x1fae20
-Kernel   LoadProgram: LoadInfo status 0
-Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
-Kernel   entry 0x10100
-Kernel   LoadProgram: size 13, argcount 1
-Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
-Kernel   Passed virtual memory check!
-Kernel   Passed physical memory check!
-Kernel   Freeing page 16!
-Kernel   Freeing page 17!
-Kernel   Freeing page 18!
-Kernel   Freeing page 19!
-Kernel   Freeing page 20!
-Kernel   Freeing page 21!
-Kernel   Freeing page 22!
-Kernel   Freeing page 23!
-Kernel   Freeing page 24!
-Kernel   Freeing page 25!
-Kernel   Freeing page 26!
-Kernel   Freeing page 27!
-Kernel   Freed current Region 0!
-Kernel   Invalidating MEM_INVALID_PAGES...Kernel   done1
-Kernel   Found free page 16 in Region 0!
-Kernel   Found free page 17 in Region 0!
-Kernel   Found free page 18 in Region 0!
-Kernel   Found free page 19 in Region 0!
-Kernel   Found free page 20 in Region 0!
-Kernel   Found free page 21 in Region 0!
-Kernel   Found free page 22 in Region 0!
-Kernel   Text pages setup completed!
-Kernel   Found free page 23 in Region 0!
-Kernel   Found free page 24 in Region 0!
-Kernel   Found free page 25 in Region 0!
-Kernel   Found free page 26 in Region 0!
-Kernel   Data and BSS pages setup completed!
-Kernel   Found free page 27 in Region 0!
-Kernel   User stack pages setup completed!
-Kernel   Flushing old process' PTEs from Region 0...
-Kernel   done Flushing 0
-Kernel   Flushing edits to mem_invalid_pages in the new process' Region 0...Kernel   done3
+Kernel   TRAP_KERNEL handler found a fork.
+Kernel   Fork called!
+Kernel   Building Region 0 for process 2!
+Kernel   Found free page 508 in Region 1!
+Kernel   Proc R0 paddr 0x215ad8
+Kernel   Allocating and setting up kernel stack...
+Kernel   Found free page 28 in Region 0!
+Kernel   Found free page 29 in Region 0!
+Kernel   Found free page 30 in Region 0!
+Kernel   Found free page 31 in Region 0!
+Kernel   Allocation and setup done.
+Kernel   Set family relationships!
+Kernel   Context switching from parent process 1 to child process 2
+Kernel   Borrowing page 22 from Region 1!
+Kernel   Found free page 32 in Region 0!
+Kernel   Found free page 33 in Region 0!
+Kernel   Found free page 34 in Region 0!
+Kernel   Found free page 35 in Region 0!
+Kernel   Found free page 36 in Region 0!
+Kernel   Found free page 37 in Region 0!
+Kernel   Found free page 38 in Region 0!
+Kernel   Found free page 39 in Region 0!
+Kernel   Found free page 40 in Region 0!
+Kernel   Found free page 41 in Region 0!
+Kernel   Found free page 42 in Region 0!
+Kernel   Found free page 43 in Region 0!
+Kernel   Found free page 44 in Region 0!
+Kernel   Found free page 45 in Region 0!
+Kernel   Found free page 46 in Region 0!
+Kernel   Found free page 47 in Region 0!
+Kernel   Writing REG0_PTR0 to 0x3fc000...Kernel   done
+Kernel   Pushing process id 1 to the ready queue
+Kernel   ForkSwitch was successful!
+Kernel   TRAP_KERNEL handler called!
+Kernel   TRAP_KERNEL handler found a getpid.
+Kernel   currproc: 2
+Kernel   GetPid: returned 2
+User     child pid is: 2
+User     currentForkReturn is: 0
+Kernel   TRAP_KERNEL handler called!
+Kernel   TRAP_KERNEL handler found a exit.
+Kernel   Exit Called! on process id 2
+Kernel   We have arrived here in Exit!
+Kernel   We have arrived here2 in Exit!
+Kernel   Removing child 2 from parent 1
+Kernel   We have arrived here3 in Exit!
+Kernel   We have arrived here4 in Exit!
+Kernel   We have arrived here5 in Exit!
+Kernel   We have arrived here7 in Exit! current proc id 2
+Kernel   Attempting to find a new process...
+Kernel   Switching to an existing process out of an exiting process, from process 2 to process 1
+Kernel   We have arrived here2 in SwitchExit!
+Kernel   Freeing page 32!
+Kernel   Freeing page 33!
+Kernel   Freeing page 34!
+Kernel   Freeing page 35!
+Kernel   Freeing page 36!
+Kernel   Freeing page 37!
+Kernel   Freeing page 38!
+Kernel   Freeing page 39!
+Kernel   Freeing page 40!
+Kernel   Freeing page 41!
+Kernel   Freeing page 42!
+Kernel   Freeing page 43!
+Kernel   Freeing page 44!
+Kernel   Freeing page 45!
+Kernel   Freeing page 46!
+Kernel   Freeing page 47!
+Kernel   ForkSwitch was successful!
 Kernel   TRAP_KERNEL handler called!
 Kernel   TRAP_KERNEL handler found a getpid.
 Kernel   currproc: 1
 Kernel   GetPid: returned 1
-User     PID of execTestProg: 1
-Kernel   TRAP_KERNEL handler called!
-Kernel   TRAP_KERNEL handler found a delay.
-Kernel   Delay called!
-Kernel   RemoveProcFromReadyQueue for process id 1!
-Kernel   Pushing proc 1 to waiting queue!
-Kernel   Attempting to set new process from delay call...
-Kernel   Queue is empty right now!
-Kernel   Switching to an existing process, from process 1 to process 0
-Kernel   ContextSwitch was successful!
-Kernel   LoadProgram 'execTest', args 0x1fffc0
-Kernel   LoadProgram: LoadInfo status 0
-Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
-Kernel   entry 0x10100
-Kernel   LoadProgram: size 9, argcount 1
-Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
-Kernel   Passed virtual memory check!
-Kernel   Passed physical memory check!
-Kernel   Freeing page 16!
-Kernel   Freeing page 17!
-Kernel   Freeing page 18!
-Kernel   Freeing page 19!
-Kernel   Freeing page 20!
-Kernel   Freeing page 21!
-Kernel   Freeing page 22!
-Kernel   Freeing page 23!
-Kernel   Freeing page 24!
-Kernel   Freeing page 25!
-Kernel   Freeing page 26!
-Kernel   Freeing page 27!
-Kernel   Freed current Region 0!
-Kernel   Invalidating MEM_INVALID_PAGES...Kernel   done1
-Kernel   Found free page 16 in Region 0!
-Kernel   Found free page 17 in Region 0!
-Kernel   Found free page 18 in Region 0!
-Kernel   Found free page 19 in Region 0!
-Kernel   Found free page 20 in Region 0!
-Kernel   Found free page 21 in Region 0!
-Kernel   Found free page 22 in Region 0!
-Kernel   Text pages setup completed!
-Kernel   Found free page 23 in Region 0!
-Kernel   Found free page 24 in Region 0!
-Kernel   Found free page 25 in Region 0!
-Kernel   Found free page 26 in Region 0!
-Kernel   Data and BSS pages setup completed!
-Kernel   Found free page 27 in Region 0!
-Kernel   User stack pages setup completed!
-Kernel   Flushing old process' PTEs from Region 0...
-Kernel   done Flushing 0
-Kernel   LoadProgram: couldn't read for 'execTest'
-Kernel   END OF CODE REACHED!!!!
-Kernel   TRAP_CLOCK handler called!
-Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item with pid 1!
-Kernel   Clock ticks passed: 0
-Kernel   TRAP_CLOCK handler called!
-Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item with pid 1!
-Kernel   Clock ticks passed: 1
-Kernel   TRAP_CLOCK handler called!
-Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item with pid 1!
-Kernel   Clock ticks passed: 2
-Kernel   Time limit reached on Process!.
-Kernel   Attempting to set new process...
-Kernel   Queue is empty right now!
-Kernel   Current process will keep running!
-Kernel   TRAP_CLOCK handler called!
-Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item with pid 1!
-Kernel   Item with id 1 delay has expired! now moving to the ready queue
-Kernel   Removing proc 1 to waiting queue!
-Kernel   Pushing process id 1 to the ready queue
-Kernel   Switching from process 0 to process id 1
-Kernel   Switching to an existing process, from process 0 to process 1
-Kernel   TRAP_KERNEL handler called!
-Kernel   TRAP_KERNEL handler found a delay.
-Kernel   Delay called!
-Kernel   RemoveProcFromReadyQueue for process id 1!
-Kernel   Found a matching process in the ready queue to remove! Removing it now.
-Kernel   Removing proc 1 to waiting queue!
-Kernel   Pushing proc 1 to waiting queue!
-Kernel   Attempting to set new process from delay call...
-Kernel   Queue is empty right now!
-Kernel   Switching to an existing process, from process 1 to process 0
-Kernel   Clock ticks passed: 3
-Kernel   Time limit reached on Process!.
-Kernel   Attempting to set new process...
-Kernel   Queue is empty right now!
-Kernel   Current process will keep running!
-Kernel   TRAP_CLOCK handler called!
-Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item with pid 1!
-Kernel   Clock ticks passed: 4
-Kernel   Time limit reached on Process!.
-Kernel   Attempting to set new process...
-Kernel   Queue is empty right now!
-Kernel   Current process will keep running!
-Kernel   TRAP_CLOCK handler called!
-Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item with pid 1!
-Kernel   Item with id 1 delay has expired! now moving to the ready queue
-Kernel   Removing proc 1 to waiting queue!
-Kernel   Pushing process id 1 to the ready queue
-Kernel   Switching from process 0 to process id 1
-Kernel   Switching to an existing process, from process 0 to process 1
+User     child pid is: 1
+User     currentForkReturn is: 2
 Kernel   TRAP_KERNEL handler called!
 Kernel   TRAP_KERNEL handler found a exit.
 Kernel   Exit Called! on process id 1
 Kernel   We have arrived here in Exit!
 Kernel   We have arrived here7 in Exit! current proc id 1
 Kernel   Attempting to find a new process...
-Kernel   Found a ready process to switch to for delay! PID 1 from PID 1.
 Kernel   Switching to an existing process out of an exiting process, from process 1 to process 1
 Kernel   We have arrived here2 in SwitchExit!
 Kernel   Freeing page 16!
@@ -266,7 +195,4 @@ Kernel   Freeing page 13!
 Kernel   Freeing page 14!
 Kernel   Freeing page 15!
 Kernel   Freeing page 1021!
-Kernel   Attempting to set new process from delay call...
-Kernel   Found a ready process to switch to for delay!.
-
-ABORT: CallSwitchFunc: PTE for kernel stack vpn 508 not valid
+Kernel   We have arrived here8 in Exit!

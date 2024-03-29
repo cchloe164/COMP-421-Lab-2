@@ -60,6 +60,11 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     initPT();   // Build 1 initial page table
 
     // Initialize terminals
+    struct term *terms = malloc(sizeof(struct term) * NUM_TERMINALS);
+    terms[0] = (struct term){TTY_CONSOLE};
+    terms[1] = (struct term){TTY_1};
+    terms[2] = (struct term){TTY_2};
+    terms[3] = (struct term){TTY_3};
 
     // Enable virtual memory
     WriteRegister(REG_VM_ENABLE, 1);
@@ -67,7 +72,6 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     vm_enabled = true;
 
     // Create idle process
-    
     TracePrintf(1, "-------TraceTraceTrace5--------");
     struct pcb *pcb1 = create_pcb();
     pcb1->region0 = &region0Pt[0];

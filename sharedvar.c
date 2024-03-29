@@ -60,6 +60,11 @@ struct pcb *idle_pcb;
 int queue_size = 0;
 int waiting_queue_size = 0;
 
+// Terminal variables
+struct term {
+    int tty_id;
+};
+
 /**
  * Set process id.
 */
