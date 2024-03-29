@@ -44,7 +44,7 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
 {
     TracePrintf(0, "Starting Kernel...\n"); 
     currKernelBrk = orig_brk;
-    malloc(10000);
+    
     /* Initialize interrupt vector table */
     TracePrintf(0, "Setting up interrupt vector table...\n"); 
     interruptVector = (void **) malloc(TRAP_VECTOR_SIZE * sizeof(int*)); // allocate space in physical memory
@@ -78,7 +78,7 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     vm_enabled = true;
 
     // Create idle process
-    malloc(10000);
+    
     TracePrintf(1, "-------TraceTraceTrace5--------");
     struct pcb *pcb1 = malloc(sizeof(struct pcb));
     pcb1->region0 = &region0Pt[0];
@@ -91,14 +91,13 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     BuildRegion0(pcb2);
 
     int res = ContextSwitch(SwitchNewProc, &pcb1->ctx, (void *)pcb1, (void *)pcb2);
-    TracePrintf(0, "Result from ContextSwitch: %d\n", res);
     if (res == 0) {
         TracePrintf(0, "ContextSwitch was successful!\n", res);
     } else {
         TracePrintf(0, "ERROR: ContextSwitch was unsuccessful.\n", res);
     }
 
-    malloc(10000);
+    
     LoadProgram(cmd_args[0], cmd_args, info, pcb2->region0);
     TracePrintf(0, "END OF CODE REACHED!!!!\n");
 
