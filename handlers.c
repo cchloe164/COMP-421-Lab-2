@@ -66,11 +66,11 @@ void TrapKernelHandler(ExceptionInfo *info)
     }
     else if (info->code == YALNIX_TTY_READ)
     {
-        info->regs[0] = TtyReadFunc(info->regs[1], (void *) info->regs[2], info->regs[3]);
+        // info->regs[0] = TtyReceiveFunc(info->regs[1], (void *) info->regs[2], info->regs[3]);
     }
     else if (info->code == YALNIX_TTY_WRITE)
     {
-        info->regs[0] = TtyWriteFunc(info->regs[1], (void *) info->regs[2], info->regs[3]);
+        // info->regs[0] = TtyWriteFunc(info->regs[1], (void *) info->regs[2], info->regs[3]);
     }
     (void)info;
 };
@@ -313,8 +313,7 @@ void TrapTTYReceiveHandler(ExceptionInfo *info)
      * call by some user process.
      */
     TracePrintf(0, "TRAP_TTYRECEIVE handler called!\n");
-    // TtyReceive(info->code, tty_buf, TERMINAL_MAX_LINE);
-    (void)info;
+    TtyReceiveFunc(info->code);
 };
 
 /**
