@@ -18,6 +18,7 @@
 // #include "contextswitch2.c"
 #include "getpid.c"
 #include "brk.c"
+#include "exec.c"
 
 void *tty_buf; // buffer in virtual memory region 1
 // struct pte region0Pt[PAGE_TABLE_LEN], region1Pt[PAGE_TABLE_LEN]; // page table pointers
@@ -44,15 +45,15 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0);
 
 extern int SetKernelBrk(void *addr);
 
-extern int Fork(void);
-extern int Exec(char *filename, char **argvec);
-extern void Exit(int status) __attribute__ ((noreturn));;
-extern int Wait(int *status_ptr);
+extern int ForkFunc(void);
+extern int ExecFunc(char *filename, char **argvec, ExceptionInfo *info);
+extern void ExitFunc(int status) __attribute__ ((noreturn));;
+extern int WaitFunc(int *status_ptr);
 extern int GetPid_(struct pcb *info);
-extern int Brk(void *addr);
-extern int Delay(int clock_ticks);
-extern int TtyRead(int tty_id, void *buf, int len);
-extern int TtyWrite(int tty_id, void *buf, int len);
+extern int BrkFunc(void *addr);
+extern int DelayFunc(int clock_ticks);
+extern int TtyReadFunc(int tty_id, void *buf, int len);
+extern int TtyWriteFunc(int tty_id, void *buf, int len);
 SavedContext *SwitchNewProc(SavedContext *ctx, void *p1, void *p2);
 
 void RemoveItemFromWaitingQueue(struct queue_item *item);
@@ -119,7 +120,8 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     pcb1->region0 = &region0Pt[0];
     pcb1->process_id = next_proc_id;
     next_proc_id++;
-    // LoadProgram("idle", cmd_args, info, pcb1->region0);
+    curr_proc = pcb1;
+    LoadProgram("idle", cmd_args, info, pcb1->region0);
 
     idle_pcb = pcb1;
     //init region 0 page table for init function (PCB2) (Copied from (see pg 22)
@@ -337,9 +339,9 @@ extern int SetKernelBrk(void *addr) {
         } else {
             int page;
             int currBrkPg = ((long)currKernelBrk >> PAGESHIFT) - PAGE_TABLE_LEN;
-            TracePrintf(1, "-------TraceTraceTrace--------"); 
+            TracePrintf(2, "-------TraceTraceTrace--------"); 
             for (page = 0; page < pagesNeeded; page++) {
-                TracePrintf(1, "-------TraceTraceTrace2--------%d\n", currBrkPg + page);
+                TracePrintf(2, "-------TraceTraceTrace2--------%d\n", currBrkPg + page);
                 int newPage = findFreePage();
 
                 region1Pt[currBrkPg + page].pfn = newPage;
@@ -350,11 +352,11 @@ extern int SetKernelBrk(void *addr) {
                 // num_free_pages--;
             }
             //TODO: flush?
-            TracePrintf(1, "-------TraceTraceTrace3--------");
+            TracePrintf(2, "-------TraceTraceTrace3--------");
             WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_ALL);
             
             currKernelBrk = addr;
-            TracePrintf(1, "-------TraceTraceTrace4--------");
+            TracePrintf(2, "-------TraceTraceTrace4--------");
             return 0;
 
         }
@@ -371,36 +373,30 @@ extern int SetKernelBrk(void *addr) {
 /* Kernel Trap Handlers */
 
 
-extern int Fork(void) {
+extern int ForkFunc(void) {
     TracePrintf(0, "Fork called!\n");
     return 0;
 }
-extern int Exec(char *filename, char **argvec) {
-    (void)filename;
-    (void)argvec;
-    TracePrintf(0, "Exec called!\n");
-    return 0;
-}
-extern void Exit(int status) {
+extern void ExitFunc(int status) {
     (void)status;
     TracePrintf(0, "Exit called!\n");
     while(1){}
 }
-extern int Wait(int *status_ptr) {
+extern int WaitFunc(int *status_ptr) {
     (void)status_ptr;
     TracePrintf(0, "Wait called!\n");
     return 0;
 }
 
 
-extern int TtyRead(int tty_id, void *buf, int len) {
+extern int TtyReadFunc(int tty_id, void *buf, int len) {
     (void)tty_id;
     (void)buf;
     (void)len;
     TracePrintf(0, "TtyRead called!\n");
     return 0;
 }
-extern int TtyWrite(int tty_id, void *buf, int len) { 
+extern int TtyWriteFunc(int tty_id, void *buf, int len) { 
     (void)tty_id;
     (void)buf;
     (void)len;
@@ -636,7 +632,8 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0)/
 
     }
     TracePrintf(0, "Data and BSS pages setup completed!\n");
-
+    TracePrintf(0, "brk, %d\n", curr_proc->process_id);
+    curr_proc->brk = MEM_INVALID_PAGES + text_npg + data_bss_npg;
     //TODO: keep track of the top pof the stack here
 
     /* And finally the user stack pages */

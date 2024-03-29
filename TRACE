@@ -8,15 +8,13 @@ Kernel   SET currKernelBreak from 0x216000 to addr 0x218000
 Kernel   Finished building free pages
 Kernel   Building page table...
 Kernel   Finished initializing Page Table 
-Kernel   Virtual memory enabled...Kernel   SET currKernelBreak from 0x218000 to addr 0x21b000 
-Kernel   -------TraceTraceTrace--------Kernel   -------TraceTraceTrace2--------24
-Kernel   -------TraceTraceTrace2--------25
-Kernel   -------TraceTraceTrace2--------26
-Kernel   -------TraceTraceTrace3--------Kernel   -------TraceTraceTrace4--------Kernel   -------TraceTraceTrace5--------Kernel   LoadProgram 'idle', args 0x1fffd0
+Kernel   Virtual memory enabled...
+Kernel   SET currKernelBreak from 0x218000 to addr 0x21b000 
+Kernel   -------TraceTraceTrace5--------Kernel   LoadProgram 'idle', args 0x1fffc0
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
 Kernel   entry 0x10100
-Kernel   LoadProgram: size 6, argcount 1
+Kernel   LoadProgram: size 9, argcount 1
 Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
 Kernel   Passed virtual memory check!
 Kernel   Passed physical memory check!
@@ -24,19 +22,17 @@ Kernel   Freed current Region 0!
 Kernel   Invalidating MEM_INVALID_PAGES...Kernel   done1
 Kernel   Text pages setup completed!
 Kernel   Data and BSS pages setup completed!
+Kernel   brk, 0
 Kernel   User stack pages setup completed!
 Kernel   Flushing old process' PTEs from Region 0...
 Kernel   done Flushing 0
 Kernel   Flushing edits to mem_invalid_pages in the new process' Region 0...Kernel   done3
-Kernel   made to this1. argcount is 1
-Kernel   made to this2.
+Kernel   Proc2 R0 original vaddr 0x1ff090
+Kernel   Starting at addr 0x400000 and searching until addr 0x212360, decrementing by 4096:
+Kernel   Found free page 509 in Region 1!
+Kernel   Proc2 R0 new paddr 0x216ab0
 Kernel   Allocating and setting up process 2's kernel stack...
-Kernel   Page Table adddress 0x1ff0d0 pfn:
-Kernel   vpn2: 508 vaddr: 0x1fc000
-Kernel   ksb 508Kernel   vpn2: 509 vaddr: 0x1fd000
-Kernel   ksb 508Kernel   vpn2: 510 vaddr: 0x1fe000
-Kernel   ksb 508Kernel   vpn2: 511 vaddr: 0x1ff000
-Kernel   ksb 508Kernel   Allocation and setup done.
+Kernel   Allocation and setup done.
 Kernel   Switching from existing process 0 to new process 1
 Kernel   Copying source page 508 to dest page 27...
 Kernel   dest addr: 0x21b000	source addr: 0x1fc000
@@ -54,23 +50,15 @@ Kernel   Copying source page 511 to dest page 27...
 Kernel   dest addr: 0x21b000	source addr: 0x1ff000
 Kernel   dest pfn: 18
 Kernel   done
-Kernel   r0 vpn: 1012
-Kernel   r0 offset: 0
-Kernel   newr0paddr created
-Kernel   phys_addr 0x3f4000 created
-Kernel   index 1012 created
-Kernel   Region 1 entry 500
-Kernel   phys_addr pfn 1012 created
+Kernel   Writing REG0_PTR0 to 0x3fd000...Kernel   done
 Kernel   Result from ContextSwitch: 0
+Kernel   ContextSwitch was successful!
 Kernel   SET currKernelBreak from 0x21b000 to addr 0x21e000 
-Kernel   -------TraceTraceTrace--------Kernel   -------TraceTraceTrace2--------27
-Kernel   -------TraceTraceTrace2--------28
-Kernel   -------TraceTraceTrace2--------29
-Kernel   -------TraceTraceTrace3--------Kernel   -------TraceTraceTrace4--------Kernel   LoadProgram 'init3', args 0x1fffd0
+Kernel   LoadProgram 'execTest', args 0x1fffc0
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
 Kernel   entry 0x10100
-Kernel   LoadProgram: size 6, argcount 1
+Kernel   LoadProgram: size 9, argcount 1
 Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
 Kernel   Passed virtual memory check!
 Kernel   Passed physical memory check!
@@ -78,35 +66,19 @@ Kernel   Freed current Region 0!
 Kernel   Invalidating MEM_INVALID_PAGES...Kernel   done1
 Kernel   Text pages setup completed!
 Kernel   Data and BSS pages setup completed!
+Kernel   brk, 1
 Kernel   User stack pages setup completed!
 Kernel   Flushing old process' PTEs from Region 0...
 Kernel   done Flushing 0
 Kernel   Flushing edits to mem_invalid_pages in the new process' Region 0...Kernel   done3
-Kernel   made to this1. argcount is 1
-Kernel   made to this2.
-Kernel   DID WE GET HERE? done contextswitching (second load program)
+Kernel   END OF CODE REACHED!!!!
 Kernel   TRAP_KERNEL handler called!
-Kernel   TRAP_KERNEL handler found a getpid.
-Kernel   currproc: 1
-Kernel   GetPid: returned 1
-User     init2 pid is: 1
-Kernel   TRAP_KERNEL handler called!
-Kernel   TRAP_KERNEL handler found a delay.
-Kernel   Delay called!
-Kernel   RemoveProcFromReadyQueue for process id 1!
-Kernel   Attempting to set new process from delay call...
-Kernel   Queue is empty right now!
-Kernel   Switching to an existing process, from process 1 to process 0
-Kernel   Result from ContextSwitch: 0
-Kernel   SET currKernelBreak from 0x21e000 to addr 0x221000 
-Kernel   -------TraceTraceTrace--------Kernel   -------TraceTraceTrace2--------30
-Kernel   -------TraceTraceTrace2--------31
-Kernel   -------TraceTraceTrace2--------32
-Kernel   -------TraceTraceTrace3--------Kernel   -------TraceTraceTrace4--------Kernel   LoadProgram 'init3', args 0x1fffd0
+Kernel   TRAP_KERNEL handler found a exec.
+Kernel   LoadProgram 'execTestProg', args 0x1fae20
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
 Kernel   entry 0x10100
-Kernel   LoadProgram: size 6, argcount 1
+Kernel   LoadProgram: size 13, argcount 1
 Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
 Kernel   Passed virtual memory check!
 Kernel   Passed physical memory check!
@@ -126,11 +98,56 @@ Kernel   Freed current Region 0!
 Kernel   Invalidating MEM_INVALID_PAGES...Kernel   done1
 Kernel   Text pages setup completed!
 Kernel   Data and BSS pages setup completed!
+Kernel   brk, 1
 Kernel   User stack pages setup completed!
 Kernel   Flushing old process' PTEs from Region 0...
 Kernel   done Flushing 0
-Kernel   LoadProgram: couldn't read for 'init3'
-Kernel   DID WE GET HERE? done contextswitching (second load program)
+Kernel   Flushing edits to mem_invalid_pages in the new process' Region 0...Kernel   done3
+Kernel   TRAP_KERNEL handler called!
+Kernel   TRAP_KERNEL handler found a getpid.
+Kernel   currproc: 1
+Kernel   GetPid: returned 1
+User     PID of execTestProg: 1
+Kernel   TRAP_KERNEL handler called!
+Kernel   TRAP_KERNEL handler found a delay.
+Kernel   Delay called!
+Kernel   RemoveProcFromReadyQueue for process id 1!
+Kernel   Attempting to set new process from delay call...
+Kernel   Queue is empty right now!
+Kernel   Switching to an existing process, from process 1 to process 0
+Kernel   Result from ContextSwitch: 0
+Kernel   ContextSwitch was successful!
+Kernel   SET currKernelBreak from 0x21e000 to addr 0x221000 
+Kernel   LoadProgram 'execTest', args 0x1fffc0
+Kernel   LoadProgram: LoadInfo status 0
+Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
+Kernel   entry 0x10100
+Kernel   LoadProgram: size 9, argcount 1
+Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
+Kernel   Passed virtual memory check!
+Kernel   Passed physical memory check!
+Kernel   Freeing page 22!
+Kernel   Freeing page 23!
+Kernel   Freeing page 24!
+Kernel   Freeing page 25!
+Kernel   Freeing page 26!
+Kernel   Freeing page 27!
+Kernel   Freeing page 28!
+Kernel   Freeing page 29!
+Kernel   Freeing page 30!
+Kernel   Freeing page 31!
+Kernel   Freeing page 32!
+Kernel   Freeing page 33!
+Kernel   Freed current Region 0!
+Kernel   Invalidating MEM_INVALID_PAGES...Kernel   done1
+Kernel   Text pages setup completed!
+Kernel   Data and BSS pages setup completed!
+Kernel   brk, 0
+Kernel   User stack pages setup completed!
+Kernel   Flushing old process' PTEs from Region 0...
+Kernel   done Flushing 0
+Kernel   LoadProgram: couldn't read for 'execTest'
+Kernel   END OF CODE REACHED!!!!
 Kernel   TRAP_CLOCK handler called!
 Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item with pid 1!
 Kernel   Clock ticks passed: 0

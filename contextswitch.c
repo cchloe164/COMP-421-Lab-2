@@ -137,7 +137,7 @@ int ticks_passed = 0;
 /**
 Delay
 */
-extern int Delay(int clock_ticks) {
+extern int DelayFunc(int clock_ticks) {
     //edge cases: clockticks 0; return 0, negative, return error
 
     TracePrintf(0, "Delay called!\n");
