@@ -15,9 +15,11 @@
 int Fork_(void)
 {
     TracePrintf(0, "Fork called!\n");
-    // cloning no loadprogram nor context switch
+    struct pcb *child = malloc(sizeof(struct pcb));
+    BuildRegion0(child);    // Allocate and set up Region 0
     
 
+    // cloning no loadprogram nor context switch
     //need to copy savedcontext in fork (for the contextswitch) with a memcpy
     return 0;
 }

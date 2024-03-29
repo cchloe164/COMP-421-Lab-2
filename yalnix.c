@@ -15,13 +15,9 @@
 #include "load.c"
 
 void *tty_buf; // buffer in virtual memory region 1
-// struct pte region0Pt[PAGE_TABLE_LEN], region1Pt[PAGE_TABLE_LEN]; // page table pointers
-// void *currKernelBrk;
-int next_proc_id = 0;
 
 void buildFreePages(unsigned int pmem_size);
 void initPT();
-void BuildRegion0(struct pcb *proc);
 int vm_enabled = false;
 
 extern int SetKernelBrk(void *addr);
@@ -36,7 +32,6 @@ extern int Delay(int clock_ticks);
 extern int TtyRead(int tty_id, void *buf, int len);
 extern int TtyWrite(int tty_id, void *buf, int len);
 
-void RemoveItemFromWaitingQueue(struct queue_item *item);
 /*
     *  This is the primary entry point into the kernel:
     *
@@ -47,12 +42,6 @@ void RemoveItemFromWaitingQueue(struct queue_item *item);
     */
 extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, char **cmd_args)
 {
-    // int arr[5] = {1, 2, 3, 4, 5};
-    // int *a = &arr[0];
-    // TracePrintf(0, "arr[2] = %d ord %d", arr[2], a[2]);
-
-
-    
     TracePrintf(0, "Starting Kernel...\n"); 
     currKernelBrk = orig_brk;
     malloc(10000);
@@ -83,7 +72,6 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
 
     // Initialize terminals
 
-
     // Enable virtual memory
     WriteRegister(REG_VM_ENABLE, 1);
     TracePrintf(0, "Virtual memory enabled...\n");
@@ -101,89 +89,20 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
 
     struct pcb *pcb2 = malloc(sizeof(struct pcb));
     BuildRegion0(pcb2);
-    // struct pte region0Pt2[PAGE_TABLE_LEN]; //automatically allocated by compiler
-    // TracePrintf(0, "Proc2 R0 original vaddr %p\n", &region0Pt2);
 
-    // unsigned long virtualPage = findFreeVirtualPage(); // find a free virtual page. Use this to store the address to the new Region 0.
-    // region1Pt[virtualPage].valid = 1;
-    // region1Pt[virtualPage].kprot = PROT_READ | PROT_WRITE;
-    // region1Pt[virtualPage].uprot = PROT_NONE;
-    // region1Pt[virtualPage].pfn = PAGE_TABLE_LEN + virtualPage;
-    // WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_ALL);
-
-    // struct pcb *pcb2 = malloc(sizeof(struct pcb));
-    // pcb2->region0 = (struct pte*)((PAGE_TABLE_LEN + virtualPage) << PAGESHIFT); // set it equal to the address
-    // pcb2->free_vpn = virtualPage;
-    // TracePrintf(0, "Proc2 R0 new paddr %p\n", &pcb2->region0);
-    
-    // TracePrintf(0, "Allocating and setting up process 2's kernel stack...\n");
-    // int vaddr3;
-    // for (vaddr3 = KERNEL_STACK_BASE; vaddr3 < KERNEL_STACK_LIMIT; vaddr3 += PAGESIZE)
-    // {
-    //     int vpn = vaddr3 >> PAGESHIFT;
-    //     pcb2->region0[vpn].pfn = findFreePage();
-    //     pcb2->region0[vpn].uprot = PROT_NONE;
-    //     pcb2->region0[vpn].kprot = PROT_READ | PROT_WRITE;
-    //     pcb2->region0[vpn].valid = 1;
-    // }
-    
-    // pcb2->process_id = next_proc_id;
-    // next_proc_id++;
-    TracePrintf(0, "Allocation and setup done.\n");
-
-    // //TODO: create pcbs for each process. Write a create pcb function to create pcbs and create pcb for idle program?
-    // // Create init process; need to call this context switch
-    // //create pcb for init
-    
-    // SavedContext *ctxp;
     int res = ContextSwitch(SwitchNewProc, &pcb1->ctx, (void *)pcb1, (void *)pcb2);
-    // pcb1->ctx = *ctxp;
     TracePrintf(0, "Result from ContextSwitch: %d\n", res);
     if (res == 0) {
         TracePrintf(0, "ContextSwitch was successful!\n", res);
     } else {
         TracePrintf(0, "ERROR: ContextSwitch was unsuccessful.\n", res);
     }
+
     malloc(10000);
     LoadProgram(cmd_args[0], cmd_args, info, pcb2->region0);
     TracePrintf(0, "END OF CODE REACHED!!!!\n");
 
     return;
-}
-
-/**
- * Allocate and set up Region 0 for given PCB.
-*/
-void BuildRegion0(struct pcb *proc) {
-    proc->process_id = next_proc_id;
-    next_proc_id++;
-    TracePrintf(0, "Building Region 0 for process %d!\n", proc->process_id);
-
-    struct pte region0Pt2[PAGE_TABLE_LEN]; // automatically allocated by compiler
-    TracePrintf(0, "Proc R0 original vaddr %p\n", &region0Pt2);
-
-    unsigned long virtualPage = findFreeVirtualPage(); // find a free virtual page. Use this to store the address to the new Region 0.
-    region1Pt[virtualPage].valid = 1;
-    region1Pt[virtualPage].kprot = PROT_READ | PROT_WRITE;
-    region1Pt[virtualPage].uprot = PROT_NONE;
-    region1Pt[virtualPage].pfn = PAGE_TABLE_LEN + virtualPage;
-    WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_ALL);
-
-    proc->region0 = (struct pte *)((PAGE_TABLE_LEN + virtualPage) << PAGESHIFT); // set it equal to the address
-    proc->free_vpn = virtualPage;
-    TracePrintf(0, "Proc R0 new paddr %p\n", &proc->region0);
-
-    TracePrintf(0, "Allocating and setting up kernel stack...");
-    int vaddr3;
-    for (vaddr3 = KERNEL_STACK_BASE; vaddr3 < KERNEL_STACK_LIMIT; vaddr3 += PAGESIZE)
-    {
-        int vpn = vaddr3 >> PAGESHIFT;
-        proc->region0[vpn].pfn = findFreePage();
-        proc->region0[vpn].uprot = PROT_NONE;
-        proc->region0[vpn].kprot = PROT_READ | PROT_WRITE;
-        proc->region0[vpn].valid = 1;
-    }
-    TracePrintf(0, "done.\n");
 }
 
 
@@ -343,15 +262,6 @@ extern int SetKernelBrk(void *addr) {
     }
     
 }
-
-
-// extern int SetKernelBrk(void *addr) {
-//     (void)addr;
-//     return 0;
-// }
-
-/* Kernel Trap Handlers */
-
 
 
 extern int Exec(char *filename, char **argvec) {

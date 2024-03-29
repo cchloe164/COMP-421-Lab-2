@@ -54,7 +54,7 @@ Kernel   Writing REG0_PTR0 to 0x3fd000...Kernel   done
 Kernel   Result from ContextSwitch: 0
 Kernel   ContextSwitch was successful!
 Kernel   SET currKernelBreak from 0x21b000 to addr 0x21e000 
-Kernel   LoadProgram 'init2', args 0x1fffd0
+Kernel   LoadProgram 'init3', args 0x1fffd0
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
 Kernel   entry 0x10100
@@ -76,6 +76,80 @@ Kernel   TRAP_KERNEL handler found a getpid.
 Kernel   currproc: 1
 Kernel   GetPid: returned 1
 User     init2 pid is: 1
+Kernel   TRAP_KERNEL handler called!
+Kernel   TRAP_KERNEL handler found a delay.
+Kernel   Delay called!
+Kernel   RemoveProcFromReadyQueue for process id 1!
+Kernel   Attempting to set new process from delay call...
+Kernel   Queue is empty right now!
+Kernel   Switching to an existing process, from process 1 to process 0
+Kernel   Result from ContextSwitch: 0
+Kernel   ContextSwitch was successful!
+Kernel   SET currKernelBreak from 0x21e000 to addr 0x221000 
+Kernel   LoadProgram 'init3', args 0x1fffd0
+Kernel   LoadProgram: LoadInfo status 0
+Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
+Kernel   entry 0x10100
+Kernel   LoadProgram: size 6, argcount 1
+Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
+Kernel   Passed virtual memory check!
+Kernel   Passed physical memory check!
+Kernel   Freeing page 22!
+Kernel   Freeing page 23!
+Kernel   Freeing page 24!
+Kernel   Freeing page 25!
+Kernel   Freeing page 26!
+Kernel   Freeing page 27!
+Kernel   Freeing page 28!
+Kernel   Freeing page 29!
+Kernel   Freeing page 30!
+Kernel   Freeing page 31!
+Kernel   Freeing page 32!
+Kernel   Freeing page 33!
+Kernel   Freed current Region 0!
+Kernel   Invalidating MEM_INVALID_PAGES...Kernel   done1
+Kernel   Text pages setup completed!
+Kernel   Data and BSS pages setup completed!
+Kernel   User stack pages setup completed!
+Kernel   Flushing old process' PTEs from Region 0...
+Kernel   done Flushing 0
+Kernel   LoadProgram: couldn't read for 'init3'
+Kernel   END OF CODE REACHED!!!!
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 0
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 1
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 2
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   Pushing process id 1 to the ready queue
+Kernel   Switching to an existing process, from process 0 to process 1
+Kernel   TRAP_KERNEL handler called!
+Kernel   TRAP_KERNEL handler found a delay.
+Kernel   Delay called!
+Kernel   RemoveProcFromReadyQueue for process id 1!
+Kernel   removing item from ready queue.
+Kernel   Attempting to set new process from delay call...
+Kernel   Queue is empty right now!
+Kernel   Switching to an existing process, from process 1 to process 0
+Kernel   Clock ticks passed: 3
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   Clock ticks passed: 4
+Kernel   Time limit reached on Process!.
+Kernel   Attempting to set new process...
+Kernel   Queue is empty right now!
+Kernel   Current process will keep running!
+Kernel   TRAP_CLOCK handler called!
+Kernel   Pushing process id 1 to the ready queue
+Kernel   Switching to an existing process, from process 0 to process 1
 Kernel   TRAP_KERNEL handler called!
 Kernel   TRAP_KERNEL handler found a exit.
 Kernel   Exit called!

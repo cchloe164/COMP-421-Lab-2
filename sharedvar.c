@@ -8,6 +8,7 @@ int num_pages;
 int num_free_pages;
 struct pte region0Pt[PAGE_TABLE_LEN], region1Pt[PAGE_TABLE_LEN]; // page table pointers
 void *currKernelBrk;
+int next_proc_id = 0;
 
 void **interruptVector;
 
@@ -288,4 +289,40 @@ void freePage(int pfn)
     TracePrintf(0, "Freeing page %d!\n", pfn);
     freePages[pfn] = PAGE_FREE;
     num_free_pages++;
+}
+
+/**
+ * Allocate and set up Region 0 for given PCB.
+ */
+void BuildRegion0(struct pcb *proc)
+{
+    proc->process_id = next_proc_id;
+    next_proc_id++;
+    TracePrintf(0, "Building Region 0 for process %d!\n", proc->process_id);
+
+    struct pte region0Pt2[PAGE_TABLE_LEN]; // automatically allocated by compiler
+    TracePrintf(0, "Proc R0 original vaddr %p\n", &region0Pt2);
+
+    unsigned long virtualPage = findFreeVirtualPage(); // find a free virtual page. Use this to store the address to the new Region 0.
+    region1Pt[virtualPage].valid = 1;
+    region1Pt[virtualPage].kprot = PROT_READ | PROT_WRITE;
+    region1Pt[virtualPage].uprot = PROT_NONE;
+    region1Pt[virtualPage].pfn = PAGE_TABLE_LEN + virtualPage;
+    WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_ALL);
+
+    proc->region0 = (struct pte *)((PAGE_TABLE_LEN + virtualPage) << PAGESHIFT); // set it equal to the address
+    proc->free_vpn = virtualPage;
+    TracePrintf(0, "Proc R0 new paddr %p\n", &proc->region0);
+
+    TracePrintf(0, "Allocating and setting up kernel stack...\n");
+    int vaddr3;
+    for (vaddr3 = KERNEL_STACK_BASE; vaddr3 < KERNEL_STACK_LIMIT; vaddr3 += PAGESIZE)
+    {
+        int vpn = vaddr3 >> PAGESHIFT;
+        proc->region0[vpn].pfn = findFreePage();
+        proc->region0[vpn].uprot = PROT_NONE;
+        proc->region0[vpn].kprot = PROT_READ | PROT_WRITE;
+        proc->region0[vpn].valid = 1;
+    }
+    TracePrintf(0, "Allocation and setup done.\n");
 }
