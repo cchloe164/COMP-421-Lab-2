@@ -15,9 +15,16 @@
 int Fork_(void)
 {
     TracePrintf(0, "Fork called!\n");
+    struct pcb *parent = curr_proc;
     struct pcb *child = malloc(sizeof(struct pcb));
+    SetProcID(child);
     BuildRegion0(child);    // Allocate and set up Region 0
-    
+    int res = ContextSwitch(SwitchFork, &parent->ctx, (void *)parent, (void *)child);
+    if (res == 0) {
+        TracePrintf(0, "ContextSwitch was successful!\n", res);
+    } else {
+        TracePrintf(0, "ERROR: ContextSwitch was unsuccessful.\n", res);
+    }
 
     // cloning no loadprogram nor context switch
     //need to copy savedcontext in fork (for the contextswitch) with a memcpy

@@ -82,12 +82,12 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     TracePrintf(1, "-------TraceTraceTrace5--------");
     struct pcb *pcb1 = malloc(sizeof(struct pcb));
     pcb1->region0 = &region0Pt[0];
-    pcb1->process_id = next_proc_id;
-    next_proc_id++;
+    SetProcID(pcb1);
     LoadProgram("idle", cmd_args, info, pcb1->region0);
     idle_pcb = pcb1;
 
     struct pcb *pcb2 = malloc(sizeof(struct pcb));
+    SetProcID(pcb2);
     BuildRegion0(pcb2);
 
     int res = ContextSwitch(SwitchNewProc, &pcb1->ctx, (void *)pcb1, (void *)pcb2);

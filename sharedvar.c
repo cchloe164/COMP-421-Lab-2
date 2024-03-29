@@ -292,16 +292,19 @@ void freePage(int pfn)
 }
 
 /**
+ * Set process id.
+*/
+void SetProcID(struct pcb *proc) {
+    proc->process_id = next_proc_id;
+    next_proc_id++;
+}
+
+/**
  * Allocate and set up Region 0 for given PCB.
  */
 void BuildRegion0(struct pcb *proc)
 {
-    proc->process_id = next_proc_id;
-    next_proc_id++;
     TracePrintf(0, "Building Region 0 for process %d!\n", proc->process_id);
-
-    struct pte region0Pt2[PAGE_TABLE_LEN]; // automatically allocated by compiler
-    TracePrintf(0, "Proc R0 original vaddr %p\n", &region0Pt2);
 
     unsigned long virtualPage = findFreeVirtualPage(); // find a free virtual page. Use this to store the address to the new Region 0.
     region1Pt[virtualPage].valid = 1;
@@ -312,7 +315,7 @@ void BuildRegion0(struct pcb *proc)
 
     proc->region0 = (struct pte *)((PAGE_TABLE_LEN + virtualPage) << PAGESHIFT); // set it equal to the address
     proc->free_vpn = virtualPage;
-    TracePrintf(0, "Proc R0 new paddr %p\n", &proc->region0);
+    TracePrintf(0, "Proc R0 paddr %p\n", &proc->region0);
 
     TracePrintf(0, "Allocating and setting up kernel stack...\n");
     int vaddr3;

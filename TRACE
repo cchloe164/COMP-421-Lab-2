@@ -12,7 +12,7 @@ Kernel   LoadProgram 'idle', args 0x1fffd0
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
 Kernel   entry 0x10100
-Kernel   LoadProgram: size 7, argcount 1
+Kernel   LoadProgram: size 6, argcount 1
 Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
 Kernel   Passed virtual memory check!
 Kernel   Passed physical memory check!
@@ -25,10 +25,9 @@ Kernel   Flushing old process' PTEs from Region 0...
 Kernel   done Flushing 0
 Kernel   Flushing edits to mem_invalid_pages in the new process' Region 0...Kernel   done3
 Kernel   Building Region 0 for process 1!
-Kernel   Proc R0 original vaddr 0x1ff090
 Kernel   Starting at addr 0x400000 and searching until addr 0x212360, decrementing by 4096:
 Kernel   Found free page 509 in Region 1!
-Kernel   Proc R0 new paddr 0x214398
+Kernel   Proc R0 paddr 0x214398
 Kernel   Allocating and setting up kernel stack...
 Kernel   Allocation and setup done.
 Kernel   Switching from existing process 0 to new process 1
@@ -50,11 +49,11 @@ Kernel   dest pfn: 15
 Kernel   done
 Kernel   Writing REG0_PTR0 to 0x3fd000...Kernel   done
 Kernel   ContextSwitch was successful!
-Kernel   LoadProgram 'init10', args 0x1fffd0
+Kernel   LoadProgram 'init2', args 0x1fffd0
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
 Kernel   entry 0x10100
-Kernel   LoadProgram: size 7, argcount 1
+Kernel   LoadProgram: size 6, argcount 1
 Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
 Kernel   Passed virtual memory check!
 Kernel   Passed physical memory check!
@@ -68,15 +67,10 @@ Kernel   done Flushing 0
 Kernel   Flushing edits to mem_invalid_pages in the new process' Region 0...Kernel   done3
 Kernel   END OF CODE REACHED!!!!
 Kernel   TRAP_KERNEL handler called!
-Kernel   TRAP_KERNEL handler found a fork.
-Kernel   Fork called!
-Kernel   Building Region 0 for process 2!
-Kernel   Proc R0 original vaddr 0x1ff0a0
-Kernel   Starting at addr 0x400000 and searching until addr 0x212360, decrementing by 4096:
-Kernel   Found free page 508 in Region 1!
-Kernel   Proc R0 new paddr 0x214710
-Kernel   Allocating and setting up kernel stack...
-Kernel   Allocation and setup done.
+Kernel   TRAP_KERNEL handler found a getpid.
+Kernel   currproc: 1
+Kernel   GetPid: returned 1
+User     init2 pid is: 1
 Kernel   TRAP_KERNEL handler called!
 Kernel   TRAP_KERNEL handler found a exit.
 Kernel   Exit called!
