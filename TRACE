@@ -1,20 +1,18 @@
-** Kernel   level 0 tracing enabled **
-** User     level 0 tracing enabled **
+** Kernel   level 1 tracing enabled **
+** User     level 1 tracing enabled **
 Kernel   Starting Kernel...
-Kernel   SET currKernelBreak from 0x214000 to addr 0x217000 
 Kernel   Setting up interrupt vector table...
 Kernel   Building free pages...
-Kernel   SET currKernelBreak from 0x217000 to addr 0x219000 
+Kernel   SET currKernelBreak from 0x214000 to addr 0x216000 
 Kernel   Finished building free pages
 Kernel   Building page table...
 Kernel   Finished initializing Page Table 
 Kernel   Virtual memory enabled...
-Kernel   SET currKernelBreak from 0x219000 to addr 0x21c000 
 Kernel   -------TraceTraceTrace5--------Kernel   LoadProgram 'idle', args 0x1fffc0
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
 Kernel   entry 0x10100
-Kernel   LoadProgram: size 7, argcount 1
+Kernel   LoadProgram: size 9, argcount 1
 Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
 Kernel   Passed virtual memory check!
 Kernel   Passed physical memory check!
@@ -38,37 +36,40 @@ Kernel   User stack pages setup completed!
 Kernel   Flushing old process' PTEs from Region 0...
 Kernel   done Flushing 0
 Kernel   Flushing edits to mem_invalid_pages in the new process' Region 0...Kernel   done3
-Kernel   Proc2 R0 original vaddr 0x1ff090
-Kernel   Starting at addr 0x400000 and searching until addr 0x213360, decrementing by 4096:
+Kernel   Building Region 0 for process 1!
 Kernel   Found free page 509 in Region 1!
-Kernel   Proc2 R0 new paddr 0x217af0
-Kernel   Allocating and setting up process 2's kernel stack...
+Kernel   Proc R0 paddr 0x215720
+Kernel   Allocating and setting up kernel stack...
+Kernel   Found free page 12 in Region 0!
+Kernel   Found free page 13 in Region 0!
+Kernel   Found free page 14 in Region 0!
+Kernel   Found free page 15 in Region 0!
 Kernel   Allocation and setup done.
 Kernel   Switching from existing process 0 to new process 1
-Kernel   Copying source page 508 to dest page 28...
-Kernel   dest addr: 0x21c000	source addr: 0x1fc000
+Kernel   Borrowing page 22 from Region 1!
+Kernel   Copying source page 508 to dest page 22...
+Kernel   dest addr: 0x216000	source addr: 0x1fc000
+Kernel   dest pfn: 12
+Kernel   done
+Kernel   Copying source page 509 to dest page 22...
+Kernel   dest addr: 0x216000	source addr: 0x1fd000
+Kernel   dest pfn: 13
+Kernel   done
+Kernel   Copying source page 510 to dest page 22...
+Kernel   dest addr: 0x216000	source addr: 0x1fe000
+Kernel   dest pfn: 14
+Kernel   done
+Kernel   Copying source page 511 to dest page 22...
+Kernel   dest addr: 0x216000	source addr: 0x1ff000
 Kernel   dest pfn: 15
-Kernel   done
-Kernel   Copying source page 509 to dest page 28...
-Kernel   dest addr: 0x21c000	source addr: 0x1fd000
-Kernel   dest pfn: 16
-Kernel   done
-Kernel   Copying source page 510 to dest page 28...
-Kernel   dest addr: 0x21c000	source addr: 0x1fe000
-Kernel   dest pfn: 17
-Kernel   done
-Kernel   Copying source page 511 to dest page 28...
-Kernel   dest addr: 0x21c000	source addr: 0x1ff000
-Kernel   dest pfn: 18
 Kernel   done
 Kernel   Writing REG0_PTR0 to 0x3fd000...Kernel   done
 Kernel   ContextSwitch was successful!
-Kernel   SET currKernelBreak from 0x21c000 to addr 0x21f000 
 Kernel   LoadProgram 'execTest', args 0x1fffc0
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
 Kernel   entry 0x10100
-Kernel   LoadProgram: size 7, argcount 1
+Kernel   LoadProgram: size 9, argcount 1
 Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
 Kernel   Passed virtual memory check!
 Kernel   Passed physical memory check!
@@ -94,39 +95,47 @@ Kernel   done Flushing 0
 Kernel   Flushing edits to mem_invalid_pages in the new process' Region 0...Kernel   done3
 Kernel   END OF CODE REACHED!!!!
 Kernel   TRAP_KERNEL handler called!
-Kernel   TRAP_KERNEL handler found a fork.
-Kernel   Fork called!
-Kernel   Set family relationships!
-Kernel   Building Region 0 for process 2!
-Kernel   Found free page 508 in Region 1!
-Kernel   Proc R0 paddr 0x215aa8
-Kernel   Allocating and setting up kernel stack...
-Kernel   Found free page 28 in Region 0!
-Kernel   Found free page 29 in Region 0!
-Kernel   Found free page 30 in Region 0!
-Kernel   Found free page 31 in Region 0!
-Kernel   Allocation and setup done.
-Kernel   Context switching from parent process 1 to child process 2
-Kernel   Borrowing page 22 from Region 1!
-Kernel   Found free page 32 in Region 0!
-Kernel   Found free page 33 in Region 0!
-Kernel   Found free page 34 in Region 0!
-Kernel   Found free page 35 in Region 0!
-Kernel   Found free page 36 in Region 0!
-Kernel   Found free page 37 in Region 0!
-Kernel   Found free page 38 in Region 0!
-Kernel   Found free page 39 in Region 0!
-Kernel   Found free page 40 in Region 0!
-Kernel   Found free page 41 in Region 0!
-Kernel   Found free page 42 in Region 0!
-Kernel   Found free page 43 in Region 0!
-Kernel   Found free page 44 in Region 0!
-Kernel   Found free page 45 in Region 0!
-Kernel   Found free page 46 in Region 0!
-Kernel   Found free page 47 in Region 0!
-Kernel   Writing REG0_PTR0 to 0x3fc000...Kernel   done
-Kernel   ContextSwitch was successful!
-Kernel   Pushing proc 1 to waiting queue!
+Kernel   TRAP_KERNEL handler found a exec.
+Kernel   LoadProgram 'execTestProg', args 0x1fae20
+Kernel   LoadProgram: LoadInfo status 0
+Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
+Kernel   entry 0x10100
+Kernel   LoadProgram: size 13, argcount 1
+Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
+Kernel   Passed virtual memory check!
+Kernel   Passed physical memory check!
+Kernel   Freeing page 16!
+Kernel   Freeing page 17!
+Kernel   Freeing page 18!
+Kernel   Freeing page 19!
+Kernel   Freeing page 20!
+Kernel   Freeing page 21!
+Kernel   Freeing page 22!
+Kernel   Freeing page 23!
+Kernel   Freeing page 24!
+Kernel   Freeing page 25!
+Kernel   Freeing page 26!
+Kernel   Freeing page 27!
+Kernel   Freed current Region 0!
+Kernel   Invalidating MEM_INVALID_PAGES...Kernel   done1
+Kernel   Found free page 16 in Region 0!
+Kernel   Found free page 17 in Region 0!
+Kernel   Found free page 18 in Region 0!
+Kernel   Found free page 19 in Region 0!
+Kernel   Found free page 20 in Region 0!
+Kernel   Found free page 21 in Region 0!
+Kernel   Found free page 22 in Region 0!
+Kernel   Text pages setup completed!
+Kernel   Found free page 23 in Region 0!
+Kernel   Found free page 24 in Region 0!
+Kernel   Found free page 25 in Region 0!
+Kernel   Found free page 26 in Region 0!
+Kernel   Data and BSS pages setup completed!
+Kernel   Found free page 27 in Region 0!
+Kernel   User stack pages setup completed!
+Kernel   Flushing old process' PTEs from Region 0...
+Kernel   done Flushing 0
+Kernel   Flushing edits to mem_invalid_pages in the new process' Region 0...Kernel   done3
 Kernel   TRAP_KERNEL handler called!
 Kernel   TRAP_KERNEL handler found a getpid.
 Kernel   currproc: 1
@@ -136,12 +145,11 @@ Kernel   TRAP_KERNEL handler called!
 Kernel   TRAP_KERNEL handler found a delay.
 Kernel   Delay called!
 Kernel   RemoveProcFromReadyQueue for process id 1!
+Kernel   Pushing proc 1 to waiting queue!
 Kernel   Attempting to set new process from delay call...
 Kernel   Queue is empty right now!
 Kernel   Switching to an existing process, from process 1 to process 0
-Kernel   Result from ContextSwitch: 0
 Kernel   ContextSwitch was successful!
-Kernel   SET currKernelBreak from 0x21f000 to addr 0x222000 
 Kernel   LoadProgram 'execTest', args 0x1fffc0
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
@@ -150,23 +158,34 @@ Kernel   LoadProgram: size 9, argcount 1
 Kernel   LoadProgram: text_npg 7, data_bss_npg 4, stack_npg 1
 Kernel   Passed virtual memory check!
 Kernel   Passed physical memory check!
+Kernel   Freeing page 16!
+Kernel   Freeing page 17!
+Kernel   Freeing page 18!
+Kernel   Freeing page 19!
+Kernel   Freeing page 20!
+Kernel   Freeing page 21!
 Kernel   Freeing page 22!
 Kernel   Freeing page 23!
 Kernel   Freeing page 24!
 Kernel   Freeing page 25!
 Kernel   Freeing page 26!
 Kernel   Freeing page 27!
-Kernel   Freeing page 28!
-Kernel   Freeing page 29!
-Kernel   Freeing page 30!
-Kernel   Freeing page 31!
-Kernel   Freeing page 32!
-Kernel   Freeing page 33!
 Kernel   Freed current Region 0!
 Kernel   Invalidating MEM_INVALID_PAGES...Kernel   done1
+Kernel   Found free page 16 in Region 0!
+Kernel   Found free page 17 in Region 0!
+Kernel   Found free page 18 in Region 0!
+Kernel   Found free page 19 in Region 0!
+Kernel   Found free page 20 in Region 0!
+Kernel   Found free page 21 in Region 0!
+Kernel   Found free page 22 in Region 0!
 Kernel   Text pages setup completed!
+Kernel   Found free page 23 in Region 0!
+Kernel   Found free page 24 in Region 0!
+Kernel   Found free page 25 in Region 0!
+Kernel   Found free page 26 in Region 0!
 Kernel   Data and BSS pages setup completed!
-Kernel   brk, 0
+Kernel   Found free page 27 in Region 0!
 Kernel   User stack pages setup completed!
 Kernel   Flushing old process' PTEs from Region 0...
 Kernel   done Flushing 0
@@ -188,6 +207,7 @@ Kernel   Current process will keep running!
 Kernel   TRAP_CLOCK handler called!
 Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item with pid 1!
 Kernel   Item with id 1 delay has expired! now moving to the ready queue
+Kernel   Removing proc 1 to waiting queue!
 Kernel   Pushing process id 1 to the ready queue
 Kernel   Switching from process 0 to process id 1
 Kernel   Switching to an existing process, from process 0 to process 1
@@ -196,7 +216,8 @@ Kernel   TRAP_KERNEL handler found a delay.
 Kernel   Delay called!
 Kernel   RemoveProcFromReadyQueue for process id 1!
 Kernel   Found a matching process in the ready queue to remove! Removing it now.
-Kernel   removing item from ready queue.
+Kernel   Removing proc 1 to waiting queue!
+Kernel   Pushing proc 1 to waiting queue!
 Kernel   Attempting to set new process from delay call...
 Kernel   Queue is empty right now!
 Kernel   Switching to an existing process, from process 1 to process 0
@@ -215,28 +236,29 @@ Kernel   Current process will keep running!
 Kernel   TRAP_CLOCK handler called!
 Kernel   TRAP_CLOCK handler decrementing clock for waiting queue item with pid 1!
 Kernel   Item with id 1 delay has expired! now moving to the ready queue
+Kernel   Removing proc 1 to waiting queue!
 Kernel   Pushing process id 1 to the ready queue
 Kernel   Switching from process 0 to process id 1
 Kernel   Switching to an existing process, from process 0 to process 1
 Kernel   TRAP_KERNEL handler called!
 Kernel   TRAP_KERNEL handler found a exit.
 Kernel   Exit Called! on process id 1
+Kernel   Freeing page 16!
+Kernel   Freeing page 17!
+Kernel   Freeing page 18!
+Kernel   Freeing page 19!
+Kernel   Freeing page 20!
+Kernel   Freeing page 21!
 Kernel   Freeing page 22!
 Kernel   Freeing page 23!
 Kernel   Freeing page 24!
 Kernel   Freeing page 25!
 Kernel   Freeing page 26!
 Kernel   Freeing page 27!
-Kernel   Freeing page 28!
-Kernel   Freeing page 29!
-Kernel   Freeing page 30!
-Kernel   Freeing page 31!
-Kernel   Freeing page 32!
-Kernel   Freeing page 33!
+Kernel   Freeing page 12!
+Kernel   Freeing page 13!
+Kernel   Freeing page 14!
 Kernel   Freeing page 15!
-Kernel   Freeing page 16!
-Kernel   Freeing page 17!
-Kernel   Freeing page 18!
 Kernel   Freeing page 1021!
 Kernel   Attempting to set new process from delay call...
 Kernel   Found a ready process to switch to for delay!.
