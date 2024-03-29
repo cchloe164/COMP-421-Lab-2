@@ -16,7 +16,7 @@ main()
     // process id is 1
     write(0, "init3! testing Delay\n", 6);
     TracePrintf(0, "init2 pid is: %i\n", GetPid());
-    // Brk((void *) 200000);
+    Brk((void *) 200000);
     Delay(4);
     Delay(2);
     Exit(0);

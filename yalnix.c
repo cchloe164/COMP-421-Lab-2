@@ -19,6 +19,7 @@
 #include "getpid.c"
 #include "brk.c"
 #include "exec.c"
+#include "exit.c"
 
 void *tty_buf; // buffer in virtual memory region 1
 // struct pte region0Pt[PAGE_TABLE_LEN], region1Pt[PAGE_TABLE_LEN]; // page table pointers
@@ -33,6 +34,8 @@ void TrapMathHandler(ExceptionInfo *info);
 void TrapTTYReceiveHandler(ExceptionInfo *info);
 void TrapTTYTransmitHandler(ExceptionInfo *info);
 void buildFreePages(unsigned int pmem_size);
+void RemoveHeadFromExitQueue(struct pcb *current);
+void PushExitToExited(struct exitedChild *child, struct pcb *current);
 void initPT();
 int findFreeVirtualPage();
 void RemoveProcFromReadyQueue(struct pcb *proc);
@@ -110,6 +113,8 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     // Enable virtual memory
     struct pcb *pcb1 = malloc(sizeof(struct pcb));
     struct pcb *pcb2 = malloc(sizeof(struct pcb));
+    pcb1->waiting = false;
+    pcb2->waiting = false;
     WriteRegister(REG_VM_ENABLE, 1);
     TracePrintf(0, "Virtual memory enabled...\n");
     vm_enabled = true;
@@ -377,17 +382,6 @@ extern int ForkFunc(void) {
     TracePrintf(0, "Fork called!\n");
     return 0;
 }
-extern void ExitFunc(int status) {
-    (void)status;
-    TracePrintf(0, "Exit called!\n");
-    while(1){}
-}
-extern int WaitFunc(int *status_ptr) {
-    (void)status_ptr;
-    TracePrintf(0, "Wait called!\n");
-    return 0;
-}
-
 
 extern int TtyReadFunc(int tty_id, void *buf, int len) {
     (void)tty_id;

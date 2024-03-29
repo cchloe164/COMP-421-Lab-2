@@ -22,6 +22,16 @@ struct pcb { //TODO: I've added a few fields for some of the other functions but
     SavedContext ctx;
     unsigned long free_vpn; // free virtual page number
     int delay_ticks; // the amount of ticks remaining if the process is Delayed
+
+    struct pcb *parent; // this process's parent if it has one
+    struct pcb *children_head;  // head child of children chain
+    struct pcb *children_tail;  
+    struct pcb *next_sibling;
+    struct pcb *prev_sibling;
+
+    struct exitedChild *exited_children_head;
+    struct exitedChild *exited_children_tail;
+    int waiting;
 };
 
 // an informal round-robin queue based on clock ticks
@@ -30,6 +40,15 @@ struct queue_item {
     struct pcb *proc;
     int ticks_left;
     struct queue_item *next;
+};
+
+// an informal round-robin queue based on clock ticks
+struct exitedChild {
+    struct exitedChild *prev; // for waiting queue only; ready queue is only one direction link
+    struct pcb *parent;
+    int status;
+    int process_id;
+    struct exitedChild *next;
 };
 
 struct queue_item *waiting_queue_head;
@@ -54,6 +73,42 @@ struct pcb create_pcb(int pid, int kernel_stack, int reg0_pfn, int brk, SavedCon
     new_pcb.delay_ticks = delay_ticks;
     return new_pcb;
 }
+
+
+
+/**
+ Exit queue functions
+
+*/
+
+void PushExitToExited(struct exitedChild *child, struct pcb *current) {
+    child->next = NULL; // no next process (this is useful for the trapclock handler)
+
+    // push onto queue
+    if (current->exited_children_head == NULL) {
+        current->exited_children_head = child;
+        current->exited_children_tail = current->exited_children_head;
+    } else {
+        current->exited_children_tail->next = child;
+        child->prev = current->exited_children_tail;
+        current->exited_children_tail = child;
+    }
+}
+
+void RemoveHeadFromExitQueue(struct pcb *current) {
+    struct exitedChild *nextChild = current->exited_children_head;
+    if (current->exited_children_head != NULL) {
+        if (current->exited_children_head == current->exited_children_tail) {
+            current->exited_children_head = NULL;
+            current->exited_children_tail = NULL;
+        } //else just pop the head
+        current->exited_children_head = nextChild->next;
+        current->exited_children_head->prev = NULL;
+        
+    free(nextChild);
+    }
+}
+
 
 /**
  * Push new process to waiting queue.
@@ -96,6 +151,30 @@ void PushItemToWaitingQueue(struct queue_item *new) {
     waiting_queue_size++;
 }
 
+void RemoveChildFromParent(struct pcb *item, struct pcb *parent_proc) {
+    
+    // Case 1: If the item is the only item in the queue
+    if (parent_proc->children_head == item && parent_proc->children_tail == item) {
+        parent_proc->children_head = NULL;
+        parent_proc->children_tail = NULL;
+    } else {
+        // Case 2: If the item is the head of the queue
+        if (parent_proc->children_head == item) {
+            parent_proc->children_head = item->next_sibling;
+            parent_proc->children_head->prev_sibling = NULL;
+        } else {
+            // Case 3: If the item is the tail of the queue
+            if (parent_proc->children_tail == item) {
+                parent_proc->children_tail = item->prev_sibling;
+                parent_proc->children_tail->next_sibling = NULL;
+            } else {
+                // Case 4: If the item is somewhere in the middle of the queue
+                item->prev_sibling->next_sibling = item->next_sibling;
+                item->next_sibling->prev_sibling = item->prev_sibling;
+            }
+        }
+    }
+}
 /**
  * remove a queue item from the waiting queue.
 */
@@ -129,7 +208,6 @@ void RemoveItemFromWaitingQueue(struct queue_item *item) {
 
     // Free memory allocated to the removed item
     // free((void *)item);
-
 
 }
 
