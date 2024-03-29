@@ -242,7 +242,8 @@ void TrapMemoryHandler(ExceptionInfo *info)
         Halt();
     // }
     (void)info;
-};
+    }
+}
 
 /**
  * This type of exception results from any arithmetic error from an instruction executed
