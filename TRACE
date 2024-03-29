@@ -1,5 +1,5 @@
-** Kernel   level 1 tracing enabled **
-** User     level 1 tracing enabled **
+** Kernel   level 0 tracing enabled **
+** User     level 0 tracing enabled **
 Kernel   Starting Kernel...
 Kernel   Setting up interrupt vector table...
 Kernel   Building free pages...
@@ -8,7 +8,7 @@ Kernel   Finished building free pages
 Kernel   Building page table...
 Kernel   Finished initializing Page Table 
 Kernel   Virtual memory enabled...
-Kernel   -------TraceTraceTrace5--------Kernel   LoadProgram 'idle', args 0x1fffd0
+Kernel   LoadProgram 'idle', args 0x1fffd0
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
 Kernel   entry 0x10100
@@ -108,6 +108,25 @@ Kernel   Found free page 31 in Region 0!
 Kernel   Allocation and setup done.
 Kernel   Set family relationships!
 Kernel   Context switching from parent process 1 to child process 2
+<<<<<<< HEAD
+Kernel   Borrowing page 22 from Region 1!
+Kernel   Found free page 32 in Region 0!
+Kernel   Found free page 33 in Region 0!
+Kernel   Found free page 34 in Region 0!
+Kernel   Found free page 35 in Region 0!
+Kernel   Found free page 36 in Region 0!
+Kernel   Found free page 37 in Region 0!
+Kernel   Found free page 38 in Region 0!
+Kernel   Found free page 39 in Region 0!
+Kernel   Found free page 40 in Region 0!
+Kernel   Found free page 41 in Region 0!
+Kernel   Found free page 42 in Region 0!
+Kernel   Found free page 43 in Region 0!
+Kernel   Found free page 44 in Region 0!
+Kernel   Found free page 45 in Region 0!
+Kernel   Found free page 46 in Region 0!
+Kernel   Found free page 47 in Region 0!
+=======
 Kernel   Borrowing page 23 from Region 1!
 Kernel   Copying source page 0 to dest page 23...
 Kernel   Copying source page 1 to dest page 23...
@@ -701,6 +720,7 @@ Kernel   Found free page 47 in Region 0!
 Kernel   dest addr: 0x217000	source addr: 0x1ff000
 Kernel   dest pfn: 47
 Kernel   memcpying content from page 511 to page 47 using R1 page 23...Kernel   done
+>>>>>>> ba53bf79e875074540baff39d7b6e709b7ec7904
 Kernel   Writing REG0_PTR0 to 0x3fc000...Kernel   done
 Kernel   Pushing process id 1 to the ready queue
 Kernel   ForkSwitch was successful!
@@ -809,9 +829,6 @@ Kernel   TRAP_KERNEL handler found a exit.
 Kernel   Exit Called! on process id 2
 Kernel   We have arrived here in Exit!
 Kernel   We have arrived here2 in Exit!
-Kernel   iterating through parent's children!
-Kernel   child pid 2, curproc id 2
-Kernel   Removing child (calling function)
 Kernel   Removing child 2 from parent 1
 Kernel   This child is the only child in the queue
 Kernel   We have arrived here3 in Exit!
@@ -821,9 +838,13 @@ Kernel   We have arrived here6 in Exit!
 Kernel   Pushing process id 1 to the ready queue
 Kernel   We have arrived here7 in Exit! current proc id 2
 Kernel   Attempting to find a new process...
+<<<<<<< HEAD
+Kernel   Switching to an existing process out of an exiting process, from process 2 to process 1
+=======
 Kernel   Found a ready process to switch to for delay! PID 2 from PID 2.
 Kernel   Removing proc 2 to waiting queue!
 Kernel   Switching to an existing process out of an exiting process, from process 2 to process 2
+>>>>>>> ba53bf79e875074540baff39d7b6e709b7ec7904
 Kernel   We have arrived here2 in SwitchExit!
 Kernel   Freeing page 32!
 Kernel   Freeing page 33!
@@ -841,6 +862,41 @@ Kernel   Freeing page 44!
 Kernel   Freeing page 45!
 Kernel   Freeing page 46!
 Kernel   Freeing page 47!
+<<<<<<< HEAD
+Kernel   ForkSwitch was successful!
+Kernel   TRAP_KERNEL handler called!
+Kernel   TRAP_KERNEL handler found a getpid.
+Kernel   currproc: 1
+Kernel   GetPid: returned 1
+User     child pid is: 1
+User     currentForkReturn is: 2
+Kernel   TRAP_KERNEL handler called!
+Kernel   TRAP_KERNEL handler found a exit.
+Kernel   Exit Called! on process id 1
+Kernel   We have arrived here in Exit!
+Kernel   We have arrived here7 in Exit! current proc id 1
+Kernel   Attempting to find a new process...
+Kernel   Switching to an existing process out of an exiting process, from process 1 to process 1
+Kernel   We have arrived here2 in SwitchExit!
+Kernel   Freeing page 16!
+Kernel   Freeing page 17!
+Kernel   Freeing page 18!
+Kernel   Freeing page 19!
+Kernel   Freeing page 20!
+Kernel   Freeing page 21!
+Kernel   Freeing page 22!
+Kernel   Freeing page 23!
+Kernel   Freeing page 24!
+Kernel   Freeing page 25!
+Kernel   Freeing page 26!
+Kernel   Freeing page 27!
+Kernel   Freeing page 12!
+Kernel   Freeing page 13!
+Kernel   Freeing page 14!
+Kernel   Freeing page 15!
+Kernel   Freeing page 1021!
+=======
 Kernel   We have arrived here9 in Exit!
 Kernel   Freeing page 1020!
+>>>>>>> ba53bf79e875074540baff39d7b6e709b7ec7904
 Kernel   We have arrived here8 in Exit!

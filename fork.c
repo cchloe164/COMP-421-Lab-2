@@ -1,7 +1,5 @@
 #include <comp421/hardware.h>
 
-// #include "contextswitch.c"
-
 /**
  * The Fork kernel call is the only way an existing process can create a new process in Yalnix (there is
  * no inherent limit on the maximum number of processes that can exist at once). The memory image
@@ -20,25 +18,10 @@ int ForkFunc(void)
 {
     TracePrintf(0, "Fork called!\n");
     struct pcb *parent = curr_proc;
-    struct pcb *child = malloc(sizeof(struct pcb));
+    struct pcb *child = create_pcb();
 
-    
-    SetProcID(child);
-
-    
     BuildRegion0(child);    // Allocate and set up kernel stack
-    // TracePrintf(0, "Child PID is %d\n", child->process_id);
-    child->waiting = false;
-    child->waiting = false;
-    child->children_head = NULL;
-    child->children_tail = NULL;
-    child->children_tail = NULL;
-    child->children_head = NULL;
 
-    child->exited_children_head = NULL;
-    child->exited_children_tail = NULL;
-    child->exited_children_head = NULL;
-    child->exited_children_tail = NULL;
     // set parent-child relations
     TracePrintf(0, "Set family relationships!\n");
     child->parent = parent;
@@ -57,13 +40,9 @@ int ForkFunc(void)
         TracePrintf(0, "ERROR: ForkSwitch was unsuccessful.\n", res);
     }
 
-    // PushProcToWaitingQueue(parent);
-    //     The only
-    //  * distinction is the fact that the return value in the calling (parent) process is the (nonzero) process ID
-    //  * of the new (child) process, while the value returned in the child is 0
-    if (curr_proc->process_id == child->process_id) {
+    if (curr_proc->process_id == child->process_id) {  // child returns
         return 0;
-    } else {
+    } else {    // occurs after child returns, exits, and parent is back as current process
         return child->process_id;
     }
 }
