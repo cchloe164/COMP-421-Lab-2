@@ -60,11 +60,14 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     initPT();   // Build 1 initial page table
 
     // Initialize terminals
-    struct term *terms = malloc(sizeof(struct term) * NUM_TERMINALS);
-    terms[0] = (struct term){TTY_CONSOLE};
-    terms[1] = (struct term){TTY_1};
-    terms[2] = (struct term){TTY_2};
-    terms[3] = (struct term){TTY_3};
+    // Initialize terminals
+    terms = malloc(sizeof(struct term) * NUM_TERMINALS);
+    int tty_id;
+    for (tty_id = 0; tty_id < NUM_TERMINALS; tty_id++) {
+        terms[tty_id].read_in = NULL;
+        terms[tty_id].write_out = NULL;
+    }
+
 
     // Enable virtual memory
     WriteRegister(REG_VM_ENABLE, 1);
