@@ -1,7 +1,5 @@
 #include <comp421/hardware.h>
 
-// #include "contextswitch.c"
-
 /**
  * The Fork kernel call is the only way an existing process can create a new process in Yalnix (there is
  * no inherent limit on the maximum number of processes that can exist at once). The memory image
@@ -42,7 +40,9 @@ int ForkFunc(void)
         TracePrintf(0, "ERROR: ContextSwitch was unsuccessful.\n", res);
     }
 
-    PushProcToWaitingQueue(parent);
-
-    return child->process_id;
+    if (curr_proc->process_id == child->process_id) {  // child returns
+        return 0;
+    } else {    // occurs after child returns, exits, and parent is back as current process
+        return child->process_id;
+    }
 }

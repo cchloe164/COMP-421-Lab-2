@@ -15,7 +15,6 @@ void **interruptVector;
 struct pcb { //TODO: I've added a few fields for some of the other functions but haven't updated the pcb creation code for idle/init yet
     int process_id;
     SavedContext ctx;
-    int kernel_stack;  // first page of kernal stack
     int brk; //stores the break position of the current process (for brk.c)
     int reg0_pfn; //stores the physical pfn of reg 0
     struct pte *region0; //stores pointer to physical address of region 0
@@ -61,16 +60,33 @@ struct pcb *idle_pcb;
 int queue_size = 0;
 int waiting_queue_size = 0;
 
+/**
+ * Set process id.
+*/
+void SetProcID(struct pcb *proc) {
+    proc->process_id = next_proc_id;
+    next_proc_id++;
+}
+
+
 //creates pcb
-struct pcb create_pcb(int pid, int kernel_stack, int reg0_pfn, int brk, SavedContext context, int delay_ticks) {
-    struct pcb new_pcb;
-    new_pcb.process_id = pid;
-    new_pcb.kernel_stack = kernel_stack;
-    new_pcb.reg0_pfn = reg0_pfn;
-    new_pcb.brk = brk;
-    new_pcb.ctx = context;
-    new_pcb.delay_ticks = delay_ticks;
-    return new_pcb;
+struct pcb *create_pcb() {
+    struct pcb *new = malloc(sizeof(struct pcb*));
+    SetProcID(new);
+    new->brk = 0;      
+    new->reg0_pfn = 0; 
+    new->region0 = NULL;  
+    new->free_vpn = 0; 
+    new->delay_ticks = 0;       
+    new->children_head = NULL; 
+    new->children_tail = NULL;
+    new->next_sibling = NULL;
+    new->prev_sibling = NULL;
+    new->exited_children_head = NULL;
+    new->exited_children_tail = NULL;
+    new->waiting = 0;
+
+    return new;
 }
 
 
@@ -391,13 +407,6 @@ void freePage(int pfn)
     num_free_pages++;
 }
 
-/**
- * Set process id.
-*/
-void SetProcID(struct pcb *proc) {
-    proc->process_id = next_proc_id;
-    next_proc_id++;
-}
 
 /**
  * Allocate and set up Region 0 for given PCB.
