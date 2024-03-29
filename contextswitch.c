@@ -11,18 +11,10 @@ SavedContext *SwitchNewProc(SavedContext *ctxp, void *p1, void *p2)
     // save context of proc 1
     proc2->ctx = *ctxp;
 
-    //had a global variable that filled from the top of VMEM1limit (make sure not to touch the kernelstack pages. he had a buffer)
-    int temp_vpn = 0;   // TODO: implement case where no invalid ptes are found
-    unsigned long vaddr;
-    for (vaddr = VMEM_1_BASE; vaddr < VMEM_1_LIMIT; vaddr += PAGESIZE) {
-        int page = (vaddr >> PAGESHIFT) - PAGE_TABLE_LEN;
-        TracePrintf(2, "\nvaddr: %p\nvpn: %d\nlimit: %p\n", vaddr, page, VMEM_1_LIMIT);
-        if (region1Pt[page].valid == 0) {
-            temp_vpn = page;
-            break;
-        }
-    }
-    struct pte *temp = &region1Pt[temp_vpn]; // borrow from the top of the Region 1 page table
+    // borrow from the top of the Region 1 page table
+    int temp_vpn = findFreeVirtualPage();
+    struct pte *temp = &region1Pt[temp_vpn]; 
+    struct pte temp_copy = *temp;   // store original pte info
 
     // find a new Region0 virtual pointer
     unsigned long source_addr;
@@ -49,7 +41,10 @@ SavedContext *SwitchNewProc(SavedContext *ctxp, void *p1, void *p2)
         WriteRegister(REG_TLB_FLUSH, dest_addr);
     }
 
+    region1Pt[temp_vpn] = temp_copy;    // restore borrowed pte from R1
+    freePages[temp_vpn + PAGE_TABLE_LEN] = PAGE_FREE;
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_1);
+
     curr_proc = proc2;
     unsigned long phys_addr = (unsigned long)((PAGE_TABLE_LEN + proc2->free_vpn) << PAGESHIFT);
     
@@ -74,18 +69,10 @@ SavedContext *SwitchFork(SavedContext *ctxp, void *p1, void *p2)
     // save context of proc 1
     child->ctx = *ctxp;
 
-    //had a global variable that filled from the top of VMEM1limit (make sure not to touch the kernelstack pages. he had a buffer)
-    int temp_vpn = 0;   // TODO: implement case where no invalid ptes are found
-    unsigned long vaddr;
-    for (vaddr = VMEM_1_BASE; vaddr < VMEM_1_LIMIT; vaddr += PAGESIZE) {
-        int page = (vaddr >> PAGESHIFT) - PAGE_TABLE_LEN;
-        TracePrintf(2, "\nvaddr: %p\nvpn: %d\nlimit: %p\n", vaddr, page, VMEM_1_LIMIT);
-        if (region1Pt[page].valid == 0) {
-            temp_vpn = page;
-            break;
-        }
-    }
-    struct pte *temp = &region1Pt[temp_vpn]; // borrow from the top of the Region 1 page table
+    // borrow from the top of the Region 1 page table
+    int temp_vpn = findFreeVirtualPage();
+    struct pte *temp = &region1Pt[temp_vpn];
+    struct pte temp_copy = *temp; // store original pte info
 
     // find a new Region0 virtual pointer
     unsigned long source_addr;
@@ -112,14 +99,9 @@ SavedContext *SwitchFork(SavedContext *ctxp, void *p1, void *p2)
         WriteRegister(REG_TLB_FLUSH, dest_addr);
     }
 
+    region1Pt[temp_vpn] = temp_copy; // restore borrowed pte from R1
+    freePages[temp_vpn + PAGE_TABLE_LEN] = PAGE_FREE;
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_1);
-    // curr_proc = child;
-    // unsigned long phys_addr = (unsigned long)((PAGE_TABLE_LEN + child->free_vpn) << PAGESHIFT);
-    
-    // TracePrintf(0, "Writing REG0_PTR0 to %p...", phys_addr);
-    // WriteRegister(REG_PTR0, (RCS421RegVal)phys_addr);
-    // WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
-    // TracePrintf(0, "done\n");
 
     // return the ctx
     return &child->ctx;

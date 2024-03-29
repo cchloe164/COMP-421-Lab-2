@@ -14,13 +14,16 @@ void **interruptVector;
 
 struct pcb { //TODO: I've added a few fields for some of the other functions but haven't updated the pcb creation code for idle/init yet
     int process_id;
-    int kernel_stack;  // first page of kernal stack
-    int reg0_pfn; //stores the physical pfn of reg 0
-    int brk; //stores the break position of the current process (for brk.c)
-    struct pte *region0; //stores pointer to physical address of region 0
     SavedContext ctx;
+    int kernel_stack;  // first page of kernal stack
+    int brk; //stores the break position of the current process (for brk.c)
+    int reg0_pfn; //stores the physical pfn of reg 0
+    struct pte *region0; //stores pointer to physical address of region 0
     unsigned long free_vpn; // free virtual page number
     int delay_ticks; // the amount of ticks remaining if the process is Delayed
+
+    struct pcb *parent; // this process's parent if it has one
+    struct pcb *children_head;  // head child of children chain
 };
 
 // an informal round-robin queue based on clock ticks
@@ -312,7 +315,7 @@ void BuildRegion0(struct pcb *proc)
     region1Pt[virtualPage].kprot = PROT_READ | PROT_WRITE;
     region1Pt[virtualPage].uprot = PROT_NONE;
     region1Pt[virtualPage].pfn = PAGE_TABLE_LEN + virtualPage;
-    WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_ALL);
+    WriteRegister(REG_TLB_FLUSH, region1Pt[virtualPage].pfn << PAGESHIFT);
 
     proc->region0 = (struct pte *)((PAGE_TABLE_LEN + virtualPage) << PAGESHIFT); // set it equal to the address
     proc->free_vpn = virtualPage;
