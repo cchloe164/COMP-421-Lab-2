@@ -4,10 +4,12 @@
 #include "fork.c"
 #include "brk.c"
 #include "getpid.c"
+#include "exec.c"
+#include "exit.c"
+#include "wait.c"
+#include "ttyread.c"
+#include "ttywrite.c"
 
-//TODO: idk if I have to do this
-extern void Tick_();
-SavedContext *SwitchExist(SavedContext *ctx, void *p1, void *p2);
 /* HANDLERS */
 
 /**
@@ -29,22 +31,22 @@ void TrapKernelHandler(ExceptionInfo *info)
     TracePrintf(0, "TRAP_KERNEL handler called!\n");
     if (info->code == YALNIX_FORK) {
         TracePrintf(0, "TRAP_KERNEL handler found a fork.\n");
-        info->regs[0] = Fork_();
+        info->regs[0] = ForkFunc();
     }
     else if (info->code == YALNIX_EXEC)
     {
         TracePrintf(0, "TRAP_KERNEL handler found a exec.\n");
-        info->regs[0] = Exec((char *) info->regs[1], (char **)info->regs[2]);
+        info->regs[0] = ExecFunc((char *) info->regs[1], (char **)info->regs[2], info);
     }
     else if (info->code == YALNIX_EXIT)
     {
         TracePrintf(0, "TRAP_KERNEL handler found a exit.\n");
-        Exit(0);
+        ExitFunc(0);
     }
     else if (info->code == YALNIX_WAIT)
     {
         TracePrintf(0, "TRAP_KERNEL handler found a wait.\n");
-        info->regs[0] = Wait((int *) info->regs[1]);
+        info->regs[0] = WaitFunc((int *) info->regs[1]);
     }
     else if (info->code == YALNIX_GETPID)
     {
@@ -56,19 +58,19 @@ void TrapKernelHandler(ExceptionInfo *info)
     else if (info->code == YALNIX_BRK)
     {
         TracePrintf(0, "TRAP_KERNEL handler found a brk.\n");
-        info->regs[0] = Brk((void *) info->regs[1]);
+        info->regs[0] = BrkFunc((void *) info->regs[1]);
     }
     else if (info->code == YALNIX_DELAY)
     {   TracePrintf(0, "TRAP_KERNEL handler found a delay.\n");
-        info->regs[0] = Delay(info->regs[1]);
+        info->regs[0] = DelayFunc(info->regs[1]);
     }
     else if (info->code == YALNIX_TTY_READ)
     {
-        info->regs[0] = TtyRead(info->regs[1], (void *) info->regs[2], info->regs[3]);
+        info->regs[0] = TtyReadFunc(info->regs[1], (void *) info->regs[2], info->regs[3]);
     }
     else if (info->code == YALNIX_TTY_WRITE)
     {
-        info->regs[0] = TtyWrite(info->regs[1], (void *) info->regs[2], info->regs[3]);
+        info->regs[0] = TtyWriteFunc(info->regs[1], (void *) info->regs[2], info->regs[3]);
     }
     (void)info;
 };

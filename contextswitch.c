@@ -151,17 +151,3 @@ SavedContext *SwitchExist(SavedContext *ctx, void *p1, void *p2) {
 }
 
 
-// // // context switching to no process, exiting kernal
-// // SavedContext *SwitchNoProc(SavedContext *ctx, void *p1, void *p2) {
-    
-// //     free(freePages);
-// //     free(interruptVector);
-
-// //     (void) p1;
-// //     (void) p2;
-
-// //     return ctx;
-// // }
-
-//cropped from other file since I couldn't figure out access things
-// #include "contextswitch.c"

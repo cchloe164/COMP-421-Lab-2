@@ -5,7 +5,7 @@ int ticks_passed = 0;
 /**
 Delay
 */
-int Delay(int clock_ticks)
+int DelayFunc(int clock_ticks)
 {
     // edge cases: clockticks 0; return 0, negative, return error
 

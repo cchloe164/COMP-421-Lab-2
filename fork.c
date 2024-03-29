@@ -1,5 +1,7 @@
 #include <comp421/hardware.h>
 
+// #include "contextswitch.c"
+
 /**
  * The Fork kernel call is the only way an existing process can create a new process in Yalnix (there is
  * no inherent limit on the maximum number of processes that can exist at once). The memory image
@@ -14,7 +16,7 @@
  * any reason, the new process cannot be created, Fork instead returns the value ERROR to the calling
  * process.
 */
-int Fork_(void)
+int ForkFunc(void)
 {
     TracePrintf(0, "Fork called!\n");
     struct pcb *parent = curr_proc;

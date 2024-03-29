@@ -12,25 +12,12 @@
 
 #include "sharedvar.c"
 #include "handlers.c"
-#include "load.c"
 
 void *tty_buf; // buffer in virtual memory region 1
 
 void buildFreePages(unsigned int pmem_size);
 void initPT();
 int vm_enabled = false;
-
-extern int SetKernelBrk(void *addr);
-
-extern int Fork(void);
-extern int Exec(char *filename, char **argvec);
-extern void Exit(int status) __attribute__ ((noreturn));;
-extern int Wait(int *status_ptr);
-extern int GetPid_(struct pcb *info);
-extern int Brk(void *addr);
-extern int Delay(int clock_ticks);
-extern int TtyRead(int tty_id, void *buf, int len);
-extern int TtyWrite(int tty_id, void *buf, int len);
 
 /*
     *  This is the primary entry point into the kernel:
@@ -84,6 +71,7 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     pcb1->region0 = &region0Pt[0];
     SetProcID(pcb1);
     LoadProgram("idle", cmd_args, info, pcb1->region0);
+    curr_proc = pcb1;
     idle_pcb = pcb1;
 
     struct pcb *pcb2 = malloc(sizeof(struct pcb));
@@ -237,9 +225,9 @@ extern int SetKernelBrk(void *addr) {
         } else {
             int page;
             int currBrkPg = ((long)currKernelBrk >> PAGESHIFT) - PAGE_TABLE_LEN;
-            TracePrintf(1, "-------TraceTraceTrace--------"); 
+            TracePrintf(2, "-------TraceTraceTrace--------"); 
             for (page = 0; page < pagesNeeded; page++) {
-                TracePrintf(1, "-------TraceTraceTrace2--------%d\n", currBrkPg + page);
+                TracePrintf(2, "-------TraceTraceTrace2--------%d\n", currBrkPg + page);
                 int newPage = findFreePage();
 
                 region1Pt[currBrkPg + page].pfn = newPage;
@@ -250,49 +238,16 @@ extern int SetKernelBrk(void *addr) {
                 // num_free_pages--;
             }
             //TODO: flush?
-            TracePrintf(1, "-------TraceTraceTrace3--------");
+            TracePrintf(2, "-------TraceTraceTrace3--------");
             WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_ALL);
             
             currKernelBrk = addr;
-            TracePrintf(1, "-------TraceTraceTrace4--------");
+            TracePrintf(2, "-------TraceTraceTrace4--------");
             return 0;
 
         }
     }
     
-}
-
-
-extern int Exec(char *filename, char **argvec) {
-    (void)filename;
-    (void)argvec;
-    TracePrintf(0, "Exec called!\n");
-    return 0;
-}
-extern void Exit(int status) {
-    (void)status;
-    TracePrintf(0, "Exit called!\n");
-    while(1){}
-}
-extern int Wait(int *status_ptr) {
-    (void)status_ptr;
-    TracePrintf(0, "Wait called!\n");
-    return 0;
-}
-
-extern int TtyRead(int tty_id, void *buf, int len) {
-    (void)tty_id;
-    (void)buf;
-    (void)len;
-    TracePrintf(0, "TtyRead called!\n");
-    return 0;
-}
-extern int TtyWrite(int tty_id, void *buf, int len) { 
-    (void)tty_id;
-    (void)buf;
-    (void)len;
-    TracePrintf(0, "TtyWrite called!\n");
-    return 0;
 }
 
 
