@@ -1,8 +1,29 @@
-extern int TtyReadFunc(int tty_id, void *buf, int len)
+int TtyReceiveFunc(int tty_id)
 {
-    (void)tty_id;
-    (void)buf;
-    (void)len;
     TracePrintf(0, "TtyRead called!\n");
-    return 0;
+    char *new_line = malloc(sizeof(char) * TERMINAL_MAX_LINE);          // allocate memory for new line
+    int len = TtyReceive(tty_id, (void *)&new_line, TERMINAL_MAX_LINE); // fill line
+
+    struct line *new = malloc(sizeof(struct line));
+    new->content = new_line;
+    new->len = len;
+    new->next_line = NULL;
+
+    struct term tty = terms[tty_id];
+    if (tty.read_in == NULL)
+    {
+        tty.read_in = new;
+    }
+    else
+    {
+        struct line *curr = tty.read_in;
+        while (curr->next_line != NULL)
+        {
+            curr = curr->next_line;
+        }
+        curr->next_line = new;
+    }
+
+    TracePrintf(0, "Terminal %d read in length %d\n", tty_id, len);
+    return len;
 }
