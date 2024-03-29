@@ -13,7 +13,8 @@
 int main()
 {
     write(0, "init10! Testing Fork!\n", 6);
-    Fork();
+    int x = Fork();
     TracePrintf(0, "child pid is: %i\n", GetPid());
+    TracePrintf(0, "currentForkReturn is: %i\n", x);
     Exit(0);
 }

@@ -89,7 +89,7 @@ SavedContext *SwitchFork(SavedContext *ctxp, void *p1, void *p2)
 
         if (child->region0[page].valid == 1)
         {
-            TracePrintf(1, "Setting up valid PTE...\n");
+            TracePrintf(1, "Setting up valid PTE page %d...\n", page);
             child->region0[page].uprot = parent->region0[page].uprot;
             child->region0[page].kprot = parent->region0[page].kprot;
             child->region0[page].pfn = findFreePage(); // allocate physical memory
@@ -109,6 +109,7 @@ SavedContext *SwitchFork(SavedContext *ctxp, void *p1, void *p2)
             WriteRegister(REG_TLB_FLUSH, dest_addr);
         }
     }
+    // TracePrintf(0, "508 valid: %d", parent->region0[508].valid);
 
     region1Pt[temp_vpn] = temp_copy; // restore borrowed pte from R1
     freePages[temp_vpn + PAGE_TABLE_LEN] = PAGE_FREE;
@@ -121,7 +122,7 @@ SavedContext *SwitchFork(SavedContext *ctxp, void *p1, void *p2)
     WriteRegister(REG_PTR0, (RCS421RegVal)phys_addr);
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
     TracePrintf(0, "done\n");
-
+    PushProcToQueue(parent);
     // return the ctx
     return &child->ctx;
 }
@@ -151,3 +152,41 @@ SavedContext *SwitchExist(SavedContext *ctx, void *p1, void *p2) {
 }
 
 
+
+
+// context switching from an existing process to another existing process
+SavedContext *SwitchExit(SavedContext *ctx, void *p1, void *p2) {
+
+    struct pcb *proc1 = (struct pcb *) p1;
+    struct pcb *proc2 = (struct pcb *) p2;
+
+    TracePrintf(0, "Switching to an existing process out of an exiting process, from process %d to process %d\n", proc1->process_id, proc2->process_id);
+    // save context of proc 1
+    // proc1->ctx = *ctx;
+
+    (void)ctx;
+    int vpn;
+    TracePrintf(0, "We have arrived here2 in SwitchExit!\n");
+    for (vpn = VMEM_0_BASE; vpn < VMEM_0_LIMIT; vpn += PAGESIZE) {
+        int page = vpn >> PAGESHIFT;
+        // TracePrintf(0, "We have arrived here3 in SwitchExit!\n");
+        // TracePrintf(0, "We have arrived here3 in SwitchExit! %d\n", proc1->region0[vpn] == NULL);
+        struct pte curr_pte = proc1->region0[page];
+        // TracePrintf(0, "We have arrived here4 in SwitchExit!\n");
+
+        if (curr_pte.valid == 1) {
+            freePage(curr_pte.pfn);
+            curr_pte.valid = 0;
+        }
+    }
+    // flush all entries in region 0 from TLB
+    WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
+
+    // redirect current region 0 pointer to new process
+    WriteRegister(REG_PTR0, (RCS421RegVal) proc2->region0);
+
+    curr_proc = p2;
+
+    WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_ALL);
+    return &proc2->ctx;
+}

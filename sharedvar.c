@@ -168,7 +168,7 @@ void PushItemToWaitingQueue(struct queue_item *new) {
 }
 
 void RemoveChildFromParent(struct pcb *item, struct pcb *parent_proc) {
-    
+    TracePrintf(0, "Removing child %d from parent %d\n", item->process_id, parent_proc->process_id);
     // Case 1: If the item is the only item in the queue
     if (parent_proc->children_head == item && parent_proc->children_tail == item) {
         parent_proc->children_head = NULL;
@@ -309,12 +309,14 @@ void RemoveProcFromReadyQueue(struct pcb *proc) {
  * Find a ready proc, or idle if none on the queue
 */
 struct pcb * FindReadyPcb() { //TODO: this procedure gets used by delay to find another pcb to switch to
-    TracePrintf(0, "Attempting to set new process from delay call...\n");
+    TracePrintf(0, "Attempting to find a new process...\n");
     if (queue_size == 0) {//TODO: check if this is 1? maybe
-        TracePrintf(0, "Queue is empty right now!\n");
+        TracePrintf(0, "Queue is empty right now! returning idle\n");
         return idle_pcb; 
     } else {
-        TracePrintf(0, "Found a ready process to switch to for delay!.\n", queue_head->proc->process_id, curr_proc->process_id);
+        TracePrintf(1, "Found a ready process to switch to for delay! PID %d from PID %d.\n", queue_head->proc->process_id, curr_proc->process_id);
+        // TracePrintf(1, "Valid bit 508: %d", (struct pte *) ((queue_head->proc)->region0)[508].valid);
+        
         return queue_head->proc;//TODO: might be switching to itself? 
     }
 }

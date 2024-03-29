@@ -20,6 +20,8 @@ int ForkFunc(void)
     struct pcb *parent = curr_proc;
     struct pcb *child = create_pcb();
 
+    BuildRegion0(child);    // Allocate and set up kernel stack
+
     // set parent-child relations
     TracePrintf(0, "Set family relationships!\n");
     child->parent = parent;
@@ -31,12 +33,11 @@ int ForkFunc(void)
     }
     parent->children_tail = child;
 
-    BuildRegion0(child);    // Allocate and set up kernel stack
     int res = ContextSwitch(SwitchFork, &parent->ctx, (void *)parent, (void *)child);
     if (res == 0) {
-        TracePrintf(0, "ContextSwitch was successful!\n", res);
+        TracePrintf(0, "ForkSwitch was successful!\n", res);
     } else {
-        TracePrintf(0, "ERROR: ContextSwitch was unsuccessful.\n", res);
+        TracePrintf(0, "ERROR: ForkSwitch was unsuccessful.\n", res);
     }
 
     if (curr_proc->process_id == child->process_id) {  // child returns
