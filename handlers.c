@@ -1,20 +1,15 @@
-#include <comp421/hardware.h>
+// #include <comp421/hardware.h>
 
 #include "delay.c"
-// #include "brk.c"
-//TODO: idk if I have to do this
-extern void Tick_();
-extern int GetPid_(struct pcb *info);
-SavedContext *SwitchExist(SavedContext *ctx, void *p1, void *p2);
-extern int ForkFunc(void);
-extern int ExecFunc(char *filename, char **argvec, ExceptionInfo *info);
-extern void ExitFunc(int status) __attribute__ ((noreturn));
-extern int WaitFunc(int *status_ptr);
-extern int GetPid_(struct pcb *info);
-extern int BrkFunc(void *addr);
-extern int DelayFunc(int clock_ticks);
-extern int TtyReadFunc(int tty_id, void *buf, int len);
-extern int TtyWriteFunc(int tty_id, void *buf, int len);
+#include "fork.c"
+#include "brk.c"
+#include "getpid.c"
+#include "exec.c"
+#include "exit.c"
+#include "wait.c"
+#include "ttyread.c"
+#include "ttywrite.c"
+
 /* HANDLERS */
 
 /**

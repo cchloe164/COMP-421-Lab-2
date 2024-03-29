@@ -1,5 +1,3 @@
-
-
 #include <comp421/hardware.h>
 
 #define PAGE_FREE 0
@@ -10,16 +8,17 @@ int num_pages;
 int num_free_pages;
 struct pte region0Pt[PAGE_TABLE_LEN], region1Pt[PAGE_TABLE_LEN]; // page table pointers
 void *currKernelBrk;
+int next_proc_id = 0;
 
 void **interruptVector;
 
 struct pcb { //TODO: I've added a few fields for some of the other functions but haven't updated the pcb creation code for idle/init yet
     int process_id;
-    int kernel_stack;  // first page of kernal stack
-    int reg0_pfn; //stores the physical pfn of reg 0
-    int brk; //stores the break position of the current process (for brk.c)
-    struct pte *region0; //stores pointer to physical address of region 0
     SavedContext ctx;
+    int kernel_stack;  // first page of kernal stack
+    int brk; //stores the break position of the current process (for brk.c)
+    int reg0_pfn; //stores the physical pfn of reg 0
+    struct pte *region0; //stores pointer to physical address of region 0
     unsigned long free_vpn; // free virtual page number
     int delay_ticks; // the amount of ticks remaining if the process is Delayed
 
@@ -114,6 +113,7 @@ void RemoveHeadFromExitQueue(struct pcb *current) {
  * Push new process to waiting queue.
 */
 void PushProcToWaitingQueue(struct pcb *proc) {
+    TracePrintf(0, "Pushing proc %d to waiting queue!\n", proc->process_id);
     // wrap process as new queue item
     struct queue_item *new = malloc(sizeof(struct queue_item));
     new->proc = proc;
@@ -136,6 +136,7 @@ void PushProcToWaitingQueue(struct pcb *proc) {
  * Push new process to waiting queue.
 */
 void PushItemToWaitingQueue(struct queue_item *new) {
+    TracePrintf(0, "Pushing proc %d to waiting queue!\n", new->proc->process_id);
     // wrap process as new queue item
     new->next = NULL; // no next process (this is useful for the trapclock handler)
 
@@ -180,8 +181,8 @@ void RemoveChildFromParent(struct pcb *item, struct pcb *parent_proc) {
 */
 
 void RemoveItemFromWaitingQueue(struct queue_item *item) {
+    TracePrintf(0, "Removing proc %d to waiting queue!\n", item->proc->process_id);
     waiting_queue_size--;
-    
 
     // Case 1: If the item is the only item in the queue
     if (waiting_queue_head == item && waiting_queue_tail == item) {
@@ -233,8 +234,8 @@ void PushProcToQueue(struct pcb *proc) {
 }
 
 void RemoveItemFromReadyQueue(struct queue_item *item) {
+    TracePrintf(0, "Removing proc %d to waiting queue!\n", item->proc->process_id);
     queue_size--;
-    TracePrintf(0, "removing item from ready queue.\n");
     // Case 1: If the item is the only item in the queue
     if (queue_head == item && queue_tail == item) {
         queue_head = NULL;
@@ -327,16 +328,18 @@ Finds a free page, returns the PFN or -1 if there are no free pages available.
 */
 int findFreePage()
 {
-    int page_itr;
-    for (page_itr = 0; page_itr < num_pages; page_itr++)
+    int page;
+    for (page = 0; page < num_pages; page++)
     {
-        if (freePages[page_itr] == PAGE_FREE)
+        if (freePages[page] == PAGE_FREE)
         {
-            freePages[page_itr] = PAGE_USED;
+            TracePrintf(0, "Found free page %d in Region 0!\n", page);
+            freePages[page] = PAGE_USED;
             num_free_pages--;
-            return page_itr;
+            return page;
         }
     }
+    TracePrintf(0, "ERROR: No free page found in region 0!\n");
     return -1;
 }
 
@@ -345,9 +348,8 @@ int findFreePage()
  */
 int findFreeVirtualPage()
 {
-    TracePrintf(0, "Starting at addr %p and searching until addr %p, decrementing by %d:\n", VMEM_1_LIMIT, (unsigned long)&currKernelBrk, PAGESIZE);
     unsigned long vaddr;
-    for (vaddr = VMEM_1_LIMIT - (3 * PAGESIZE); vaddr > (unsigned long)&currKernelBrk; vaddr -= PAGESIZE)
+    for (vaddr = VMEM_1_LIMIT - (3 * PAGESIZE); vaddr > (unsigned long)&currKernelBrk; vaddr -= PAGESIZE) //TODO: try removing 3*pagesize
     {
         int page = (vaddr >> PAGESHIFT) - PAGE_TABLE_LEN;
         if (region1Pt[page].valid == 0)
@@ -359,4 +361,71 @@ int findFreeVirtualPage()
     }
     TracePrintf(0, "ERROR: No free page found in region 1!\n");
     return -1;
+}
+
+/**
+ * Return free page number from Region 1 for borrowing. If none available, return -1.
+*/
+int BorrowR1Page() {
+    unsigned long vaddr;
+    for (vaddr = VMEM_1_BASE; vaddr < VMEM_1_LIMIT; vaddr += PAGESIZE)
+    {
+        int page = (vaddr >> PAGESHIFT) - PAGE_TABLE_LEN;
+        if (region1Pt[page].valid == 0)
+        {
+            TracePrintf(0, "Borrowing page %d from Region 1!\n", page);
+            return page;
+        }
+    }
+    TracePrintf(0, "ERROR: No more free pages in Region 1 to borrow!\n");
+    return -1;
+}
+
+/**
+frees a page
+*/
+void freePage(int pfn)
+{
+    TracePrintf(0, "Freeing page %d!\n", pfn);
+    freePages[pfn] = PAGE_FREE;
+    num_free_pages++;
+}
+
+/**
+ * Set process id.
+*/
+void SetProcID(struct pcb *proc) {
+    proc->process_id = next_proc_id;
+    next_proc_id++;
+}
+
+/**
+ * Allocate and set up Region 0 for given PCB.
+ */
+void BuildRegion0(struct pcb *proc)
+{
+    TracePrintf(0, "Building Region 0 for process %d!\n", proc->process_id);
+
+    unsigned long virtualPage = findFreeVirtualPage(); // find a free virtual page. Use this to store the address to the new Region 0.
+    region1Pt[virtualPage].valid = 1;
+    region1Pt[virtualPage].kprot = PROT_READ | PROT_WRITE;
+    region1Pt[virtualPage].uprot = PROT_NONE;
+    region1Pt[virtualPage].pfn = PAGE_TABLE_LEN + virtualPage;
+    WriteRegister(REG_TLB_FLUSH, region1Pt[virtualPage].pfn << PAGESHIFT);
+
+    proc->region0 = (struct pte *)((PAGE_TABLE_LEN + virtualPage) << PAGESHIFT); // set it equal to the address
+    proc->free_vpn = virtualPage;
+    TracePrintf(0, "Proc R0 paddr %p\n", &proc->region0);
+
+    TracePrintf(0, "Allocating and setting up kernel stack...\n");
+    int vaddr3;
+    for (vaddr3 = KERNEL_STACK_BASE; vaddr3 < KERNEL_STACK_LIMIT; vaddr3 += PAGESIZE)
+    {
+        int vpn = vaddr3 >> PAGESHIFT;
+        proc->region0[vpn].pfn = findFreePage();
+        proc->region0[vpn].uprot = PROT_NONE;
+        proc->region0[vpn].kprot = PROT_READ | PROT_WRITE;
+        proc->region0[vpn].valid = 1;
+    }
+    TracePrintf(0, "Allocation and setup done.\n");
 }
