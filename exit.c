@@ -25,14 +25,14 @@ void ExitFunc(int status) {
 
     //if parent dies first, then inform children that you're ded
     if (curr_proc->children_head != NULL) {
-        
-        struct pcb *child = (struct pcb *) &curr_proc->children_head; //(this should take the first child anyways, even if it is a list)
-        
+        struct pcb *child = (struct pcb *) curr_proc->children_head; //(this should take the first child anyways, even if it is a list)
+        TracePrintf(0, "children_head%d\n", curr_proc->process_id);
         while (child != NULL) { //reset parents of orphans
             child->parent = NULL;
             child = child->next_sibling;
         }
     }
+    
     //valid bit 0s for region 0
     
     //go to Region 1 pte with the region 0, free pfn and reset valid bit
@@ -85,7 +85,8 @@ void ExitFunc(int status) {
     //TODO: do we need a new switch function?
     //context switch to next ready process, if none, switch to idle
     //ok so two things: nothing on the ready queue, and second: 
-	ContextSwitch(SwitchExit, &(curr_proc->ctx), (void *)curr_proc, FindReadyPcb());
+	ContextSwitch(SwitchExit, &curr_proc->ctx, (void *)curr_proc, FindReadyPcb());
+    TracePrintf(0, "We have arrived here9 in Exit!\n");
     struct pte *reg1pte = &region1Pt[curr_proc->free_vpn];
     reg1pte->valid = 0;
     freePage(reg1pte->pfn);

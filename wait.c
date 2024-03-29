@@ -18,8 +18,9 @@ extern int WaitFunc(int *status_ptr) {
     //check if there are any children
     //if no children ever, return error
     TracePrintf(1, "WaitFunc called for parent process %d\n", curr_proc->process_id);
-    if (curr_proc->children_head == NULL) {
-        if (curr_proc->exited_children_head == NULL) {
+    if (curr_proc->exited_children_head == NULL) {
+        TracePrintf(1, "Should have a child\n");
+        if (curr_proc->children_head == NULL) {
             //no children ever
             return ERROR;
         }
@@ -29,8 +30,9 @@ extern int WaitFunc(int *status_ptr) {
             //so have a status field in parent pcb that indicates whether waiting or not
             //if parent waiting, contextswitch to parent
         curr_proc->waiting = true;
-        ContextSwitch(SwitchExist, &(curr_proc->ctx), (void *)curr_proc, curr_proc->children_head);
+        ContextSwitch(SwitchExist, &(curr_proc->ctx), (void *)curr_proc, FindReadyPcb());
     }
+    TracePrintf(1, "there is an exited child\n");
     //this will resume after the contextswitch in waitfunc. 
     //then, there should be a child in the exitlist
     //then write status of that child to the pointer
