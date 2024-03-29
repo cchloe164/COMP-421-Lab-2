@@ -1,9 +1,23 @@
-// cloning no loadprogram nor context switch
-
-//need to copy savedcontext in fork (for the contextswitch) with a memcpy
-
+/**
+ * The Fork kernel call is the only way an existing process can create a new process in Yalnix (there is
+ * no inherent limit on the maximum number of processes that can exist at once). The memory image
+ * of the new process (the child) is a copy of that of the process calling Fork (the parent). When the
+ * Fork call completes, both the parent process and the child process return (separately) from the Fork
+ * kernel call as if each had been the one to call Fork, since the child is a copy of the parent. The only
+ * distinction is the fact that the return value in the calling (parent) process is the (nonzero) process ID
+ * of the new (child) process, while the value returned in the child is 0; as noted in Section 7.1, the
+ * process ID for each (real) process should be greater than 0 (you should use the process ID value of 0
+ * for your idle process). When returning from a successful Fork, you can return first either as the new
+ * child process or as the parent process (think about why you might want to do one or the other). If, for
+ * any reason, the new process cannot be created, Fork instead returns the value ERROR to the calling
+ * process.
+*/
 int Fork_(void)
 {
     TracePrintf(0, "Fork called!\n");
+    // cloning no loadprogram nor context switch
+    
+
+    //need to copy savedcontext in fork (for the contextswitch) with a memcpy
     return 0;
 }

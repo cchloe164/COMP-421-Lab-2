@@ -19,23 +19,10 @@ void *tty_buf; // buffer in virtual memory region 1
 // void *currKernelBrk;
 int next_proc_id = 0;
 
-void TrapKernelHandler(ExceptionInfo *info);
-void TrapClockHandler(ExceptionInfo *info);
-void TrapIllegalHandler(ExceptionInfo *info);
-void TrapMemoryHandler(ExceptionInfo *info);
-void TrapMathHandler(ExceptionInfo *info);
-void TrapTTYReceiveHandler(ExceptionInfo *info);
-void TrapTTYTransmitHandler(ExceptionInfo *info);
 void buildFreePages(unsigned int pmem_size);
 void initPT();
-int findFreeVirtualPage();
-void RemoveProcFromReadyQueue(struct pcb *proc);
-void RemoveItemFromReadyQueue(struct queue_item *item);
+void BuildRegion0(struct pcb *proc);
 int vm_enabled = false;
-void freePage(int pfn);
-int findFreePage();
-
-int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0);
 
 extern int SetKernelBrk(void *addr);
 
@@ -48,7 +35,6 @@ extern int Brk(void *addr);
 extern int Delay(int clock_ticks);
 extern int TtyRead(int tty_id, void *buf, int len);
 extern int TtyWrite(int tty_id, void *buf, int len);
-SavedContext *SwitchNewProc(SavedContext *ctx, void *p1, void *p2);
 
 void RemoveItemFromWaitingQueue(struct queue_item *item);
 /*
@@ -90,72 +76,59 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
         interruptVector[i] = NULL;
     }
     WriteRegister(REG_VECTOR_BASE, (RCS421RegVal) &interruptVector[0]);
-
-    // Build a boolean array that keeps track of free pages
-    //RW: maybe we could do this after 
-    buildFreePages(pmem_size);
-    // Build 1 initial page table
-    // struct pte *region0Pt = malloc(PAGE_TABLE_LEN * sizeof(struct pte));
-    // initPT(region0Pt);
-    initPT();
+    
+    buildFreePages(pmem_size);  // Build a boolean array that keeps track of free pages
+    
+    initPT();   // Build 1 initial page table
 
     // Initialize terminals
 
+
     // Enable virtual memory
-    struct pcb *pcb1 = malloc(sizeof(struct pcb));
-    struct pcb *pcb2 = malloc(sizeof(struct pcb));
     WriteRegister(REG_VM_ENABLE, 1);
     TracePrintf(0, "Virtual memory enabled...\n");
     vm_enabled = true;
+
     // Create idle process
-    //TODO:  The idle process should have Yalnix process ID 0. Is this done?
     malloc(10000);
     TracePrintf(1, "-------TraceTraceTrace5--------");
+    struct pcb *pcb1 = malloc(sizeof(struct pcb));
     pcb1->region0 = &region0Pt[0];
     pcb1->process_id = next_proc_id;
     next_proc_id++;
     LoadProgram("idle", cmd_args, info, pcb1->region0);
-
     idle_pcb = pcb1;
-    //init region 0 page table for init function (PCB2) (Copied from (see pg 22)
-    // TracePrintf(0, "REGION 0\n");
-    // TracePrintf(0, "base: %p\nlimit: %p\n", KERNEL_STACK_BASE, KERNEL_STACK_LIMIT);
 
-    //find a new free page
-    // pcb2->physaddr = findFreePage();
+    struct pcb *pcb2 = malloc(sizeof(struct pcb));
+    BuildRegion0(pcb2);
+    // struct pte region0Pt2[PAGE_TABLE_LEN]; //automatically allocated by compiler
+    // TracePrintf(0, "Proc2 R0 original vaddr %p\n", &region0Pt2);
 
+    // unsigned long virtualPage = findFreeVirtualPage(); // find a free virtual page. Use this to store the address to the new Region 0.
+    // region1Pt[virtualPage].valid = 1;
+    // region1Pt[virtualPage].kprot = PROT_READ | PROT_WRITE;
+    // region1Pt[virtualPage].uprot = PROT_NONE;
+    // region1Pt[virtualPage].pfn = PAGE_TABLE_LEN + virtualPage;
+    // WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_ALL);
 
-    struct pte region0Pt2[PAGE_TABLE_LEN]; //automatically allocated by compiler
-    TracePrintf(0, "Proc2 R0 original vaddr %p\n", &region0Pt2);
-
-    unsigned long virtualPage = findFreeVirtualPage(); // find a free virtual page. Use this to store the address to the new Region 0.
-    region1Pt[virtualPage].valid = 1;
-    region1Pt[virtualPage].kprot = PROT_READ | PROT_WRITE;
-    region1Pt[virtualPage].uprot = PROT_NONE;
-    region1Pt[virtualPage].pfn = PAGE_TABLE_LEN + virtualPage;
-    WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_ALL);
-
-    pcb2->region0 = (struct pte*)((PAGE_TABLE_LEN + virtualPage) << PAGESHIFT); // set it equal to the address
-    pcb2->free_vpn = virtualPage;
-    TracePrintf(0, "Proc2 R0 new paddr %p\n", &pcb2->region0);
+    // struct pcb *pcb2 = malloc(sizeof(struct pcb));
+    // pcb2->region0 = (struct pte*)((PAGE_TABLE_LEN + virtualPage) << PAGESHIFT); // set it equal to the address
+    // pcb2->free_vpn = virtualPage;
+    // TracePrintf(0, "Proc2 R0 new paddr %p\n", &pcb2->region0);
     
-    TracePrintf(0, "Allocating and setting up process 2's kernel stack...\n");
-    int vaddr3;
-    for (vaddr3 = KERNEL_STACK_BASE; vaddr3 < KERNEL_STACK_LIMIT; vaddr3 += PAGESIZE)
-    {
-        int vpn = vaddr3 >> PAGESHIFT; // addr -> page number
-        // TracePrintf(0, "vpn2: %d vaddr: %p\n", vpn, vaddr3);
-
-        // TODO: change this Region0pt to be a specific region0pt for the pcb2 (see piazza @130)
-        pcb2->region0[vpn].pfn = findFreePage();
-        pcb2->region0[vpn].uprot = PROT_NONE;
-        pcb2->region0[vpn].kprot = PROT_READ | PROT_WRITE;
-        pcb2->region0[vpn].valid = 1;
-        // TracePrintf(0, "ksb %d", KERNEL_STACK_BASE >> PAGESHIFT);
-    }
+    // TracePrintf(0, "Allocating and setting up process 2's kernel stack...\n");
+    // int vaddr3;
+    // for (vaddr3 = KERNEL_STACK_BASE; vaddr3 < KERNEL_STACK_LIMIT; vaddr3 += PAGESIZE)
+    // {
+    //     int vpn = vaddr3 >> PAGESHIFT;
+    //     pcb2->region0[vpn].pfn = findFreePage();
+    //     pcb2->region0[vpn].uprot = PROT_NONE;
+    //     pcb2->region0[vpn].kprot = PROT_READ | PROT_WRITE;
+    //     pcb2->region0[vpn].valid = 1;
+    // }
     
-    pcb2->process_id = next_proc_id;
-    next_proc_id++;
+    // pcb2->process_id = next_proc_id;
+    // next_proc_id++;
     TracePrintf(0, "Allocation and setup done.\n");
 
     // //TODO: create pcbs for each process. Write a create pcb function to create pcbs and create pcb for idle program?
@@ -178,24 +151,41 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     return;
 }
 
-// struct pte buildRegion0() {
-//     int vaddr2;
-//     struct pte region0Pt2[PAGE_TABLE_LEN];
+/**
+ * Allocate and set up Region 0 for given PCB.
+*/
+void BuildRegion0(struct pcb *proc) {
+    proc->process_id = next_proc_id;
+    next_proc_id++;
+    TracePrintf(0, "Building Region 0 for process %d!\n", proc->process_id);
 
-//     for (vaddr2 = KERNEL_STACK_BASE; vaddr2 < KERNEL_STACK_LIMIT; vaddr2 += PAGESIZE)
-//     {
-//         int vpn = vaddr2 >> PAGESHIFT; // addr -> page number
-//         TracePrintf(0, "vpn: %d vaddr: %p\n", vpn, vaddr2);
+    struct pte region0Pt2[PAGE_TABLE_LEN]; // automatically allocated by compiler
+    TracePrintf(0, "Proc R0 original vaddr %p\n", &region0Pt2);
 
-//         // TODO: change this Region0pt to be a specific region0pt for the pcb2 (see piazza @130)
-//         region0Pt2[vpn].pfn = findFreePage();
-//         region0Pt2[vpn].uprot = PROT_NONE;
-//         region0Pt2[vpn].kprot = PROT_READ | PROT_WRITE;
-//         region0Pt2[vpn].valid = 1;
-//     }
+    unsigned long virtualPage = findFreeVirtualPage(); // find a free virtual page. Use this to store the address to the new Region 0.
+    region1Pt[virtualPage].valid = 1;
+    region1Pt[virtualPage].kprot = PROT_READ | PROT_WRITE;
+    region1Pt[virtualPage].uprot = PROT_NONE;
+    region1Pt[virtualPage].pfn = PAGE_TABLE_LEN + virtualPage;
+    WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_ALL);
 
-//     return region0Pt2;
-// }
+    proc->region0 = (struct pte *)((PAGE_TABLE_LEN + virtualPage) << PAGESHIFT); // set it equal to the address
+    proc->free_vpn = virtualPage;
+    TracePrintf(0, "Proc R0 new paddr %p\n", &proc->region0);
+
+    TracePrintf(0, "Allocating and setting up kernel stack...");
+    int vaddr3;
+    for (vaddr3 = KERNEL_STACK_BASE; vaddr3 < KERNEL_STACK_LIMIT; vaddr3 += PAGESIZE)
+    {
+        int vpn = vaddr3 >> PAGESHIFT;
+        proc->region0[vpn].pfn = findFreePage();
+        proc->region0[vpn].uprot = PROT_NONE;
+        proc->region0[vpn].kprot = PROT_READ | PROT_WRITE;
+        proc->region0[vpn].valid = 1;
+    }
+    TracePrintf(0, "done.\n");
+}
+
 
 /**
 Build a structure to keep track of what page frames in physical memory are free. 
@@ -205,8 +195,8 @@ which is probably easier, though slightly less efficient. This list of free page
 frames should be based on the pmem_size argument passed to your KernelStart, but 
 be careful not include any memory that is already in use by your kernel.
 */
-//will allocate first before the kernel is allocated, then set the bits to PAGE_USED
 void buildFreePages(unsigned int pmem_size) {
+    //will allocate first before the kernel is allocated, then set the bits to PAGE_USED
 	TracePrintf(0, "Building free pages...\n"); 
     //For testing: iterate and print free pages and print used pages
     num_pages = DOWN_TO_PAGE(pmem_size) >> PAGESHIFT;
@@ -255,7 +245,7 @@ void initPT() { //TODO: add this as input struct pte *region0Pt
     // TracePrintf(0, "base: %p\nbreak: %p\n", VMEM_1_BASE, currKernelBrk);
     unsigned int brk = (uintptr_t) currKernelBrk;
     for (vaddr = VMEM_1_BASE; vaddr < brk; vaddr += PAGESIZE) {
-        int page = (vaddr >> PAGESHIFT) - 512;
+        int page = (vaddr >> PAGESHIFT) - PAGE_TABLE_LEN;
         TracePrintf(2, "\npage_itr: %p\nindex: %d\nbrk: %p\n", vaddr, page, brk);
         region1Pt[page].pfn = vaddr >> PAGESHIFT;
         region1Pt[page].uprot = PROT_NONE;
@@ -276,8 +266,7 @@ void initPT() { //TODO: add this as input struct pte *region0Pt
         }
 
         TracePrintf(2, "Still initializing Page Table \n"); 
-        freePages[vaddr >> PAGESHIFT] = PAGE_USED; //page_itr >> PAGESHIFT?
-        num_free_pages--;
+        freePages[vaddr >> PAGESHIFT] = PAGE_USED;
     };
 
 
@@ -287,11 +276,9 @@ void initPT() { //TODO: add this as input struct pte *region0Pt
     RCS421RegVal ptr1;
     ptr0 = (RCS421RegVal) &region0Pt; //TODO: maybe take this as input
     ptr1 = (RCS421RegVal) &region1Pt;
-    // TracePrintf(0, "PTR0 is here:%d", ptr0);
     WriteRegister(REG_PTR0, ptr0);
     WriteRegister(REG_PTR1, ptr1);
     TracePrintf(0, "Finished initializing Page Table \n"); 
-    
 }
 
 /*
