@@ -221,6 +221,9 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     for (tty_id = 0; tty_id < NUM_TERMINALS; tty_id++) {
         terms[tty_id].read_in = NULL;
         terms[tty_id].write_out = NULL;
+        terms[tty_id].write_queue = NULL;
+        terms[tty_id].read_queue = NULL;
+        terms[tty_id].mutex = 1;
     }
 
 

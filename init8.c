@@ -12,8 +12,14 @@
 
 int main()
 {
-    char *text = "HELLO!\n";
-    TtyWrite(1, (void *)text, 6);
-    while(1) {}
+    char *buf = malloc(sizeof(char)*2);
+    buf[0] = 'a';
+    buf[1] = '\n';
+
+    while(1){
+        TtyWrite(1, buf, 2);
+    }
+
+    TtyWrite(1, buf, 2);
     Exit(0);
 }

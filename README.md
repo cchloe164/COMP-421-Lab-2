@@ -16,7 +16,7 @@ The majority of our project should work. See "known bugs" section below this sec
 *Wait is implemented. When a parent wishes to wait for its child, it does so appropriately through calls such as Delay() in the child process. 
 *Ready processes switch when they are running for more than 2 clock ticks, if there are other processes on the ready queue
 
-*Most kernel calls related to terminal I/O handling are written. This includes the TrapKernelHandler, TrapClockHandler, TrapIllegalHandler, TrapMemoryHandler, TrapMathHandler, TrapTTYReceiveHandler. TrapTTYTransmitHandler is currently being implemented, and may be complete when this project is submitted. 
+*Most kernel calls related to terminal I/O handling are written. This includes the TrapKernelHandler, TrapClockHandler, TrapIllegalHandler, TrapMemoryHandler, TrapMathHandler, TrapTTYReceiveHandler. TrapTTYTransmitHandler is currently being implemented, and was not complete at the time of submission. 
 
 
 Known bugs:
