@@ -65,8 +65,8 @@ void TrapKernelHandler(ExceptionInfo *info)
         info->regs[0] = DelayFunc(info->regs[1]);
     }
     else if (info->code == YALNIX_TTY_READ)
-    {
-        // info->regs[0] = TtyReceiveFunc(info->regs[1], (void *) info->regs[2], info->regs[3]);
+    {   //TODO
+        // info->regs[0] = TtyReadFunc(info->regs[1], (void *) info->regs[2], info->regs[3]);
     }
     else if (info->code == YALNIX_TTY_WRITE)
     {
@@ -209,41 +209,74 @@ void TrapMemoryHandler(ExceptionInfo *info)
      * of the process and an explanation of the problem; and continue running other processes
      */
     // check if virtual addr is in region 0, below the stack, and above the break for the process
-    TracePrintf(0, "TRAP_MEMORY handler called!\n");
-    int addri = (uintptr_t) info->addr;
-    if (addri > VMEM_0_BASE || addri < VMEM_0_LIMIT || addri < KERNEL_STACK_BASE) {
-        SetKernelBrk(info->addr);
-    }
-    else {
-        if (info->code == TRAP_MEMORY_MAPERR)
-        {
-            printf("Process %d: No mapping at addr", GetPid_(curr_proc));
 
+    int terminate = true;
+    TracePrintf(0, "TRAP_MEMORY handler called!\n");
+    unsigned long addri = (unsigned long) info->addr;
+    unsigned long addr_vpn = DOWN_TO_PAGE((void *)info->addr) >> PAGESHIFT;
+
+
+    int curr_limit = curr_proc->sp;
+    TracePrintf(1, "KerneStack requested moving down the current stack bottom from %d to %d\n", curr_limit, addr_vpn);
+    TracePrintf(1, "KerneStack requested moving down the current stack bottom from address %d to %d\n", (long)curr_limit << PAGESHIFT, addri);
+    if (info->code == TRAP_MEMORY_MAPERR)
+        {
+            TracePrintf(0, "Process %d: No mapping at addr", GetPid_(curr_proc));
+            //3 checks: is is in the kerenel stack? Is it less than the current process's break? (in the user heap)
+            //otherwise, set region0 from cur sp-1 down to new vpn. set new sp to new sp vpn
+            if (addri > KERNEL_STACK_BASE) {
+                TracePrintf(0, "Process %d: address is in the kernel stack", GetPid_(curr_proc));
+            } else if (addr_vpn < curr_proc->brk) {
+                TracePrintf(0, "Process %d: address vpn %d is in the user heap at %d", GetPid_(curr_proc), addr_vpn, curr_proc->brk);
+            } else {
+                
+                
+                
+                int pgs_up = curr_limit - addr_vpn;
+                int i;
+                TracePrintf(1, "KerneStack moving down the current stack bottom from %d to %d\n", curr_limit, addr_vpn);
+                for (i = 0; i < pgs_up; i++) {
+                    //set up the user page
+                    TracePrintf(1, "adding page %d\n", addr_vpn + i);
+                    curr_proc->region0[addr_vpn + i].valid = 1;
+                    curr_proc->region0[addr_vpn + i].uprot = PROT_READ | PROT_WRITE;
+                    curr_proc->region0[addr_vpn + i].kprot = PROT_READ | PROT_WRITE;
+                    curr_proc->region0[addr_vpn + i].pfn = findFreePage();
+
+                }
+                // TracePrintf(0, "WER ARE HERE1\n");
+                WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
+                curr_proc->sp = addr_vpn;
+                // info->sp = addr_vpn;
+                terminate = false;
+                // TracePrintf(0, "WER ARE HERE2\n");
+
+            }
         }
         else if (info->code == TRAP_MEMORY_ACCERR)
         {
-            printf("Process %d: Protection violation at addr", GetPid_(curr_proc));
+            TracePrintf(0, "Process %d: Protection violation at addr\n", GetPid_(curr_proc));
         }
         else if (info->code == TRAP_MEMORY_KERNEL)
         {
-            printf("Process %d: Linux kernel sent SIGSEGV at addr", GetPid_(curr_proc));
+            TracePrintf(0, "Process %d: Linux kernel sent SIGSEGV at addr\n", GetPid_(curr_proc));
         }
         else if (info->code == TRAP_MEMORY_USER)
         {
-            printf("Process %d: Received SIGSEGV from user", GetPid_(curr_proc));
+            TracePrintf(0, "Process %d: Received SIGSEGV from user\n", GetPid_(curr_proc));
         }
         else
         {
-            printf("Code not found.");
+            TracePrintf(0, "Code not found.\n");
         }
-    if (terminate) {
+    if (terminate == 1) {
+        TracePrintf(0, "WER ARE HERE2\n");
         ExitFunc(1);
     }
-        Halt();
     // }
     (void)info;
     }
-}
+
 
 /**
  * This type of exception results from any arithmetic error from an instruction executed

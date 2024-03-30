@@ -1,7 +1,7 @@
 void freePage(int pfn);
 int BrkFunc(void *addr){
     TracePrintf(0, "BREAK CALLED!\n");
-    int roundedBrk = UP_TO_PAGE(addr) >> PAGESHIFT;
+    unsigned long roundedBrk = UP_TO_PAGE(addr) >> PAGESHIFT;
     //TODO: store the current pcb in main so this can access it.
 
     //Two cases: move up vs move down

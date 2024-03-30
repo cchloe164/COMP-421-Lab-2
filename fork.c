@@ -21,7 +21,8 @@ int ForkFunc(void)
     struct pcb *child = create_pcb();
 
     BuildRegion0(child);    // Allocate and set up kernel stack
-
+    child->sp = parent->sp;
+    child->brk = parent->brk;
     // set parent-child relations
     TracePrintf(0, "Set family relationships!\n");
     child->parent = parent;

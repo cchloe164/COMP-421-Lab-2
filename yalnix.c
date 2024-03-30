@@ -39,13 +39,13 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     interruptVector = (void **) malloc(TRAP_VECTOR_SIZE * sizeof(int*)); // allocate space in physical memory
 
     // assign handler functions to indices
-    interruptVector[TRAP_KERNEL] = TrapKernelHandler;
-    interruptVector[TRAP_CLOCK] = TrapClockHandler;
-    interruptVector[TRAP_ILLEGAL] = TrapIllegalHandler;
-    interruptVector[TRAP_MEMORY] = TrapMemoryHandler;
-    interruptVector[TRAP_MATH] = TrapMathHandler;
-    interruptVector[TRAP_TTY_RECEIVE] = TrapTTYReceiveHandler;
-    interruptVector[TRAP_TTY_TRANSMIT] = TrapTTYTransmitHandler;
+    interruptVector[TRAP_KERNEL] = &TrapKernelHandler;
+    interruptVector[TRAP_CLOCK] = &TrapClockHandler;
+    interruptVector[TRAP_ILLEGAL] = &TrapIllegalHandler;
+    interruptVector[TRAP_MEMORY] = &TrapMemoryHandler;
+    interruptVector[TRAP_MATH] = &TrapMathHandler;
+    interruptVector[TRAP_TTY_RECEIVE] = &TrapTTYReceiveHandler;
+    interruptVector[TRAP_TTY_TRANSMIT] = &TrapTTYTransmitHandler;
     
     // fill in rest of empty slots
     int i;
@@ -78,8 +78,9 @@ extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_
     TracePrintf(1, "-------TraceTraceTrace5--------");
     struct pcb *pcb1 = create_pcb();
     pcb1->region0 = &region0Pt[0];
-    LoadProgram("idle", cmd_args, info, pcb1->region0);
     curr_proc = pcb1;
+    LoadProgram("idle", cmd_args, info, pcb1->region0);
+    
     idle_pcb = pcb1;
 
     struct pcb *pcb2 = create_pcb();

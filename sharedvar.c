@@ -15,11 +15,12 @@ void **interruptVector;
 struct pcb { //TODO: I've added a few fields for some of the other functions but haven't updated the pcb creation code for idle/init yet
     int process_id;
     SavedContext ctx;
-    int brk; //stores the break position of the current process (for brk.c)
+    unsigned long brk; //stores the break position of the current process (for brk.c)
     int reg0_pfn; //stores the physical pfn of reg 0
     struct pte *region0; //stores pointer to physical address of region 0
     unsigned long free_vpn; // free virtual page number
     int delay_ticks; // the amount of ticks remaining if the process is Delayed
+    unsigned long sp;
 
     struct pcb *parent; // this process's parent if it has one
     struct pcb *children_head;  // head child of children chain
