@@ -197,8 +197,7 @@ void TrapIllegalHandler(ExceptionInfo *info)
  * the address is not mapped in the current page tables, or because the access violates the current page
  * protection specified in the corresponding page table entry.
  */
-void TrapMemoryHandler(ExceptionInfo *info)
-{
+void TrapMemoryHandler(ExceptionInfo *info) {
     /**
      * The kernel must determine if this exception represents an implicit request by the
      * current process to enlarge the amount of memory allocated to the process’s stack, as described in
@@ -236,13 +235,15 @@ void TrapMemoryHandler(ExceptionInfo *info)
         {
             printf("Code not found.");
         }
-    if (terminate) {
+    }
+    // if (terminate) {
+    if (0) {
         ExitFunc(1);
     }
         Halt();
     // }
     (void)info;
-};
+}
 
 /**
  * This type of exception results from any arithmetic error from an instruction executed

@@ -30,6 +30,9 @@ struct pcb { //TODO: I've added a few fields for some of the other functions but
     struct exitedChild *exited_children_head;
     struct exitedChild *exited_children_tail;
     int waiting;
+
+    struct pcb *read_q_next;
+    struct pcb *write_q_next;
 };
 
 // an informal round-robin queue based on clock ticks
@@ -73,7 +76,10 @@ struct line {
 struct term {
     int tty_id; // terminal id
     struct line *read_in;  // store read-in lines
-    struct line *write_out;
+    struct line *write_out; // store write-out lines
+    struct pcb *read_queue;
+    struct pcb *write_queue;
+    int mutex;
 };
 struct term *terms; // array of terminals
 

@@ -27,3 +27,19 @@ int TtyReceiveFunc(int tty_id)
     TracePrintf(0, "Terminal %d read in length %d\n", tty_id, len);
     return len;
 }
+
+int TtyReadFunc(int tty_id, void *buf, int len) {
+    (void) buf;
+    (void) len;
+    if (terms[tty_id].read_queue == NULL) {
+        terms[tty_id].read_queue = curr_proc;
+    } else {
+        struct pcb *ptr = terms[tty_id].read_queue;
+        while (ptr->read_q_next != NULL) {
+            ptr = ptr->read_q_next;
+        }
+        ptr->read_q_next = curr_proc;
+    }
+    Halt();
+    return 0;
+}
