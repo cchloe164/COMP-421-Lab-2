@@ -1,5 +1,5 @@
-** Kernel   level 0 tracing enabled **
-** User     level 0 tracing enabled **
+** Kernel   level 1 tracing enabled **
+** User     level 1 tracing enabled **
 Kernel   Starting Kernel...
 Kernel   Setting up interrupt vector table...
 Kernel   Building free pages...
@@ -8,7 +8,7 @@ Kernel   Finished building free pages
 Kernel   Building page table...
 Kernel   Finished initializing Page Table 
 Kernel   Virtual memory enabled...
-Kernel   LoadProgram 'idle', args 0x1fffd0
+Kernel   -------TraceTraceTrace5--------Kernel   LoadProgram 'idle', args 0x1fffd0
 Kernel   LoadProgram: LoadInfo status 0
 Kernel   text_size 0x7000, data_size 0x130, bss_size 0x3098
 Kernel   entry 0x10100

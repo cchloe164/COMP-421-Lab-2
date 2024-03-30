@@ -25,7 +25,7 @@
 #	For example, the Makefile will make test1 out of test1.c,
 #	if you have a file named test1.c in this directory.
 #
-ALL = yalnix init1 idle init2 init3 init9 init8 init10 init11 init12 execTest execTestProg
+ALL = yalnix init1 idle init2 init3 init9 init8 init10 init11 init12 init13 init15 execTest execTestProg
 
 #
 #	You must modify the KERNEL_OBJS and KERNEL_SRCS definitions

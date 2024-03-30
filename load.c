@@ -140,7 +140,7 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0) 
     // >>>> pages already allocated to this process that will be
     // >>>> freed below before we allocate the needed pages for
     // >>>> the new program being loaded.
-
+    curr_proc->brk = data_bss_npg + text_npg + MEM_INVALID_PAGES;
     if (data_bss_npg + text_npg + stack_npg > num_free_pages)
     {
         TracePrintf(0,
@@ -257,7 +257,8 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0) 
         ptr0[userIter].pfn = findFreePage();
     }
     TracePrintf(0, "User stack pages setup completed!\n");
-
+    
+    curr_proc->sp = (USER_STACK_LIMIT >> PAGESHIFT) - stack_npg;
     /*
      *  All pages for the new address space are now in place.  Flush
      *  the TLB to get rid of all the old PTEs from this process, so
@@ -300,6 +301,7 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info, struct pte *ptr0) 
     TracePrintf(0, "Flushing edits to mem_invalid_pages in the new process' Region 0...");
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
     TracePrintf(0, "done3\n");
+
 
     /*
      *  Zero out the bss
