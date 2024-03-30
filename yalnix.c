@@ -19,83 +19,6 @@ void PushExitToExited(struct exitedChild *child, struct pcb *current);
 // void initPT();
 int vm_enabled = false;
 
-/*
-    *  This is the primary entry point into the kernel:
-    *
-    *  ExceptionInfo *info
-    *  unsigned int pmem_size
-    *  void *orig_brk
-    *  char **cmd_args
-    */
-extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, char **cmd_args)
-{
-    TracePrintf(0, "Starting Kernel...\n"); 
-    currKernelBrk = orig_brk;
-    
-    /* Initialize interrupt vector table */
-    TracePrintf(0, "Setting up interrupt vector table...\n"); 
-    interruptVector = (void **) malloc(TRAP_VECTOR_SIZE * sizeof(int*)); // allocate space in physical memory
-
-    // assign handler functions to indices
-    interruptVector[TRAP_KERNEL] = &TrapKernelHandler;
-    interruptVector[TRAP_CLOCK] = &TrapClockHandler;
-    interruptVector[TRAP_ILLEGAL] = &TrapIllegalHandler;
-    interruptVector[TRAP_MEMORY] = &TrapMemoryHandler;
-    interruptVector[TRAP_MATH] = &TrapMathHandler;
-    interruptVector[TRAP_TTY_RECEIVE] = &TrapTTYReceiveHandler;
-    interruptVector[TRAP_TTY_TRANSMIT] = &TrapTTYTransmitHandler;
-    
-    // fill in rest of empty slots
-    int i;
-    for (i = TRAP_DISK; i < TRAP_VECTOR_SIZE; i++)
-    {
-        interruptVector[i] = NULL;
-    }
-    WriteRegister(REG_VECTOR_BASE, (RCS421RegVal) &interruptVector[0]);
-    
-    buildFreePages(pmem_size);  // Build a boolean array that keeps track of free pages
-    
-    initPT();   // Build 1 initial page table
-
-    // Initialize terminals
-    // Initialize terminals
-    terms = malloc(sizeof(struct term) * NUM_TERMINALS);
-    int tty_id;
-    for (tty_id = 0; tty_id < NUM_TERMINALS; tty_id++) {
-        terms[tty_id].read_in = NULL;
-        terms[tty_id].write_out = NULL;
-    }
-
-
-    // Enable virtual memory
-    WriteRegister(REG_VM_ENABLE, 1);
-    TracePrintf(0, "Virtual memory enabled...\n");
-    vm_enabled = true;
-
-    // Create idle process
-    TracePrintf(1, "-------TraceTraceTrace5--------");
-    struct pcb *pcb1 = create_pcb();
-    pcb1->region0 = &region0Pt[0];
-    curr_proc = pcb1;
-    LoadProgram("idle", cmd_args, info, pcb1->region0);
-    
-    idle_pcb = pcb1;
-
-    struct pcb *pcb2 = create_pcb();
-    BuildRegion0(pcb2);
-
-    int res = ContextSwitch(SwitchNewProc, &pcb1->ctx, (void *)pcb1, (void *)pcb2);
-    if (res == 0) {
-        TracePrintf(0, "ContextSwitch was successful!\n", res);
-    } else {
-        TracePrintf(0, "ERROR: ContextSwitch was unsuccessful.\n", res);
-    }
-
-    LoadProgram(cmd_args[0], cmd_args, info, pcb2->region0);
-    TracePrintf(0, "END OF CODE REACHED!!!!\n");
-
-    return;
-}
 
 
 /**
@@ -253,7 +176,6 @@ int SetKernelBrk(void *addr) {
 }
 
 
-
 /*
     *  This is the primary entry point into the kernel:
     *
@@ -262,7 +184,7 @@ int SetKernelBrk(void *addr) {
     *  void *orig_brk
     *  char **cmd_args
     */
-void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, char **cmd_args)
+extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, char **cmd_args)
 {
     TracePrintf(0, "Starting Kernel...\n"); 
     currKernelBrk = orig_brk;
@@ -272,13 +194,13 @@ void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, ch
     interruptVector = (void **) malloc(TRAP_VECTOR_SIZE * sizeof(int*)); // allocate space in physical memory
 
     // assign handler functions to indices
-    interruptVector[TRAP_KERNEL] = TrapKernelHandler;
-    interruptVector[TRAP_CLOCK] = TrapClockHandler;
-    interruptVector[TRAP_ILLEGAL] = TrapIllegalHandler;
-    interruptVector[TRAP_MEMORY] = TrapMemoryHandler;
-    interruptVector[TRAP_MATH] = TrapMathHandler;
-    interruptVector[TRAP_TTY_RECEIVE] = TrapTTYReceiveHandler;
-    interruptVector[TRAP_TTY_TRANSMIT] = TrapTTYTransmitHandler;
+    interruptVector[TRAP_KERNEL] = &TrapKernelHandler;
+    interruptVector[TRAP_CLOCK] = &TrapClockHandler;
+    interruptVector[TRAP_ILLEGAL] = &TrapIllegalHandler;
+    interruptVector[TRAP_MEMORY] = &TrapMemoryHandler;
+    interruptVector[TRAP_MATH] = &TrapMathHandler;
+    interruptVector[TRAP_TTY_RECEIVE] = &TrapTTYReceiveHandler;
+    interruptVector[TRAP_TTY_TRANSMIT] = &TrapTTYTransmitHandler;
     
     // fill in rest of empty slots
     int i;
@@ -299,8 +221,8 @@ void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, ch
     for (tty_id = 0; tty_id < NUM_TERMINALS; tty_id++) {
         terms[tty_id].read_in = NULL;
         terms[tty_id].write_out = NULL;
-        terms[tty_id].mutex = 1;
     }
+
 
     // Enable virtual memory
     WriteRegister(REG_VM_ENABLE, 1);
@@ -311,8 +233,9 @@ void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, ch
     TracePrintf(1, "-------TraceTraceTrace5--------");
     struct pcb *pcb1 = create_pcb();
     pcb1->region0 = &region0Pt[0];
-    LoadProgram("idle", cmd_args, info, pcb1->region0);
     curr_proc = pcb1;
+    LoadProgram("idle", cmd_args, info, pcb1->region0);
+    
     idle_pcb = pcb1;
 
     struct pcb *pcb2 = create_pcb();
